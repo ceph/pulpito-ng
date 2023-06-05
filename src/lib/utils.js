@@ -3,7 +3,7 @@ import convert from "color-convert";
 
 function formatDate(orig) {
   if (!orig) return;
-  return format(new Date(orig), "yy-MM-dd HH:mm:ss");
+  return format(new Date(orig), "yyyy-MM-dd HH:mm:ss");
 }
 
 function pad(num) {
