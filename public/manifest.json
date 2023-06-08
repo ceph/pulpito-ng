@@ -3,7 +3,7 @@
   "name": "Pulpito",
   "icons": [
     {
-      "src": "ceph-logo.svg",
+      "src": "favicon.ico",
       "sizes": "any"
     }
   ],
