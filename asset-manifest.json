@@ -1,15 +1,16 @@
 {
   "files": {
     "main.css": "/pulpito-ng/static/css/main.ed418844.css",
-    "main.js": "/pulpito-ng/static/js/main.e9e095ea.js",
+    "main.js": "/pulpito-ng/static/js/main.ab219dfc.js",
     "static/js/787.c5483868.chunk.js": "/pulpito-ng/static/js/787.c5483868.chunk.js",
     "index.html": "/pulpito-ng/index.html",
+    "static/media/sentry.svg": "/pulpito-ng/static/media/sentry.e82813fbfc5dbaf6062f0ec660b7dbbc.svg",
     "main.ed418844.css.map": "/pulpito-ng/static/css/main.ed418844.css.map",
-    "main.e9e095ea.js.map": "/pulpito-ng/static/js/main.e9e095ea.js.map",
+    "main.ab219dfc.js.map": "/pulpito-ng/static/js/main.ab219dfc.js.map",
     "787.c5483868.chunk.js.map": "/pulpito-ng/static/js/787.c5483868.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.ed418844.css",
-    "static/js/main.e9e095ea.js"
+    "static/js/main.ab219dfc.js"
   ]
 }
