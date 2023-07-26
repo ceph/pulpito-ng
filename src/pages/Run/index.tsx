@@ -1,9 +1,14 @@
 import { useQueryParams, StringParam, NumberParam } from "use-query-params";
 import { styled, useTheme } from "@mui/material/styles";
 import { useParams } from "react-router-dom";
+import { useState } from "react";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
+import Snackbar from "@mui/material/Snackbar";
 import { format } from "date-fns";
 import SourceBranch from "mdi-material-ui/SourceBranch";
 import { Helmet } from "react-helmet";
@@ -35,6 +40,28 @@ export default function Run() {
     page: NumberParam,
     pageSize: NumberParam,
   });
+  const [kill, setKill] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+  const killRun = async () => {
+    setKill(true);
+    // Using a mock API endpoint for testing
+    const response = await fetch("https://reqres.in/api/users/2?delay=3");
+    const status = response.status;
+    if (status === 200) setSuccess(true);
+    else setError(true);
+    setKill(false);
+  };
+  const handleClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSuccess(false);
+    setError(false);
+  };
   const { name } = useParams<RunParams>();
   const query = useRun(name === undefined ? "" : name);
   if (query === null) return <Typography>404</Typography>;
@@ -70,6 +97,35 @@ export default function Run() {
           <Typography>scheduled on {date}</Typography>
         </Link>
       </div>
+      <div
+        style={{
+          display: "flex",
+        }}
+      >
+        <Button
+          variant="contained"
+          color="error"
+          size="large"
+          onClick={killRun}
+        >
+          Kill Run
+        </Button>
+        {kill ? (
+          <Box sx={{ p: 1 }}>
+            <CircularProgress size={20} color="inherit" />
+          </Box>
+        ) : null}
+      </div>
+      <Snackbar autoHideDuration={3000} open={success} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+          Run killed successfully
+        </Alert>
+      </Snackbar>
+      <Snackbar autoHideDuration={3000} open={error} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
+          Unable to kill run
+        </Alert>
+      </Snackbar>
       <ButtonGroup style={{ display: "flex", justifyContent: "center" }}>
         <Button
           onClick={() => {
