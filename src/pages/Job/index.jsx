@@ -42,7 +42,25 @@ function StatusIcon({ status }) {
   return <Icon style={style} />;
 }
 
+function isValidDate(dateString) {
+  // Regex checks for the pattern YYYY-MM-DD HH:MM:SS
+  const regex = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
+	if (!dateString.match(regex)) {
+    return false;
+  }
+	const date = new Date(dateString);
+	const dateTime = date.getTime();
+	if (!dateTime && dateTime !== 0) {
+    return false;
+  }
+	return true;
+}
+
 function timeSince(date) {
+  if (!isValidDate(date)) {
+    return 'N/A'; 
+  }
+
   let minute = 60;
   let hour   = minute * 60;
   let day    = hour   * 24;
