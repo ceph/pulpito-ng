@@ -85,8 +85,7 @@ export default function AppBar(props) {
           component={RouterLink}
           to="http://localhost:8082/login" 
           color="inherit"
-          sx={{
-            bgcolor: "#b81f14", 
+          sx={{ 
             marginLeft: "12px", 
           }}
         >
