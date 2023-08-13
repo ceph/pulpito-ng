@@ -2,6 +2,7 @@ import { PropsWithChildren } from 'react'
 import { useQueryParams, StringParam, NumberParam } from "use-query-params";
 import { styled } from "@mui/material/styles";
 import { useParams } from "react-router-dom";
+import { useState } from "react";
 import Typography from "@mui/material/Typography";
 import { format } from "date-fns";
 import { Helmet } from "react-helmet";
@@ -42,6 +43,28 @@ export default function Run() {
     page: NumberParam,
     pageSize: NumberParam,
   });
+  const [kill, setKill] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+  const killRun = async () => {
+    setKill(true);
+    // Using a mock API endpoint for testing
+    const response = await fetch("https://reqres.in/api/users/2?delay=3");
+    const status = response.status;
+    if (status === 200) setSuccess(true);
+    else setError(true);
+    setKill(false);
+  };
+  const handleClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSuccess(false);
+    setError(false);
+  };
   const { name } = useParams<RunParams>();
   const query = useRun(name === undefined ? "" : name);
   if (query === null) return <Typography>404</Typography>;
