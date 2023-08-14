@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 
 import AppBar from "./components/AppBar";
@@ -9,6 +9,7 @@ import Runs from "./pages/Runs";
 import Run from "./pages/Run";
 import Job from "./pages/Job";
 import Queue from "./pages/Queue";
+import Error from "./pages/Error";
 
 import "./App.css";
 
@@ -41,6 +42,8 @@ function App(props: AppProps) {
           <Route path="/queue" element={<Queue />} />
           <Route path="/:name" element={<Run />} />
           <Route path="/:name/:job_id" element={<Job />} />
+          <Route path="/error" element={ <Error /> } /> 
+          <Route path="*" element={<Navigate to="/error" replace />} />
         </Routes>
       </div>
     </div>

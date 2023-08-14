@@ -1,6 +1,6 @@
 import { useQueryParams, StringParam, NumberParam } from "use-query-params";
 import { styled, useTheme } from "@mui/material/styles";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
@@ -29,6 +29,7 @@ const Root = styled("div")(() => ({
 }));
 
 export default function Run() {
+  const navigate = useNavigate();
   const theme = useTheme();
   const [params, setParams] = useQueryParams({
     status: StringParam,
@@ -38,7 +39,7 @@ export default function Run() {
   const { name } = useParams<RunParams>();
   const query = useRun(name === undefined ? "" : name);
   if (query === null) return <Typography>404</Typography>;
-  if (query.isError) return null;
+  if (query.isError) return navigate('/error');
   const data: Run | undefined = query.data;
   const suite = data?.suite;
   const branch = query.data?.branch;
