@@ -3,7 +3,9 @@ import Typography from "@mui/material/Typography";
 import { Helmet } from "react-helmet";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useLocalStorage } from 'usehooks-ts';
+import LockIcon from "@mui/icons-material/Lock";
+import LockOpenIcon from "@mui/icons-material/LockOpen";
+import { useLocalStorage } from "usehooks-ts";
 
 export default function Schedule() {
   const predefinedKeyOptions = [
@@ -17,6 +19,8 @@ export default function Schedule() {
   const [valueData, setValueData] = useLocalStorage("valueData", []);
   const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
   const [checkedRows, setCheckedRows] = useLocalStorage("checkedRows", []);
+  const [rowLocks, setRowLocks] = useLocalStorage("rowLocks", Array(selectedKeyIndices.length).fill(false));
+  const [keyLocks, setKeyLocks] = useLocalStorage("keyLocks", Array(selectedKeyIndices.length).fill(false));
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
@@ -26,8 +30,8 @@ export default function Schedule() {
     updateCommand(checkedRows);
   };
 
-  const handleDryRun = () => {  
-    updateCommand(checkedRows)
+  const handleDryRun = () => {
+    updateCommand(checkedRows);
   };
 
   useEffect(() => {
@@ -37,6 +41,8 @@ export default function Schedule() {
   const addNewRow = () => {
     setSelectedKeyIndices([...selectedKeyIndices, 0]);
     setValueData([...valueData, ""]);
+    setRowLocks([...rowLocks, false]);
+    setKeyLocks([...keyLocks, false]); 
   };
 
   const handleCheckboxChange = (index, event) => {
@@ -81,20 +87,38 @@ export default function Schedule() {
     const newCheckedRows = checkedRows.filter((checkedIndex) => checkedIndex !== index);
     setCheckedRows(newCheckedRows);
 
+    const updatedRowLocks = [...rowLocks];
+    updatedRowLocks.splice(index, 1);
+    setRowLocks(updatedRowLocks);
+
+    const updatedKeyLocks = [...keyLocks];
+    updatedKeyLocks.splice(index, 1);
+    setKeyLocks(updatedKeyLocks);
+
     updateCommand(newCheckedRows);
+  };
+
+  const toggleRowLock = (index) => {
+    const updatedRowLocks = [...rowLocks];
+    updatedRowLocks[index] = !updatedRowLocks[index];
+    setRowLocks(updatedRowLocks);
+
+    const updatedKeyLocks = [...keyLocks];
+    updatedKeyLocks[index] = !updatedKeyLocks[index];
+    setKeyLocks(updatedKeyLocks);
   };
 
   const updateCommand = (checkedRows) => {
     const commandArgs = checkedRows
       .map((index) => {
-        const selectedKeyIndex = selectedKeyIndices[index]; 
+        const selectedKeyIndex = selectedKeyIndices[index];
         const selectedKey = predefinedKeyOptions[selectedKeyIndex];
         const selectedValue = valueData[index];
         return `${selectedKey} ${selectedValue}`;
       })
       .join(" ");
     const teuthologySuiteCommand = `teuthology suite ${commandArgs}`;
-  
+
     setInputValue(teuthologySuiteCommand);
   };
 
@@ -118,18 +142,18 @@ export default function Schedule() {
           <Button
             style={{ margin: "10px", padding: "8px" }}
             variant="contained"
-            color="error" 
+            color="error"
             onClick={handleRun}
           >
             Run
           </Button>
           <Button
-          style={{ margin: "10px", padding: "8px", backgroundColor: "#1976D2", color: "#fff" }}
-          variant="contained"
-          onClick={handleDryRun}
-        >
-          Dry Run
-        </Button>
+            style={{ margin: "10px", padding: "8px", backgroundColor: "#1976D2", color: "#fff" }}
+            variant="contained"
+            onClick={handleDryRun}
+          >
+            Dry Run
+          </Button>
         </div>
       </div>
       <table style={{ borderCollapse: "collapse", width: "100%" }}>
@@ -151,18 +175,26 @@ export default function Schedule() {
               }}
             >
               <td style={{ border: "1px solid #777875", padding: "8px" }}>
-                <input
-                  type="checkbox"
-                  id={`checkbox${index + 1}`}
-                  checked={checkedRows.includes(index)}
-                  onChange={(event) => handleCheckboxChange(index, event)}
-                />
-                <label htmlFor={`checkbox${index + 1}`}></label>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="checkbox"
+                    id={`checkbox${index + 1}`}
+                    checked={checkedRows.includes(index)}
+                    onChange={(event) => handleCheckboxChange(index, event)}
+                  />
+                  <div
+                    style={{ cursor: "pointer", marginLeft: "8px", color: "#888" }}
+                    onClick={() => toggleRowLock(index)}
+                  >
+                    {rowLocks[index] ? <LockIcon /> : <LockOpenIcon />}
+                  </div>
+                </div>
               </td>
               <td style={{ border: "1px solid #777875", padding: "8px" }}>
                 <select
                   value={selectedKeyIndex}
                   onChange={(event) => handleKeySelectChange(index, event)}
+                  disabled={rowLocks[index] || keyLocks[index]} 
                 >
                   {predefinedKeyOptions.map((option, optionIndex) => (
                     <option key={optionIndex} value={optionIndex}>
@@ -177,22 +209,23 @@ export default function Schedule() {
                     type="text"
                     value={valueData[index]}
                     onChange={(event) => handleValueChange(index, event)}
+                    disabled={rowLocks[index]} 
                   />
-                  {hoveredRowIndex === index && (
-                    <DeleteIcon
-                      style={{ cursor: "pointer", marginLeft:"8px", color: "#888"}}
+                  <div
+                    style={{ cursor: "pointer", marginLeft: "8px", color: "#888" }}
                     onClick={() => handleDeleteRow(index)}
-                  />
-                )}
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-    <button style={{ margin: "10px", padding: "8px" }} onClick={addNewRow}>
-      Add Option
-    </button>
-  </div>
-);
+                  >
+                    {hoveredRowIndex === index && <DeleteIcon />}
+                  </div>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <button style={{ margin: "10px", padding: "8px" }} onClick={addNewRow}>
+        Add Option
+      </button>
+    </div>
+  );
 }
