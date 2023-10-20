@@ -13,8 +13,10 @@ import Nodes from "./pages/Nodes";
 import Node from "./pages/Node";
 import StatsNodesLock from "./pages/StatsNodesLock";
 import StatsNodesJobs from "./pages/StatsNodesJobs";
+import { ErrorBoundary } from "react-error-boundary";
 
 import "./App.css";
+import ErrorFallback from "./components/ErrorFallback";
 
 type AppProps = {
   darkMode: boolean;
@@ -37,19 +39,21 @@ function App(props: AppProps) {
       </header>
       <Drawer drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
       <div className="App-body">
-        <Routes>
-          <Route path="/" element={<Runs />} />
-          <Route path="/nodes" element={<Nodes />} />
-          <Route path="/nodes/:name" element={<Node />} />
-          <Route path="/stats/nodes/jobs" element={<StatsNodesJobs />} />
-          <Route path="/stats/nodes/lock" element={<StatsNodesLock />} />
-          <Route path="/runs" element={<Runs />} />
-          <Route path="/runs/:name" element={<Run />} />
-          <Route path="/runs/:name/jobs/:job_id" element={<Job />} />
-          <Route path="/queue" element={<Queue />} />
-          <Route path="/:name" element={<Run />} />
-          <Route path="/:name/:job_id" element={<Job />} />
-        </Routes>
+        <ErrorBoundary FallbackComponent={ErrorFallback} >
+          <Routes>
+            <Route path="/" element={<Runs />} />
+            <Route path="/nodes" element={<Nodes />} />
+            <Route path="/nodes/:name" element={<Node />} />
+            <Route path="/stats/nodes/jobs" element={<StatsNodesJobs />} />
+            <Route path="/stats/nodes/lock" element={<StatsNodesLock />} />
+            <Route path="/runs" element={<Runs />} />
+            <Route path="/runs/:name" element={<Run />} />
+            <Route path="/runs/:name/jobs/:job_id" element={<Job />} />
+            <Route path="/queue" element={<Queue />} />
+            <Route path="/:name" element={<Run />} />
+            <Route path="/:name/:job_id" element={<Job />} />
+          </Routes>
+        </ErrorBoundary>
       </div>
     </div>
   );
