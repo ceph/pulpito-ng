@@ -13,6 +13,7 @@ import Nodes from "./pages/Nodes";
 import Node from "./pages/Node";
 import StatsNodesLock from "./pages/StatsNodesLock";
 import StatsNodesJobs from "./pages/StatsNodesJobs";
+import Schedule from "./pages/Schedule";
 
 import "./App.css";
 
@@ -47,6 +48,7 @@ function App(props: AppProps) {
           <Route path="/runs/:name" element={<Run />} />
           <Route path="/runs/:name/jobs/:job_id" element={<Job />} />
           <Route path="/queue" element={<Queue />} />
+          <Route path="/schedule" element={<Schedule />} />
           <Route path="/:name" element={<Run />} />
           <Route path="/:name/:job_id" element={<Job />} />
         </Routes>
