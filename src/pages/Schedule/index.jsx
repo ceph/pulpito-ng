@@ -1,125 +1,160 @@
-import React, { useState, useEffect } from "react";
-import Typography from "@mui/material/Typography";
+import { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet";
+import { useLocalStorage } from "usehooks-ts";
+import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import Fab from '@mui/material/Fab';
+import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from "@mui/icons-material/Delete";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
-import { useLocalStorage } from "usehooks-ts";
+import Paper from '@mui/material/Paper';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import TableBody from '@mui/material/TableBody';
+import Table from '@mui/material/Table';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
+import Tooltip from '@mui/material/Tooltip';
+import InfoIcon from '@mui/icons-material/Info';
 
 export default function Schedule() {
-  const predefinedKeyOptions = [
-    "--ceph-repo", "--suite-repo", "--subset",
-    "--suite-branch", "--suite", "--limit", 
-    "--repo", "--ceph-branch", "subset"
-  ];
+  const keyOptions =
+    [
+      "--ceph",
+      "--ceph-repo",
+      "--suite-repo",
+      "--suite-branch",
+      "--suite",
+      "--subset",
+      "--machine",
+      "--filter",
+      "--distro",
+      "--rerun",
+      "--rerun-statuses",
+      "--limit",
+      "--priority",
+    ];
+  const OptionsInfo = {
+    "--ceph": "The ceph branch to run against [default: main]",
+    "--ceph-repo": "Query this repository for Ceph branch and \
+      SHA1 values [default: https://github.com/ceph/ceph-ci.git]",
+    "--suite-repo": "Use tasks and suite definition in this \
+      repository [default: https://github.com/ceph/ceph-ci.git]",
+    "--suite-branch": "Use this suite branch instead of the ceph branch",
+    "--suite": "The suite to schedule",
+    "--subset": "Instead of scheduling the entire suite, break the \
+    set of jobs into <outof> pieces (each of which will \
+      contain each facet at least once) and schedule \
+      piece <index>.  Scheduling 0/<outof>, 1/<outof>, \
+      2/<outof> ... <outof>-1/<outof> will schedule all \
+      jobs in the suite (many more than once). If specified, \
+      this value can be found in results.log.",
+    "--machine": "Machine type e.g., smithi, mira, gibba.",
+    "--filter": "Only run jobs whose description contains at least one \
+      of the keywords in the comma separated keyword string specified.",
+    "--distro": "Distribution to run against",
+    "--rerun": "Attempt to reschedule a run, selecting only those \
+    jobs whose status are mentioned by --rerun-status. \
+      Note that this is implemented by scheduling an \
+      entirely new suite and including only jobs whose \
+      descriptions match the selected ones. It does so \
+      using the same logic as --filter. \
+      Of all the flags that were passed when scheduling \
+      the original run, the resulting one will only \
+      inherit the --suite value. Any other arguments \
+      must be passed again while scheduling. By default, \
+      'seed' and 'subset' will be taken from results.log, \
+      but can be overide if passed again. \
+      This is important for tests involving random facet \
+      (path ends with '$' operator).",
+    "--rerun-statuses": "A comma-separated list of statuses to be used \
+      with --rerun. Supported statuses are: 'dead', \
+      'fail', 'pass', 'queued', 'running', 'waiting' \
+      [default: fail,dead]",
+    "--limit": "Queue at most this many jobs [default: 0]",
+    "--priority": "Job priority (lower is sooner) 0 - 1000",
+  }
 
-  const [inputValue, setInputValue] = useLocalStorage("inputValue", "");
-  const [selectedKeyIndices, setSelectedKeyIndices] = useLocalStorage("selectedKeyIndices", []);
-  const [valueData, setValueData] = useLocalStorage("valueData", []);
-  const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
-  const [checkedRows, setCheckedRows] = useLocalStorage("checkedRows", []);
-  const [rowLocks, setRowLocks] = useLocalStorage("rowLocks", Array(selectedKeyIndices.length).fill(false));
-  const [keyLocks, setKeyLocks] = useLocalStorage("keyLocks", Array(selectedKeyIndices.length).fill(false));
+  const [rowData, setRowData] = useLocalStorage("rowData", []);
+  const [rowIndex, setRowIndex] = useLocalStorage("rowIndex", -1);
+  const [commandBarValue, setCommandBarValue] = useState([]);
 
-  const handleInputChange = (event) => {
-    setInputValue(event.target.value);
-  };
+  useEffect(() => {
+    setCommandBarValue(rowData);
+  }, [rowData])
 
   const handleRun = () => {
-    updateCommand(checkedRows);
+    return false;
   };
 
   const handleDryRun = () => {
-    updateCommand(checkedRows);
+    return false;
   };
 
-  useEffect(() => {
-    updateCommand(checkedRows);
-  }, [selectedKeyIndices, valueData, checkedRows]);
+  const handleForcePriority = () => {
+    return false;
+  };
 
   const addNewRow = () => {
-    setSelectedKeyIndices([...selectedKeyIndices, 0]);
-    setValueData([...valueData, ""]);
-    setRowLocks([...rowLocks, false]);
-    setKeyLocks([...keyLocks, false]); 
+    console.log("addNewRow");
+    const updatedRowIndex = rowIndex + 1;
+    setRowIndex(updatedRowIndex);
+    const index = (updatedRowIndex % keyOptions.length);
+    const object = {
+      key: keyOptions[index],
+      value: "",
+      lock: false,
+      checked: true,
+    }
+    const updatedRowData = [...rowData];
+    updatedRowData.push(object);
+    setRowData(updatedRowData);
   };
 
   const handleCheckboxChange = (index, event) => {
-    const newCheckedRows = [...checkedRows];
-
+    console.log("handleCheckboxChange");
+    const newRowData = [...rowData];
     if (event.target.checked) {
-      newCheckedRows.push(index);
+      newRowData[index].checked = true;
     } else {
-      const indexToRemove = newCheckedRows.indexOf(index);
-      if (indexToRemove !== -1) {
-        newCheckedRows.splice(indexToRemove, 1);
-      }
+      newRowData[index].checked = false;
     }
-
-    setCheckedRows(newCheckedRows);
-    updateCommand(newCheckedRows);
+    setRowData(newRowData);
   };
 
   const handleKeySelectChange = (index, event) => {
-    const updatedSelectedKeyIndices = [...selectedKeyIndices];
-    updatedSelectedKeyIndices[index] = event.target.value;
-    setSelectedKeyIndices(updatedSelectedKeyIndices);
-    updateCommand(checkedRows);
+    console.log("handleKeySelectChange");
+    const newRowData = [...rowData];
+    newRowData[index].key = event.target.value;
+    setRowData(newRowData);
   };
 
   const handleValueChange = (index, event) => {
-    const updatedValueData = [...valueData];
-    updatedValueData[index] = event.target.value;
-    setValueData(updatedValueData);
-    updateCommand(checkedRows);
+    console.log("handleValueChange");
+    const newRowData = [...rowData];
+    newRowData[index].value = event.target.value;
+    setRowData(newRowData);
   };
 
   const handleDeleteRow = (index) => {
-    const updatedSelectedKeyIndices = [...selectedKeyIndices];
-    updatedSelectedKeyIndices.splice(index, 1);
-    setSelectedKeyIndices(updatedSelectedKeyIndices);
-
-    const updatedValueData = [...valueData];
-    updatedValueData.splice(index, 1);
-    setValueData(updatedValueData);
-
-    const newCheckedRows = checkedRows.filter((checkedIndex) => checkedIndex !== index);
-    setCheckedRows(newCheckedRows);
-
-    const updatedRowLocks = [...rowLocks];
-    updatedRowLocks.splice(index, 1);
-    setRowLocks(updatedRowLocks);
-
-    const updatedKeyLocks = [...keyLocks];
-    updatedKeyLocks.splice(index, 1);
-    setKeyLocks(updatedKeyLocks);
-
-    updateCommand(newCheckedRows);
+    console.log("handleDeleteRow");
+    let newRowData = [...rowData];
+    newRowData.splice(index, 1)
+    setRowData(newRowData);
+    const updatedRowIndex = rowIndex - 1;
+    setRowIndex(updatedRowIndex);
   };
 
   const toggleRowLock = (index) => {
-    const updatedRowLocks = [...rowLocks];
-    updatedRowLocks[index] = !updatedRowLocks[index];
-    setRowLocks(updatedRowLocks);
-
-    const updatedKeyLocks = [...keyLocks];
-    updatedKeyLocks[index] = !updatedKeyLocks[index];
-    setKeyLocks(updatedKeyLocks);
-  };
-
-  const updateCommand = (checkedRows) => {
-    const commandArgs = checkedRows
-      .map((index) => {
-        const selectedKeyIndex = selectedKeyIndices[index];
-        const selectedKey = predefinedKeyOptions[selectedKeyIndex];
-        const selectedValue = valueData[index];
-        return `${selectedKey} ${selectedValue}`;
-      })
-      .join(" ");
-    const teuthologySuiteCommand = `teuthology suite ${commandArgs}`;
-
-    setInputValue(teuthologySuiteCommand);
+    console.log("toggleRowLock");
+    const newRowData = [...rowData];
+    newRowData[index].lock = !newRowData[index].lock;
+    setRowData(newRowData);
   };
 
   return (
@@ -127,105 +162,156 @@ export default function Schedule() {
       <Helmet>
         <title>Schedule - Pulpito</title>
       </Helmet>
-      <Typography variant="h5" style={{ margin: "20px" }}>
+      <Typography variant="h5" style={{ paddingBottom: "20px" }}>
         Schedule a run
       </Typography>
-      <div style={{ border: "#b4bfa6", position: "relative", padding: 10 }}>
-        <input
-          type="text"
-          style={{ width: "900px", height: "50px" }}
-          value={inputValue}
-          onChange={handleInputChange}
-          placeholder="Enter instructions here"
-        />
-        <div style={{ position: "absolute", top: 0, right: 0 }}>
-          <Button
-            style={{ margin: "10px", padding: "8px" }}
-            variant="contained"
-            color="error"
-            onClick={handleRun}
-          >
-            Run
-          </Button>
-          <Button
-            style={{ margin: "10px", padding: "8px", backgroundColor: "#1976D2", color: "#fff" }}
-            variant="contained"
-            onClick={handleDryRun}
-          >
-            Dry Run
-          </Button>
+      <div style={{ border: "#b4bfa6", display: "flex", paddingBottom: "20px" }}>
+        <Tooltip title="Teuthology command that will execute" arrow>
+          <TextField // Command Bar
+            variant="outlined"
+            style={{ width: "100%", height: "50px" }}
+            value={`teuthology-suite ${commandBarValue.map((data, index) => {
+              if (data.checked) {
+                return `${data.key} ${data.value}`;
+              }
+            })
+              .join(" ")}`}
+            placeholder="teuthology-suite"
+            disabled={true}
+          />
+        </Tooltip>
+        <div style={{ display: "flex", paddingLeft: "20px" }}>
+          <Tooltip title="Execute command with regards to the --priority value" arrow>
+            <Button // Run Button
+              style={{ height: "50px", width: "100px", backgroundColor: "#33b249", color: "#fff" }}
+              variant="contained"
+              onClick={handleRun}
+            >
+              Run
+            </Button>
+          </Tooltip>
+          <Tooltip title="Execute command without regards to the --priority value " arrow>
+            <Button // Force Priority Button
+              style={{ height: "50px", width: "100px", marginLeft: "20px" }}
+              variant="contained"
+              color="error"
+              onClick={handleForcePriority}
+            >
+              force priority
+            </Button>
+          </Tooltip>
+          <Tooltip title="Simulate the execution of the command to see what kind of jobs are scheduled, how many there are and etc." arrow>
+            <Button // Dry Run Button
+              style={{ height: "50px", width: "100px", backgroundColor: "#1976D2", color: "#fff", marginLeft: "20px" }}
+              variant="contained"
+              onClick={handleDryRun}
+            >
+              Dry Run
+            </Button>
+          </Tooltip>
         </div>
       </div>
-      <table style={{ borderCollapse: "collapse", width: "100%" }}>
-        <thead>
-          <tr>
-            <th style={{ border: "1px solid #777875", padding: "8px", width: "5%" }}></th>
-            <th style={{ border: "1px solid #777875", padding: "8px" }}>Key</th>
-            <th style={{ border: "1px solid #777875", padding: "8px" }}>Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          {selectedKeyIndices.map((selectedKeyIndex, index) => (
-            <tr
-              key={index}
-              onMouseEnter={() => setHoveredRowIndex(index)}
-              onMouseLeave={() => setHoveredRowIndex(null)}
-              style={{
-                background: hoveredRowIndex === index ? "#f5f5f5" : "transparent",
-              }}
-            >
-              <td style={{ border: "1px solid #777875", padding: "8px" }}>
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <input
-                    type="checkbox"
-                    id={`checkbox${index + 1}`}
-                    checked={checkedRows.includes(index)}
-                    onChange={(event) => handleCheckboxChange(index, event)}
-                  />
-                  <div
-                    style={{ cursor: "pointer", marginLeft: "8px", color: "#888" }}
-                    onClick={() => toggleRowLock(index)}
-                  >
-                    {rowLocks[index] ? <LockIcon /> : <LockOpenIcon />}
-                  </div>
-                </div>
-              </td>
-              <td style={{ border: "1px solid #777875", padding: "8px" }}>
-                <select
-                  value={selectedKeyIndex}
-                  onChange={(event) => handleKeySelectChange(index, event)}
-                  disabled={rowLocks[index] || keyLocks[index]} 
+      <div style={{ paddingBottom: "20px" }}>
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell align="left"></TableCell>
+                <TableCell align="left">Key</TableCell>
+                <TableCell align="left">Value</TableCell>
+                <TableCell align="left"></TableCell>
+              </TableRow>
+            </TableHead>
+            {<TableBody>
+              {rowData.map((data, index) => (
+                <TableRow
+                  key={index}
+                  hover={true}
                 >
-                  {predefinedKeyOptions.map((option, optionIndex) => (
-                    <option key={optionIndex} value={optionIndex}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td style={{ border: "1px solid #777875", padding: "8px" }}>
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <input
-                    type="text"
-                    value={valueData[index]}
-                    onChange={(event) => handleValueChange(index, event)}
-                    disabled={rowLocks[index]} 
-                  />
-                  <div
-                    style={{ cursor: "pointer", marginLeft: "8px", color: "#888" }}
-                    onClick={() => handleDeleteRow(index)}
-                  >
-                    {hoveredRowIndex === index && <DeleteIcon />}
-                  </div>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <button style={{ margin: "10px", padding: "8px" }} onClick={addNewRow}>
-        Add Option
-      </button>
-    </div>
+                  <TableCell>
+                    <Checkbox
+                      style={{ transform: "scale(1.2)" }}
+                      type="checkbox"
+                      id={`checkbox${index + 1}`}
+                      checked={data.checked}
+                      onChange={(event) => handleCheckboxChange(index, event)} />
+                  </TableCell>
+                  <TableCell>
+                    <div style={{ display: "flex" }}>
+                      <Select
+                        value={data.key}
+                        onChange={(event) => handleKeySelectChange(index, event)}
+                        disabled={data.lock}
+                        size="small"
+                      >
+                        {keyOptions.map((option, optionIndex) => (
+                          <MenuItem
+                            key={optionIndex}
+                            value={option}
+                          >
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      <Tooltip
+                        title={OptionsInfo[data.key]}
+                        arrow
+                        style={{ marginLeft: "10px", marginTop: "5px" }}
+                      >
+                        <InfoIcon></InfoIcon>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      required
+                      error={data.value <= 0 & data.checked}
+                      label="Required"
+                      variant="outlined"
+                      size="small"
+                      value={data.value}
+                      onChange={(event) => handleValueChange(index, event)}
+                      disabled={data.lock}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div style={{ display: "flex" }}>
+                      <Tooltip title={data.lock ? "Unlock" : "Lock"} arrow>
+                        <div
+                          style={{ cursor: "pointer", color: "#888" }}
+                          onClick={() => toggleRowLock(index)}
+                        >
+                          {data.lock ? <LockIcon /> : <LockOpenIcon />}
+                        </div>
+                      </Tooltip>
+                      <Tooltip title="Delete" arrow>
+                        <div
+                          style={{ cursor: "pointer", color: "#888" }}
+                          onClick={() => {
+                            handleDeleteRow(index);
+                          }}
+                        >
+                          <DeleteIcon />
+                        </div>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>}
+          </Table>
+        </TableContainer>
+      </div>
+      <Tooltip title="Add" arrow>
+        <Fab
+          disabled={!keyOptions.length}
+          style={{ backgroundColor: "#1976D2", color: "#fff", float: "right" }}
+          onClick={addNewRow}>
+          <AddIcon
+          >
+          </AddIcon>
+        </Fab >
+      </Tooltip>
+    </div >
   );
 }
