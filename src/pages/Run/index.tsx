@@ -2,7 +2,6 @@ import { PropsWithChildren } from 'react'
 import { useQueryParams, StringParam, NumberParam } from "use-query-params";
 import { styled } from "@mui/material/styles";
 import { useParams } from "react-router-dom";
-import { useState } from "react";
 import Typography from "@mui/material/Typography";
 import { format } from "date-fns";
 import { Helmet } from "react-helmet";
@@ -10,8 +9,11 @@ import { Helmet } from "react-helmet";
 import type { Run as Run_, RunParams } from "../../lib/paddles.d";
 
 import { useRun } from "../../lib/paddles";
+import { useRunKill } from "../../lib/teuthologyAPI";
 import JobList from "../../components/JobList";
 import Link from "../../components/Link";
+import KillButton from "../../components/KillButton";
+import { KillRun } from '../../lib/teuthologyAPI.d';
 
 const PREFIX = "index";
 
@@ -43,29 +45,8 @@ export default function Run() {
     page: NumberParam,
     pageSize: NumberParam,
   });
-  const [kill, setKill] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(false);
-  const killRun = async () => {
-    setKill(true);
-    // Using a mock API endpoint for testing
-    const response = await fetch("https://reqres.in/api/users/2?delay=3");
-    const status = response.status;
-    if (status === 200) setSuccess(true);
-    else setError(true);
-    setKill(false);
-  };
-  const handleClose = (
-    event?: React.SyntheticEvent | Event,
-    reason?: string
-  ) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setSuccess(false);
-    setError(false);
-  };
   const { name } = useParams<RunParams>();
+  const killMutation = useRunKill();
   const query = useRun(name === undefined ? "" : name);
   if (query === null) return <Typography>404</Typography>;
   if (query.isError) return null;
@@ -75,6 +56,12 @@ export default function Run() {
   const date = query.data?.scheduled
     ? format(new Date(query.data.scheduled), "yyyy-MM-dd")
     : null;
+  const killPayload: KillRun = {
+    "--run": data?.name || "",
+    "--owner": data?.user || "",
+    "--machine-type": data?.machine_type || "",
+    "--user": data?.user || "",
+  }
   return (
     <Root className={classes.root}>
       <Helmet>

@@ -76,6 +76,7 @@ export type Run = {
   results: RunResults;
   machine_type: string;
   status: RunStatus;
+  user: string;
 };
 
 export type Node = {
