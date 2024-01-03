@@ -13,7 +13,7 @@ import { useRunKill } from "../../lib/teuthologyAPI";
 import JobList from "../../components/JobList";
 import Link from "../../components/Link";
 import KillButton from "../../components/KillButton";
-import { KillRun } from '../../lib/teuthologyAPI.d';
+import { KillRunPayload } from '../../lib/teuthologyAPI.d';
 
 const PREFIX = "index";
 
@@ -56,9 +56,10 @@ export default function Run() {
   const date = query.data?.scheduled
     ? format(new Date(query.data.scheduled), "yyyy-MM-dd")
     : null;
-  const killPayload: KillRun = {
+  const run_owner = data?.jobs[0].owner || "";
+  const killPayload: KillRunPayload = {
     "--run": data?.name || "",
-    "--owner": data?.user || "",
+    "--owner": run_owner,
     "--machine-type": data?.machine_type || "",
     "--user": data?.user || "",
   }
@@ -82,6 +83,12 @@ export default function Run() {
           date
         </FilterLink>
       </div>
+      <KillButton 
+        mutation={killMutation} 
+        text="Kill run" 
+        payload={killPayload} 
+        disabled={(data?.status.includes("finished"))} 
+      />
       <JobList query={query} params={params} setter={setParams} />
     </Root>
   );
