@@ -42,6 +42,7 @@ export type Job = {
   roles: NodeRoles[];
   os_type: string;
   os_version: string;
+  owner: string;
 };
 
 export type NodeRoles = string[];
