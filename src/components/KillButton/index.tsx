@@ -3,20 +3,28 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import { CircularProgress } from "@mui/material";
 
-import { KillRun } from "../../lib/teuthologyAPI.d";
+import { KillRunPayload } from "../../lib/teuthologyAPI.d";
+import { useSession } from "../../lib/teuthologyAPI";
 import Alert from "../Alert";
 
 
 type KillButtonProps = {
   mutation: UseMutationResult;
   text: string;
-  payload: KillRun;
+  payload: KillRunPayload;
+  disabled?: boolean;
 };
 
 
 export default function KillButton(props: KillButtonProps) {
   const mutation: UseMutationResult = props.mutation;
-  
+  const sessionQuery = useSession();
+  const loggedUser = sessionQuery.data?.session.username;
+
+  if (loggedUser?.toLowerCase() != props.payload["--user"].toLowerCase()) {
+    // logged user and owner of the job should be equal (case insensitive)
+    return null
+  }
 
   return (
   <div>
@@ -26,7 +34,7 @@ export default function KillButton(props: KillButtonProps) {
           color="error"
           size="large"
           onClick={() => mutation.mutate(props.payload)}
-          disabled={(mutation.isLoading)}
+          disabled={(props.disabled || mutation.isLoading)}
         >
           {props.text}
         </Button>

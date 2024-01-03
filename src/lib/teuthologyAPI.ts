@@ -2,6 +2,7 @@ import axios from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import { Cookies } from "react-cookie";
+import { Session } from "./teuthologyAPI.d"
 
 const TEUTHOLOGY_API_SERVER = 
     import.meta.env.VITE_TEUTHOLOGY_API || "";
@@ -25,9 +26,9 @@ function doLogout() {
     window.location.href = url;
 }
 
-function useSession(): UseQueryResult {
+function useSession(): UseQueryResult<Session> {
     const url = getURL("/");
-    const query = useQuery({
+    const query = useQuery<Session, Error>({
         queryKey: ['ping-api', { url }],
         queryFn: () => (
             axios.get(url, {
