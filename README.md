@@ -41,3 +41,14 @@ In [teuthology's docker-compose](https://github.com/ceph/teuthology/blob/main/do
     ports:
       - 8081:8081
 ```
+[recommended] For developement purposes:
+Add the following to `pulpito-ng` container:
+
+```
+pulpito-ng:
+    environment:
+      DEPLOYMENT: development
+    volumes:
+      - ../../../pulpito-ng:/app/:rw
+      - /app/node_modules
+```

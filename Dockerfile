@@ -7,7 +7,4 @@ RUN \
   mkdir -p /app/node_modules/.vite && \
   npm install
 COPY . .
-RUN chown -R node:node /app && \
-  npm run build
-USER node
-CMD ["npm", "run", "serve", "--", "--host"]
+CMD sh /app/start_container.sh
