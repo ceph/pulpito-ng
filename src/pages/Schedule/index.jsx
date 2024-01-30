@@ -21,6 +21,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import InfoIcon from '@mui/icons-material/Info';
+import { useUserData, doSchedule } from '../../lib/teuthologyAPI';
 
 export default function Schedule() {
   const keyOptions =
@@ -83,20 +84,44 @@ export default function Schedule() {
   const [rowData, setRowData] = useLocalStorage("rowData", []);
   const [rowIndex, setRowIndex] = useLocalStorage("rowIndex", -1);
   const [commandBarValue, setCommandBarValue] = useState([]);
+  const userData = useUserData();
+  let commandValue = {};
 
   useEffect(() => {
     setCommandBarValue(rowData);
   }, [rowData])
 
+  function getCommandValue() {
+    let retCommandValue = {};
+    commandBarValue.map((data) => {
+      if (data.checked) {
+        retCommandValue[data.key] = data.value;
+      }
+    })
+    let username = userData.get("username");
+    if (!username) {
+      console.log("User is not logged in");
+      return {};
+    } else {
+      retCommandValue['--user'] = userData.get("username");
+    }
+    return retCommandValue;
+  }
+
   const handleRun = () => {
-    return false;
+    let commandValue = getCommandValue();
+    doSchedule(commandValue);
   };
 
   const handleDryRun = () => {
-    return false;
+    let commandValue = getCommandValue();
+    doSchedule(commandValue, true);
   };
 
   const handleForcePriority = () => {
+    let commandValue = getCommandValue();
+    commandValue['--force-priority'] = true;
+    doSchedule(commandValue);
     return false;
   };
 
