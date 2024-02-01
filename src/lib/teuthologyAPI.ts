@@ -25,26 +25,21 @@ function doLogout() {
     window.location.href = url;
 }
 
-function doSchedule(commandValue: any, dryRun = false) {
-    console.log("doSchedule");
-    console.log(commandValue);
-    let url;
-    if (dryRun) {
-        url = getURL("/suite?dry_run=true");
-    } else {
-        url = getURL("/suite?dry_run=false");
+async function useSchedule(commandValue: any) {
+    const url = getURL("/suite?logs=true");
+    const username = useUserData().get("username");
+    if (username) {
+        commandValue['--owner'] = username;
     }
-    if (commandValue['--user'] != useUserData().get("username")) {
-        console.log("Error: --user doesn't match username of current logged in account");
-        return false;
-    }
-    axios.post(url, commandValue, {
+    await axios.post(url, commandValue, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
     }).then((resp) => {
         console.log(resp);
+        return resp;
     }, (error) => {
         console.log(error);
+        throw new Error(error);
     });
 }
 
@@ -82,7 +77,7 @@ function useUserData(): Map<string, string> {
 export {
     doLogin,
     doLogout,
-    doSchedule,
+    useSchedule,
     useSession,
     useUserData,
 }

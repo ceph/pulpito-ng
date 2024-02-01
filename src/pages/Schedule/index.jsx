@@ -21,7 +21,11 @@ import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import InfoIcon from '@mui/icons-material/Info';
-import { useUserData, doSchedule } from '../../lib/teuthologyAPI';
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useUserData, useSchedule } from '../../lib/teuthologyAPI';
+import { useMutation } from "@tanstack/react-query";
 
 export default function Schedule() {
   const keyOptions =
@@ -85,13 +89,68 @@ export default function Schedule() {
   const [rowIndex, setRowIndex] = useLocalStorage("rowIndex", -1);
   const [commandBarValue, setCommandBarValue] = useState([]);
   const userData = useUserData();
-  let commandValue = {};
+
+  const [open, setOpenSuccess] = useState(false);
+  const [openErr, setOpenErr] = useState(false);
+  const [ErrText, setErrText] = useState("");
+
+  const handleOpenSuccess = () => {
+    setOpenSuccess(true);
+  };
+  const handleOpenErr = (errText) => {
+    setErrText(errText);
+    setOpenErr(true);
+  };
+
+  const handleCloseSuccess = () => {
+    setOpenSuccess(false);
+  };
+  const handleCloseErr = () => {
+    setOpenErr(false);
+  };
+
+  const clickRun = useMutation({
+    mutationFn: async (commandValue) => {
+      return await useSchedule(commandValue);
+    },
+    onSuccess: () => {
+      handleOpenSuccess();
+    },
+    onError: () => {
+      handleOpenErr("Failed to Schedule Run");
+    }
+  })
+
+  const clickDryRun = useMutation({
+    mutationFn: async (commandValue) => {
+      return await useSchedule(commandValue);
+    },
+    onSuccess: () => {
+      handleOpenSuccess();
+    },
+    onError: () => {
+      handleOpenErr("Failed to Schedule Dry Run");
+    }
+  })
+
+  const clickForcePriority = useMutation({
+    mutationFn: async (commandValue) => {
+      commandValue['--force-priority'] = true;
+      return await useSchedule(commandValue);
+    },
+    onSuccess: () => {
+      handleOpenSuccess();
+    },
+    onError: () => {
+      handleOpenErr("Failed to Schedule run with --force-priority");
+    }
+  })
 
   useEffect(() => {
     setCommandBarValue(rowData);
   }, [rowData])
 
-  function getCommandValue() {
+  function getCommandValue(dry_run) {
     let retCommandValue = {};
     commandBarValue.map((data) => {
       if (data.checked) {
@@ -105,25 +164,13 @@ export default function Schedule() {
     } else {
       retCommandValue['--user'] = userData.get("username");
     }
+    if (dry_run) {
+      retCommandValue['--dry-run'] = true;
+    } else {
+      retCommandValue['--dry-run'] = false;
+    }
     return retCommandValue;
   }
-
-  const handleRun = () => {
-    let commandValue = getCommandValue();
-    doSchedule(commandValue);
-  };
-
-  const handleDryRun = () => {
-    let commandValue = getCommandValue();
-    doSchedule(commandValue, true);
-  };
-
-  const handleForcePriority = () => {
-    let commandValue = getCommandValue();
-    commandValue['--force-priority'] = true;
-    doSchedule(commandValue);
-    return false;
-  };
 
   const addNewRow = () => {
     console.log("addNewRow");
@@ -207,32 +254,68 @@ export default function Schedule() {
         </Tooltip>
         <div style={{ display: "flex", paddingLeft: "20px" }}>
           <Tooltip title="Execute command with regards to the --priority value" arrow>
-            <Button // Run Button
+            <Snackbar open={open} onClose={handleCloseSuccess}>
+              <Alert
+                onClose={handleCloseSuccess}
+                severity="success"
+                variant="filled"
+                sx={{ width: '100%' }}
+              >
+                Run Scheduled!
+              </Alert>
+            </Snackbar>
+            {clickRun.isLoading ? (
+              <CircularProgress />
+            ) : <Button // Run Button
               style={{ height: "50px", width: "100px", backgroundColor: "#33b249", color: "#fff" }}
               variant="contained"
-              onClick={handleRun}
+              disabled={clickDryRun.isLoading || clickForcePriority.isLoading}
+              onClick={() => {
+                clickRun.mutate(getCommandValue(false)
+                )
+              }}
             >
               Run
-            </Button>
+            </Button>}
+            <Snackbar open={openErr} onClose={handleCloseErr}>
+              <Alert
+                onClose={handleCloseErr}
+                severity="error"
+                variant="filled"
+                sx={{ width: '100%' }}
+              >
+                {ErrText}
+              </Alert>
+            </Snackbar>
           </Tooltip>
           <Tooltip title="Execute command without regards to the --priority value " arrow>
-            <Button // Force Priority Button
-              style={{ height: "50px", width: "100px", marginLeft: "20px" }}
-              variant="contained"
-              color="error"
-              onClick={handleForcePriority}
-            >
-              force priority
-            </Button>
+            {clickForcePriority.isLoading ? (
+              <CircularProgress />
+            ) :
+              <Button // Force Priority Button
+                style={{ height: "50px", width: "100px", marginLeft: "20px" }}
+                variant="contained"
+                color="error"
+                disabled={clickDryRun.isLoading || clickRun.isLoading}
+                onClick={() => {
+                  clickForcePriority.mutate(getCommandValue(false))
+                }}
+              >
+                force priority
+              </Button>}
           </Tooltip>
           <Tooltip title="Simulate the execution of the command to see what kind of jobs are scheduled, how many there are and etc." arrow>
-            <Button // Dry Run Button
+            {clickDryRun.isLoading ? <CircularProgress /> : (<Button // Dry Run Button
               style={{ height: "50px", width: "100px", backgroundColor: "#1976D2", color: "#fff", marginLeft: "20px" }}
               variant="contained"
-              onClick={handleDryRun}
+              disabled={clickRun.isLoading || clickForcePriority.isLoading}
+              onClick={() => {
+                clickDryRun.mutate(getCommandValue(true)
+                )
+              }}
             >
               Dry Run
-            </Button>
+            </Button>)}
           </Tooltip>
         </div>
       </div>
