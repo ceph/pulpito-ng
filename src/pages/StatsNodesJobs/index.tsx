@@ -1,4 +1,4 @@
-import { useQueryParams, StringParam, NumberParam } from "use-query-params";
+import { useSearchParams } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import { Helmet } from "react-helmet";
 import Link from '@mui/material/Link';
@@ -59,12 +59,12 @@ export const columns: MRT_ColumnDef<StatsJobsResponse>[] = [
 ]
 
 export default function StatsNodesJobs() {
-  const [params, setParams] = useQueryParams({
-    machine_type: StringParam,
-    since_days: NumberParam,
+  const [params, setParams] = useSearchParams({
+    machine_type: "",
+    since_days: "",
   });
-  const machine_type = params["machine_type"];
-  const since_days = params["since_days"];
+  const machine_type = params.get("machine_type");
+  const since_days = params.get("since_days");
   const query = useStatsNodeJobs(params);
   const options = useDefaultTableOptions<StatsJobsResponse>();
 

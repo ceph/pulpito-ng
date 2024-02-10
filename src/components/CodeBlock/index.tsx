@@ -1,20 +1,32 @@
 import Editor from "react-simple-code-editor";
-import { highlight, languages } from "prismjs/components/prism-core";
+import prism from "prismjs/components/prism-core";
 import 'prismjs/components/prism-clike';
 import "prismjs/components/prism-yaml";
 import 'prismjs/components/prism-javascript';
+import "prismjs/themes/prism-tomorrow.css";
 
-export default function CodeBlock(props) {
-  const language = languages[props.language];
+const { highlight, languages } = prism;
+
+
+type CodeBlockProps = {
+  value: string,
+  language: string,
+}
+
+
+export default function CodeBlock(props: CodeBlockProps) {
+  const language = languages[props.language] || "yaml";
   if ( ! props.value ) return null;
+  const highlight_ = (code: string) => {
+    if (!! language ) return highlight(code, language);
+    return code;
+  }
   return (
     <Editor
       value={props.value}
       readOnly={true}
-      highlight={(code) => {
-        if (!! language ) return highlight(code, language);
-        return code;
-      }}
+      onValueChange={() => {}}
+      highlight={highlight_}
       style={{
         fontFamily: [
           "ui-monospace",

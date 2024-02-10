@@ -1,52 +1,60 @@
-import { useParams } from "react-router-dom";
-import { useTheme } from "@mui/material/styles";
-import Grid from "@mui/material/Grid";
+import { useData } from 'vike-react/useData'
+import Grid from '@mui/material/Grid2';
 import Typography from "@mui/material/Typography";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ScheduleIcon from "@mui/icons-material/Schedule";
-import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import FolderIcon from '@mui/icons-material/Folder';
+import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import ScheduleIcon from "@mui/icons-material/Schedule";
 import formatDuration from "date-fns/formatDuration";
-import { isValid, parse } from "date-fns";
-import "prismjs/themes/prism-tomorrow.css";
 import { Helmet } from "react-helmet";
 import YAML from "json-to-pretty-yaml";
 
-import Link from "../../components/Link";
-import CodeBlock from "../../components/CodeBlock";
-import { useJob } from "../../lib/paddles";
-import { getDuration, dirName } from "../../lib/utils";
+import Link from "#src/components/Link";
+import CodeBlock from "#src/components/CodeBlock";
+import type { Job, JobStatus } from "#src/lib/paddles.d";
+import { getDuration, dirName } from "#src/lib/utils";
 
-function StatusIcon({ status }) {
-  const theme = useTheme();
-  const statuses = {
-    pass: { icon: CheckCircleOutlineIcon, color: theme.palette.success.light },
-    fail: { icon: HighlightOffIcon, color: theme.palette.error.light },
-    dead: { icon: HighlightOffIcon, color: theme.palette.warning.light },
-    running: {
-      icon: PlayCircleOutlineIcon,
-      theme: theme.palette.warning.light,
-    },
+
+type StatusIconInfo = {
+  icon: any,
+  color?: string,
+}
+
+type StatusIconsInfo = {
+  [key: string]: StatusIconInfo;
+}
+
+
+function StatusIcon({ status }: {status: JobStatus}) {
+  const statuses: StatusIconsInfo = {
+    pass: { icon: CheckCircleOutlineIcon, color: "var(--mui-palette-success-light)" },
+    fail: { icon: HighlightOffIcon, color: "var(--mui-palette-error-light)" },
+    dead: { icon: HighlightOffIcon, color: "var(--mui-palette-error-light)" },
+    running: { icon: PlayCircleOutlineIcon, color: "var(--mui-palette-warning-light)" },
+    queued: { icon: CalendarMonthIcon },
     waiting: { icon: ScheduleIcon },
+    unknown: { icon: QuestionMarkIcon },
   };
   const conf = statuses[status];
   if (!conf) return null;
   const Icon = conf.icon;
-  const style = { alignSelf: "center", margin: "5px" };
+  const style: Record<string, string> = { alignSelf: "center", margin: "5px" };
   if (conf.color) style.color = conf.color;
   return <Icon style={style} />;
 }
 
-function timeSince(date) {
-  const parsedDate = parse(date, "yyyy-MM-dd HH:mm:ss", new Date());
-  if (!isValid(parsedDate)) {
-    return 'N/A';
-  }
+function timeSince(date: Date) {
+  // const parsedDate = parse(date, "yyyy-MM-dd HH:mm:ss", new Date());
+  // if (!isValid(parsedDate)) {
+  //   return 'N/A';
+  // }
 
   let minute = 60;
   let hour   = minute * 60;
@@ -56,7 +64,7 @@ function timeSince(date) {
 
   let suffix = ' ago';
 
-  let elapsed = Math.floor((Date.now() - date) / 1000);
+  let elapsed = Math.floor((Date.now() - Number(date)) / 1000);
 
   if (elapsed < minute) {
     return 'just now';
@@ -67,50 +75,49 @@ function timeSince(date) {
           elapsed < month ? [Math.floor(elapsed / day), 'day'] :
           elapsed < year ? [Math.floor(elapsed / month), 'month'] :
           [Math.floor(elapsed / year), 'year'];
-          
+
   return a[0] + ' ' + a[1] + (a[0] === 1 ? '' : 's') + suffix;
 }
 
-function JobHeader({ query }) {
-  if (!query.isSuccess) return null;
+function JobHeader({ data }: { data: Job }) {
   return (
     <>
-      <Grid item xs={12} style={{ display: "flex" }}>
-        <StatusIcon status={query.data?.status} />
+      <Grid size={12} style={{ display: "flex" }}>
+        <StatusIcon status={data.status} />
         <Typography variant="h5">
-          <Link to={`/runs/${query.data.name}`}>{query.data.name}</Link>/{query.data.job_id}
+          <Link to={`/runs/${data.name}`}>{data.name}</Link>/{data.job_id}
         </Typography>
       </Grid>
-      <Grid item xs={12} style={{ display: "flex" }}>
+      <Grid size={12} style={{ display: "flex" }}>
         <FolderIcon sx={{ alignSelf: "center", margin: "5px" }} />
         <Typography variant="h5">
-          <Link to={dirName(query.data.log_href)}>Log Archive</Link>
+          <Link to={dirName(data.log_href)}>Log Archive</Link>
         </Typography>
       </Grid>
-      <Grid item xs={4}>
-        <Typography>Status: {query.data.status}</Typography>
+      <Grid size={4}>
+        <Typography>Status: {data.status}</Typography>
         <Typography>
-          {timeSince(new Date(query.data.started))}
+          {timeSince(new Date(data.started))}
         </Typography>
-        {query.data.duration ? (
+        {data.duration ? (
           <Typography>
-            Took {formatDuration(getDuration(query.data.duration))}
+            Took {formatDuration(getDuration(data.duration))}
           </Typography>
         ) : null}
       </Grid>
-      <Grid item xs={4}>
-        <Typography>Ceph Branch: {query.data.branch}</Typography>
+      <Grid size={4}>
+        <Typography>Ceph Branch: {data.branch}</Typography>
         <Typography>
-          SHA1: <code>{query.data.sha1.slice(0, 7)}</code>
+          SHA1: <code>{data.sha1.slice(0, 7)}</code>
         </Typography>
         <Typography>
-          Teuthology Branch: {query.data.teuthology_branch}
+          Teuthology Branch: {data.teuthology_branch}
         </Typography>
       </Grid>
-      <Grid item xs={4}>
+      <Grid size={4}>
         <Typography>
           Nodes:&nbsp;
-          {Object.keys(query.data.targets || []).map((item) => (
+          {Object.keys(data.targets || []).map((item) => (
             <span key={item}>
               <Link
                 to={`/nodes/${item}`}
@@ -122,20 +129,20 @@ function JobHeader({ query }) {
           ))}
         </Typography>
         <Typography>
-          OS: {query.data.os_type} {query.data.os_version}
+          OS: {data.os_type} {data.os_version}
         </Typography>
       </Grid>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Typography component="span">Description:&nbsp;</Typography>
         <Typography variant="body2" component="span">
-          <code>{query.data.description}</code>
+          <code>{data.description}</code>
         </Typography>
       </Grid>
-      {query.data.failure_reason ? (
-        <Grid item xs={12}>
+      {data.failure_reason ? (
+        <Grid size={12}>
           <Typography component="span">Failure reason:&nbsp;</Typography>
           <Typography variant="body2" component="span">
-            <code>{query.data.failure_reason}</code>
+            <code>{data.failure_reason}</code>
           </Typography>
         </Grid>
       ) : null}
@@ -143,25 +150,22 @@ function JobHeader({ query }) {
   );
 }
 
-function JobDetails({ query }) {
-  if (query.isLoading) return "...";
-  if (query.isError) return "!!!";
-  const code = YAML.stringify(query.data);
+function JobDetails({ data }: {data: Job}) {
+  const code = YAML.stringify(data);
   return (
     <CodeBlock value={code} language="yaml" />
   );
 }
 
 export default function Job() {
-  const { name, job_id } = useParams();
-  const query = useJob(name, job_id);
+  const data: Job = useData();
   return (
     <Grid container spacing={2}>
       <Helmet>
-        <title>{`Job ${job_id} - Pulpito`}</title>
+        <title>{`Job ${data.job_id} - Pulpito`}</title>
       </Helmet>
-      <JobHeader query={query} />
-      <Grid item xs={12}>
+      <JobHeader data={data} />
+      <Grid size={12}>
         <Accordion
           TransitionProps={{ unmountOnExit: true }}
           style={{ marginTop: "20px" }}
@@ -170,7 +174,7 @@ export default function Job() {
             <Typography>Full job details</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <JobDetails query={query} />
+            <JobDetails data={data} />
           </AccordionDetails>
         </Accordion>
       </Grid>

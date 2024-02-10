@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useQueryParams, NumberParam } from "use-query-params";
+import { useSearchParams } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import { Helmet } from "react-helmet";
 
@@ -10,9 +10,9 @@ import type { NodeParams } from "../../lib/paddles.d";
 import { useNode, useNodeJobs } from "../../lib/paddles";
 
 export default function Node() {
-  const [params, _] = useQueryParams({
-    page: NumberParam,
-    pageSize: NumberParam,
+  const [params, _] = useSearchParams({
+    page: "",
+    pageSize: "",
   });
   const { name } = useParams<NodeParams>();
   const detailsQuery = useNode(name === undefined ? "" : name);
