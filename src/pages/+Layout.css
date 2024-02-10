@@ -1,0 +1,475 @@
+/* @media (prefers-color-scheme: dark) { */
+/* body { */
+/* background-color: rgb(24, 24, 24); */
+/* } */
+/* } */
+
+/* body:where([color-scheme="dark"]) { */
+/* background-color: rgb(24, 24, 24); */
+/* } */
+
+/* body:where([color-scheme="light"]) { */
+/* background-color: white; */
+/* } */
+
+body {
+  font-size: 12px;
+  background-color: var(--mui-palette-background-default);
+}
+
+.App-body {
+  margin: 20px 20px 0px 20px;
+}
+
+.App-body,
+.MuiBox-root,
+.MuiList-root,
+.MuiPaper-root {
+  background-color: var(--mui-palette-background-default);
+  color: var(--mui-palette-text-primary);
+  box-shadow: none;
+}
+
+/* Table */
+.MuiTableContainer-root {
+
+  .MuiTableRow-root,
+  .MuiTableCell-root {
+    background-color: var(--mui-palette-background-default);
+    color: var(--mui-palette-text-primary);
+  }
+
+  .MuiTable-root {
+    .MuiTableHead-root {
+
+      .MuiSvgIcon-root,
+      .MuiTableSortLabel-icon {
+        color: var(--mui-palette-text-primary);
+      }
+    }
+  }
+
+  .MuiTable-root .MuiButtonBase-root {
+    svg {
+      color: var(--mui-palette-text-primary) !important;
+    }
+  }
+
+  tr td {
+    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-right: 0;
+  }
+
+  tr td:has(svg) {
+    padding: 0;
+  }
+
+  tr td .MuiButtonBase-root {
+    color: inherit;
+  }
+
+  td.Mui-TableBodyCell-DetailPanel {
+    width: 100%;
+    padding-left: 5px;
+  }
+
+  tr.error td {
+    background-color: var(--mui-palette-error-main);
+    color: var(--mui-palette-error-contrastText);
+  }
+
+  tr.info td {
+    background-color: var(--mui-palette-info-main);
+    color: var(--mui-palette-info-contrastText);
+  }
+
+  tr.success td {
+    background-color: var(--mui-palette-success-main);
+    color: var(--mui-palette-success-contrastText);
+  }
+
+  tr.warning td {
+    background-color: var(--mui-palette-warning-main);
+    color: var(--mui-palette-warning-contrastText);
+  }
+
+  tr.empty td {
+    display: none;
+  }
+
+  /*
+    The following two items hide button and corresponding empty "row"
+    for items whose detail panel is empty. If the library adds a way to
+    avoid populating detail panels on a per-row basis.
+    :has is supported naerly everywhere: https://caniuse.com/css-has
+  */
+  tr:has(td):has(.Mui-TableBodyCell-DetailPanel:empty) {
+    height: 0;
+  }
+
+  tr:has(+ tr.empty) button {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    tr:hover td {
+      filter: brightness(85%);
+    }
+  }
+
+  @media (prefers-color-scheme: light) {
+    tr:hover td {
+      filter: brightness(115%);
+    }
+  }
+}
+
+[data-mui-color-scheme="dark"] {
+
+  /* @media (prefers-color-scheme: dark) { */
+  body {
+    color-scheme: only dark;
+    --mui-palette-background-default: #181818;
+    --mui-palette-background-paper: #303030;
+    --mui-palette-background-defaultChannel: 24 24 24;
+    --mui-palette-primary-main: #0288d1;
+    --mui-palette-primary-light: rgb(52, 159, 218);
+    --mui-palette-primary-dark: rgb(1, 95, 146);
+    --mui-palette-primary-contrastText: #fff;
+    --mui-palette-primary-mainChannel: 2 136 209;
+    --mui-palette-primary-lightChannel: 52 159 218;
+    --mui-palette-primary-darkChannel: 1 95 146;
+    --mui-palette-primary-contrastTextChannel: 255 255 255;
+    --mui-palette-error-main: #ef9a9a;
+    --mui-palette-error-light: rgb(242, 174, 174);
+    --mui-palette-error-dark: rgb(167, 107, 107);
+    --mui-palette-error-contrastText: rgba(0, 0, 0, 0.87);
+    --mui-palette-error-mainChannel: 239 154 154;
+    --mui-palette-error-lightChannel: 242 174 174;
+    --mui-palette-error-darkChannel: 167 107 107;
+    --mui-palette-error-contrastTextChannel: 0 0 0;
+    --mui-palette-info-main: #81d4fa;
+    --mui-palette-info-light: rgb(154, 220, 251);
+    --mui-palette-info-dark: rgb(90, 148, 175);
+    --mui-palette-info-contrastText: rgba(0, 0, 0, 0.87);
+    --mui-palette-info-mainChannel: 129 212 250;
+    --mui-palette-info-lightChannel: 154 220 251;
+    --mui-palette-info-darkChannel: 90 148 175;
+    --mui-palette-info-contrastTextChannel: 0 0 0;
+    --mui-palette-success-main: #a5d6a7;
+    --mui-palette-success-light: rgb(183, 222, 184);
+    --mui-palette-success-dark: rgb(115, 149, 116);
+    --mui-palette-success-contrastText: rgba(0, 0, 0, 0.87);
+    --mui-palette-success-mainChannel: 165 214 167;
+    --mui-palette-success-lightChannel: 183 222 184;
+    --mui-palette-success-darkChannel: 115 149 116;
+    --mui-palette-success-contrastTextChannel: 0 0 0;
+    --mui-palette-warning-main: #ffcc80;
+    --mui-palette-warning-light: rgb(255, 214, 153);
+    --mui-palette-warning-dark: rgb(178, 142, 89);
+    --mui-palette-warning-contrastText: rgba(0, 0, 0, 0.87);
+    --mui-palette-warning-mainChannel: 255 204 128;
+    --mui-palette-warning-lightChannel: 255 214 153;
+    --mui-palette-warning-darkChannel: 178 142 89;
+    --mui-palette-warning-contrastTextChannel: 0 0 0;
+    --mui-palette-common-black: #000;
+    --mui-palette-common-white: #fff;
+    --mui-palette-common-background: #000;
+    --mui-palette-common-onBackground: #fff;
+    --mui-palette-common-backgroundChannel: 0 0 0;
+    --mui-palette-common-onBackgroundChannel: 255 255 255;
+    --mui-palette-secondary-main: #ce93d8;
+    --mui-palette-secondary-light: #f3e5f5;
+    --mui-palette-secondary-dark: #ab47bc;
+    --mui-palette-secondary-contrastText: rgba(0, 0, 0, 0.87);
+    --mui-palette-secondary-mainChannel: 206 147 216;
+    --mui-palette-secondary-lightChannel: 243 229 245;
+    --mui-palette-secondary-darkChannel: 171 71 188;
+    --mui-palette-secondary-contrastTextChannel: 0 0 0;
+    --mui-palette-grey-50: #fafafa;
+    --mui-palette-grey-100: #f5f5f5;
+    --mui-palette-grey-200: #eeeeee;
+    --mui-palette-grey-300: #e0e0e0;
+    --mui-palette-grey-400: #bdbdbd;
+    --mui-palette-grey-500: #9e9e9e;
+    --mui-palette-grey-600: #757575;
+    --mui-palette-grey-700: #616161;
+    --mui-palette-grey-800: #424242;
+    --mui-palette-grey-900: #212121;
+    --mui-palette-grey-A100: #f5f5f5;
+    --mui-palette-grey-A200: #eeeeee;
+    --mui-palette-grey-A400: #bdbdbd;
+    --mui-palette-grey-A700: #616161;
+    --mui-palette-text-primary: #fff;
+    --mui-palette-text-secondary: rgba(255, 255, 255, 0.7);
+    --mui-palette-text-disabled: rgba(255, 255, 255, 0.5);
+    --mui-palette-text-icon: rgba(255, 255, 255, 0.5);
+    --mui-palette-text-primaryChannel: 255 255 255;
+    --mui-palette-text-secondaryChannel: 255 255 255;
+    --mui-palette-divider: rgba(255, 255, 255, 0.12);
+    --mui-palette-action-active: #fff;
+    --mui-palette-action-hover: rgba(255, 255, 255, 0.08);
+    --mui-palette-action-hoverOpacity: 0.08;
+    --mui-palette-action-selected: rgba(255, 255, 255, 0.16);
+    --mui-palette-action-selectedOpacity: 0.16;
+    --mui-palette-action-disabled: rgba(255, 255, 255, 0.3);
+    --mui-palette-action-disabledBackground: rgba(255, 255, 255, 0.12);
+    --mui-palette-action-disabledOpacity: 0.38;
+    --mui-palette-action-focus: rgba(255, 255, 255, 0.12);
+    --mui-palette-action-focusOpacity: 0.12;
+    --mui-palette-action-activatedOpacity: 0.24;
+    --mui-palette-action-activeChannel: 255 255 255;
+    --mui-palette-action-selectedChannel: 255 255 255;
+    --mui-palette-Alert-errorColor: rgb(249, 222, 222);
+    --mui-palette-Alert-infoColor: rgb(214, 241, 253);
+    --mui-palette-Alert-successColor: rgb(226, 241, 226);
+    --mui-palette-Alert-warningColor: rgb(255, 238, 214);
+    --mui-palette-Alert-errorFilledBg: var(--mui-palette-error-dark, rgb(167, 107, 107));
+    --mui-palette-Alert-infoFilledBg: var(--mui-palette-info-dark, rgb(90, 148, 175));
+    --mui-palette-Alert-successFilledBg: var(--mui-palette-success-dark, rgb(115, 149, 116));
+    --mui-palette-Alert-warningFilledBg: var(--mui-palette-warning-dark, rgb(178, 142, 89));
+    --mui-palette-Alert-errorFilledColor: #fff;
+    --mui-palette-Alert-infoFilledColor: #fff;
+    --mui-palette-Alert-successFilledColor: #fff;
+    --mui-palette-Alert-warningFilledColor: #fff;
+    --mui-palette-Alert-errorStandardBg: rgb(24, 17, 17);
+    --mui-palette-Alert-infoStandardBg: rgb(15, 21, 25);
+    --mui-palette-Alert-successStandardBg: rgb(18, 22, 18);
+    --mui-palette-Alert-warningStandardBg: rgb(25, 21, 15);
+    --mui-palette-Alert-errorIconColor: var(--mui-palette-error-main, #ef9a9a);
+    --mui-palette-Alert-infoIconColor: var(--mui-palette-info-main, #81d4fa);
+    --mui-palette-Alert-successIconColor: var(--mui-palette-success-main, #a5d6a7);
+    --mui-palette-Alert-warningIconColor: var(--mui-palette-warning-main, #ffcc80);
+    --mui-palette-AppBar-defaultBg: var(--mui-palette-grey-900, #212121);
+    --mui-palette-AppBar-darkBg: var(--mui-palette-background-paper, #303030);
+    --mui-palette-AppBar-darkColor: var(--mui-palette-text-primary, #fff);
+    --mui-palette-Avatar-defaultBg: var(--mui-palette-grey-600, #757575);
+    --mui-palette-Button-inheritContainedBg: var(--mui-palette-grey-800, #424242);
+    --mui-palette-Button-inheritContainedHoverBg: var(--mui-palette-grey-700, #616161);
+    --mui-palette-Chip-defaultBorder: var(--mui-palette-grey-700, #616161);
+    --mui-palette-Chip-defaultAvatarColor: var(--mui-palette-grey-300, #e0e0e0);
+    --mui-palette-Chip-defaultIconColor: var(--mui-palette-grey-300, #e0e0e0);
+    --mui-palette-FilledInput-bg: rgba(255, 255, 255, 0.09);
+    --mui-palette-FilledInput-hoverBg: rgba(255, 255, 255, 0.13);
+    --mui-palette-FilledInput-disabledBg: rgba(255, 255, 255, 0.12);
+    --mui-palette-LinearProgress-primaryBg: rgb(1, 68, 104);
+    --mui-palette-LinearProgress-secondaryBg: rgb(103, 73, 108);
+    --mui-palette-LinearProgress-errorBg: rgb(119, 77, 77);
+    --mui-palette-LinearProgress-infoBg: rgb(64, 106, 125);
+    --mui-palette-LinearProgress-successBg: rgb(82, 107, 83);
+    --mui-palette-LinearProgress-warningBg: rgb(127, 102, 64);
+    --mui-palette-Skeleton-bg: rgba(var(--mui-palette-text-primaryChannel, undefined) / 0.13);
+    --mui-palette-Slider-primaryTrack: rgb(1, 68, 104);
+    --mui-palette-Slider-secondaryTrack: rgb(103, 73, 108);
+    --mui-palette-Slider-errorTrack: rgb(119, 77, 77);
+    --mui-palette-Slider-infoTrack: rgb(64, 106, 125);
+    --mui-palette-Slider-successTrack: rgb(82, 107, 83);
+    --mui-palette-Slider-warningTrack: rgb(127, 102, 64);
+    --mui-palette-SnackbarContent-bg: #181818;
+    --mui-palette-SnackbarContent-color: #fff;
+    --mui-palette-SpeedDialAction-fabHoverBg: #303030;
+    --mui-palette-StepConnector-border: var(--mui-palette-grey-600, #757575);
+    --mui-palette-StepContent-border: var(--mui-palette-grey-600, #757575);
+    --mui-palette-Switch-defaultColor: var(--mui-palette-grey-300, #e0e0e0);
+    --mui-palette-Switch-defaultDisabledColor: var(--mui-palette-grey-600, #757575);
+    --mui-palette-Switch-primaryDisabledColor: rgb(0, 61, 94);
+    --mui-palette-Switch-secondaryDisabledColor: rgb(92, 66, 97);
+    --mui-palette-Switch-errorDisabledColor: rgb(107, 69, 69);
+    --mui-palette-Switch-infoDisabledColor: rgb(58, 95, 112);
+    --mui-palette-Switch-successDisabledColor: rgb(74, 96, 75);
+    --mui-palette-Switch-warningDisabledColor: rgb(114, 91, 57);
+    --mui-palette-TableCell-border: rgba(81, 81, 81, 1);
+    --mui-palette-Tooltip-bg: rgba(97, 97, 97, 0.92);
+    --mui-palette-dividerChannel: 255 255 255;
+    --mui-opacity-inputPlaceholder: 0.5;
+    --mui-opacity-inputUnderline: 0.7;
+    --mui-opacity-switchTrackDisabled: 0.2;
+    --mui-opacity-switchTrack: 0.3;
+    --mui-overlays-1: linear-gradient(rgba(255 255 255 / 0.05), rgba(255 255 255 / 0.05));
+    --mui-overlays-2: linear-gradient(rgba(255 255 255 / 0.07), rgba(255 255 255 / 0.07));
+    --mui-overlays-3: linear-gradient(rgba(255 255 255 / 0.08), rgba(255 255 255 / 0.08));
+    --mui-overlays-4: linear-gradient(rgba(255 255 255 / 0.09), rgba(255 255 255 / 0.09));
+    --mui-overlays-5: linear-gradient(rgba(255 255 255 / 0.10), rgba(255 255 255 / 0.10));
+    --mui-overlays-6: linear-gradient(rgba(255 255 255 / 0.11), rgba(255 255 255 / 0.11));
+    --mui-overlays-7: linear-gradient(rgba(255 255 255 / 0.11), rgba(255 255 255 / 0.11));
+    --mui-overlays-8: linear-gradient(rgba(255 255 255 / 0.12), rgba(255 255 255 / 0.12));
+    --mui-overlays-9: linear-gradient(rgba(255 255 255 / 0.12), rgba(255 255 255 / 0.12));
+    --mui-overlays-10: linear-gradient(rgba(255 255 255 / 0.13), rgba(255 255 255 / 0.13));
+    --mui-overlays-11: linear-gradient(rgba(255 255 255 / 0.13), rgba(255 255 255 / 0.13));
+    --mui-overlays-12: linear-gradient(rgba(255 255 255 / 0.14), rgba(255 255 255 / 0.14));
+    --mui-overlays-13: linear-gradient(rgba(255 255 255 / 0.14), rgba(255 255 255 / 0.14));
+    --mui-overlays-14: linear-gradient(rgba(255 255 255 / 0.14), rgba(255 255 255 / 0.14));
+    --mui-overlays-15: linear-gradient(rgba(255 255 255 / 0.14), rgba(255 255 255 / 0.14));
+    --mui-overlays-16: linear-gradient(rgba(255 255 255 / 0.15), rgba(255 255 255 / 0.15));
+    --mui-overlays-17: linear-gradient(rgba(255 255 255 / 0.15), rgba(255 255 255 / 0.15));
+    --mui-overlays-18: linear-gradient(rgba(255 255 255 / 0.15), rgba(255 255 255 / 0.15));
+    --mui-overlays-19: linear-gradient(rgba(255 255 255 / 0.15), rgba(255 255 255 / 0.15));
+    --mui-overlays-20: linear-gradient(rgba(255 255 255 / 0.16), rgba(255 255 255 / 0.16));
+    --mui-overlays-21: linear-gradient(rgba(255 255 255 / 0.16), rgba(255 255 255 / 0.16));
+    --mui-overlays-22: linear-gradient(rgba(255 255 255 / 0.16), rgba(255 255 255 / 0.16));
+    --mui-overlays-23: linear-gradient(rgba(255 255 255 / 0.16), rgba(255 255 255 / 0.16));
+    --mui-overlays-24: linear-gradient(rgba(255 255 255 / 0.16), rgba(255 255 255 / 0.16));
+  }
+}
+
+[data-mui-color-scheme="light"] {
+
+  /* @media (prefers-color-scheme: light) { */
+  body {
+    color-scheme: only light;
+    --mui-palette-primary-main: #039be5;
+    --mui-palette-primary-light: rgb(53, 175, 234);
+    --mui-palette-primary-dark: rgb(2, 108, 160);
+    --mui-palette-primary-contrastText: #fff;
+    --mui-palette-primary-mainChannel: 3 155 229;
+    --mui-palette-primary-lightChannel: 53 175 234;
+    --mui-palette-primary-darkChannel: 2 108 160;
+    --mui-palette-primary-contrastTextChannel: 255 255 255;
+    --mui-palette-error-main: #ffcdd2;
+    --mui-palette-error-light: rgb(255, 215, 219);
+    --mui-palette-error-dark: rgb(178, 143, 147);
+    --mui-palette-error-contrastText: rgba(0, 0, 0, 0.87);
+    --mui-palette-error-mainChannel: 255 205 210;
+    --mui-palette-error-lightChannel: 255 215 219;
+    --mui-palette-error-darkChannel: 178 143 147;
+    --mui-palette-error-contrastTextChannel: 0 0 0;
+    --mui-palette-info-main: #b3e5fc;
+    --mui-palette-info-light: rgb(194, 234, 252);
+    --mui-palette-info-dark: rgb(125, 160, 176);
+    --mui-palette-info-contrastText: rgba(0, 0, 0, 0.87);
+    --mui-palette-info-mainChannel: 179 229 252;
+    --mui-palette-info-lightChannel: 194 234 252;
+    --mui-palette-info-darkChannel: 125 160 176;
+    --mui-palette-info-contrastTextChannel: 0 0 0;
+    --mui-palette-success-main: #c8e6c9;
+    --mui-palette-success-light: rgb(211, 235, 211);
+    --mui-palette-success-dark: rgb(140, 161, 140);
+    --mui-palette-success-contrastText: rgba(0, 0, 0, 0.87);
+    --mui-palette-success-mainChannel: 200 230 201;
+    --mui-palette-success-lightChannel: 211 235 211;
+    --mui-palette-success-darkChannel: 140 161 140;
+    --mui-palette-success-contrastTextChannel: 0 0 0;
+    --mui-palette-warning-main: #ffe0b2;
+    --mui-palette-warning-light: rgb(255, 230, 193);
+    --mui-palette-warning-dark: rgb(178, 156, 124);
+    --mui-palette-warning-contrastText: rgba(0, 0, 0, 0.87);
+    --mui-palette-warning-mainChannel: 255 224 178;
+    --mui-palette-warning-lightChannel: 255 230 193;
+    --mui-palette-warning-darkChannel: 178 156 124;
+    --mui-palette-warning-contrastTextChannel: 0 0 0;
+    --mui-palette-common-black: #000;
+    --mui-palette-common-white: #fff;
+    --mui-palette-common-background: #fff;
+    --mui-palette-common-onBackground: #000;
+    --mui-palette-common-backgroundChannel: 255 255 255;
+    --mui-palette-common-onBackgroundChannel: 0 0 0;
+    --mui-palette-secondary-main: #9c27b0;
+    --mui-palette-secondary-light: #ba68c8;
+    --mui-palette-secondary-dark: #7b1fa2;
+    --mui-palette-secondary-contrastText: #fff;
+    --mui-palette-secondary-mainChannel: 156 39 176;
+    --mui-palette-secondary-lightChannel: 186 104 200;
+    --mui-palette-secondary-darkChannel: 123 31 162;
+    --mui-palette-secondary-contrastTextChannel: 255 255 255;
+    --mui-palette-grey-50: #fafafa;
+    --mui-palette-grey-100: #f5f5f5;
+    --mui-palette-grey-200: #eeeeee;
+    --mui-palette-grey-300: #e0e0e0;
+    --mui-palette-grey-400: #bdbdbd;
+    --mui-palette-grey-500: #9e9e9e;
+    --mui-palette-grey-600: #757575;
+    --mui-palette-grey-700: #616161;
+    --mui-palette-grey-800: #424242;
+    --mui-palette-grey-900: #212121;
+    --mui-palette-grey-A100: #f5f5f5;
+    --mui-palette-grey-A200: #eeeeee;
+    --mui-palette-grey-A400: #bdbdbd;
+    --mui-palette-grey-A700: #616161;
+    --mui-palette-text-primary: rgba(0, 0, 0, 0.87);
+    --mui-palette-text-secondary: rgba(0, 0, 0, 0.6);
+    --mui-palette-text-disabled: rgba(0, 0, 0, 0.38);
+    --mui-palette-text-primaryChannel: 0 0 0;
+    --mui-palette-text-secondaryChannel: 0 0 0;
+    --mui-palette-divider: rgba(0, 0, 0, 0.12);
+    --mui-palette-background-paper: #fff;
+    --mui-palette-background-default: #fff;
+    --mui-palette-background-defaultChannel: 255 255 255;
+    --mui-palette-action-active: rgba(0, 0, 0, 0.54);
+    --mui-palette-action-hover: rgba(0, 0, 0, 0.04);
+    --mui-palette-action-hoverOpacity: 0.04;
+    --mui-palette-action-selected: rgba(0, 0, 0, 0.08);
+    --mui-palette-action-selectedOpacity: 0.08;
+    --mui-palette-action-disabled: rgba(0, 0, 0, 0.26);
+    --mui-palette-action-disabledBackground: rgba(0, 0, 0, 0.12);
+    --mui-palette-action-disabledOpacity: 0.38;
+    --mui-palette-action-focus: rgba(0, 0, 0, 0.12);
+    --mui-palette-action-focusOpacity: 0.12;
+    --mui-palette-action-activatedOpacity: 0.12;
+    --mui-palette-action-activeChannel: 0 0 0;
+    --mui-palette-action-selectedChannel: 0 0 0;
+    --mui-palette-Alert-errorColor: rgb(102, 86, 87);
+    --mui-palette-Alert-infoColor: rgb(77, 93, 100);
+    --mui-palette-Alert-successColor: rgb(84, 94, 84);
+    --mui-palette-Alert-warningColor: rgb(102, 92, 77);
+    --mui-palette-Alert-errorFilledBg: var(--mui-palette-error-main, #ffcdd2);
+    --mui-palette-Alert-infoFilledBg: var(--mui-palette-info-main, #b3e5fc);
+    --mui-palette-Alert-successFilledBg: var(--mui-palette-success-main, #c8e6c9);
+    --mui-palette-Alert-warningFilledBg: var(--mui-palette-warning-main, #ffe0b2);
+    --mui-palette-Alert-errorFilledColor: rgba(0, 0, 0, 0.87);
+    --mui-palette-Alert-infoFilledColor: rgba(0, 0, 0, 0.87);
+    --mui-palette-Alert-successFilledColor: rgba(0, 0, 0, 0.87);
+    --mui-palette-Alert-warningFilledColor: rgba(0, 0, 0, 0.87);
+    --mui-palette-Alert-errorStandardBg: rgb(255, 251, 251);
+    --mui-palette-Alert-infoStandardBg: rgb(248, 252, 254);
+    --mui-palette-Alert-successStandardBg: rgb(250, 253, 250);
+    --mui-palette-Alert-warningStandardBg: rgb(255, 252, 248);
+    --mui-palette-Alert-errorIconColor: var(--mui-palette-error-main, #ffcdd2);
+    --mui-palette-Alert-infoIconColor: var(--mui-palette-info-main, #b3e5fc);
+    --mui-palette-Alert-successIconColor: var(--mui-palette-success-main, #c8e6c9);
+    --mui-palette-Alert-warningIconColor: var(--mui-palette-warning-main, #ffe0b2);
+    --mui-palette-AppBar-defaultBg: var(--mui-palette-grey-100, #f5f5f5);
+    --mui-palette-Avatar-defaultBg: var(--mui-palette-grey-400, #bdbdbd);
+    --mui-palette-Button-inheritContainedBg: var(--mui-palette-grey-300, #e0e0e0);
+    --mui-palette-Button-inheritContainedHoverBg: var(--mui-palette-grey-A100, #f5f5f5);
+    --mui-palette-Chip-defaultBorder: var(--mui-palette-grey-400, #bdbdbd);
+    --mui-palette-Chip-defaultAvatarColor: var(--mui-palette-grey-700, #616161);
+    --mui-palette-Chip-defaultIconColor: var(--mui-palette-grey-700, #616161);
+    --mui-palette-FilledInput-bg: rgba(0, 0, 0, 0.06);
+    --mui-palette-FilledInput-hoverBg: rgba(0, 0, 0, 0.09);
+    --mui-palette-FilledInput-disabledBg: rgba(0, 0, 0, 0.12);
+    --mui-palette-LinearProgress-primaryBg: rgb(159, 217, 245);
+    --mui-palette-LinearProgress-secondaryBg: rgb(217, 172, 224);
+    --mui-palette-LinearProgress-errorBg: rgb(255, 236, 237);
+    --mui-palette-LinearProgress-infoBg: rgb(226, 245, 253);
+    --mui-palette-LinearProgress-successBg: rgb(234, 245, 234);
+    --mui-palette-LinearProgress-warningBg: rgb(255, 243, 225);
+    --mui-palette-Skeleton-bg: rgba(var(--mui-palette-text-primaryChannel, undefined) / 0.11);
+    --mui-palette-Slider-primaryTrack: rgb(159, 217, 245);
+    --mui-palette-Slider-secondaryTrack: rgb(217, 172, 224);
+    --mui-palette-Slider-errorTrack: rgb(255, 236, 237);
+    --mui-palette-Slider-infoTrack: rgb(226, 245, 253);
+    --mui-palette-Slider-successTrack: rgb(234, 245, 234);
+    --mui-palette-Slider-warningTrack: rgb(255, 243, 225);
+    --mui-palette-SnackbarContent-bg: #fff;
+    --mui-palette-SnackbarContent-color: rgba(0, 0, 0, 0.87);
+    --mui-palette-SpeedDialAction-fabHoverBg: #fff;
+    --mui-palette-StepConnector-border: var(--mui-palette-grey-400, #bdbdbd);
+    --mui-palette-StepContent-border: var(--mui-palette-grey-400, #bdbdbd);
+    --mui-palette-Switch-defaultColor: var(--mui-palette-common-white, #fff);
+    --mui-palette-Switch-defaultDisabledColor: var(--mui-palette-grey-100, #f5f5f5);
+    --mui-palette-Switch-primaryDisabledColor: rgb(159, 217, 245);
+    --mui-palette-Switch-secondaryDisabledColor: rgb(217, 172, 224);
+    --mui-palette-Switch-errorDisabledColor: rgb(255, 236, 237);
+    --mui-palette-Switch-infoDisabledColor: rgb(226, 245, 253);
+    --mui-palette-Switch-successDisabledColor: rgb(234, 245, 234);
+    --mui-palette-Switch-warningDisabledColor: rgb(255, 243, 225);
+    --mui-palette-TableCell-border: rgba(224, 224, 224, 1);
+    --mui-palette-Tooltip-bg: rgba(97, 97, 97, 0.92);
+    --mui-palette-dividerChannel: 0 0 0;
+    --mui-opacity-inputPlaceholder: 0.42;
+    --mui-opacity-inputUnderline: 0.42;
+    --mui-opacity-switchTrackDisabled: 0.12;
+    --mui-opacity-switchTrack: 0.38;
+  }
+}

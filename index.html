@@ -23,21 +23,8 @@
 
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root"></div>
-  <script>
-    try {
-      let colorScheme = localStorage.getItem("theme");
-      const systemDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (!colorScheme) {
-        colorScheme = systemDarkMode ? "dark" : "light";
-      }
-      if (!!colorScheme) localStorage.setItem("theme", colorScheme);
-      document.getElementsByTagName("body")[0].setAttribute("color-scheme", colorScheme);
-    } catch (e) {
-      console.error(e);
-    }
-  </script>
-  <script type="module" src="/src/index.tsx"></script>
+  <script type="module" src="/src/entry-client.jsx"></script>
+  <div id="root"><!--app-html--></div>
 </body>
 
 </html>

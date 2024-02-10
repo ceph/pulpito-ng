@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import type { 
-  GetURLParams, 
   Run, Job, 
   Node, NodeJobs,
   StatsLocksResponse,
@@ -13,7 +12,7 @@ import type {
 const PADDLES_SERVER =
   import.meta.env.VITE_PADDLES_SERVER || "https://paddles.front.sepia.ceph.com";
 
-function getURL(endpoint: string, params?: GetURLParams) {
+function getURL(endpoint: string, params?: URLSearchParams) {
   // Because paddles' API is clunky, we have to do extra work. If it were
   // more inuitive, we could replace everything until the next comment with
   // just these lines:
@@ -53,10 +52,10 @@ function getURL(endpoint: string, params?: GetURLParams) {
   return new URL(uri, PADDLES_SERVER).href;
 }
 
-function useRuns(params: GetURLParams): UseQueryResult<Run[]> {
-  const params_ = { ...params };
-  if (params_.pageSize) {
-    params_.count = params.pageSize;
+function useRuns(params: URLSearchParams): UseQueryResult<Run[]> {
+  const params_ = Object.fromEntries(Object.entries(params));
+  if (params_.get("pageSize")) {
+    params_.set("count", params.get("pageSize"));
     delete params_.pageSize;
   }
   const url = getURL("/runs/", params);
@@ -106,9 +105,8 @@ function useMachineTypes() {
   });
 }
 
-function useNodeJobs(name: string, params: GetURLParams): UseQueryResult<NodeJobs> {
+function useNodeJobs(name: string, params: URLSearchParams): UseQueryResult<NodeJobs> {
   // 'page' and 'count' are mandatory query params for this paddles endpoint
-  params = { "page": params?.page || 0, "pageSize": params?.pageSize || 25 }  
   const url = getURL(`/nodes/${name}/jobs/`, params);
   const query = useQuery(["nodeJobs", { url }], {
     select: (data: Job[]) => {
@@ -134,7 +132,7 @@ function useNode(name: string): UseQueryResult<Node[]> {
 }
 
 function useNodes(machine_type: string): UseQueryResult<Node[]> {
-  const url = getURL(`/nodes/`, {machine_type});
+  const url = getURL(`/nodes/`, new URLSearchParams({machine_type}));
   const query = useQuery(["nodes", { url }], {
     select: (data: Node[]) =>
       data.map((item) => {
@@ -145,7 +143,7 @@ function useNodes(machine_type: string): UseQueryResult<Node[]> {
   return query;
 }
 
-function useStatsNodeLocks(params: GetURLParams): UseQueryResult<StatsLocksResponse[]> {
+function useStatsNodeLocks(params: URLSearchParams): UseQueryResult<StatsLocksResponse[]> {
   const params_ = JSON.parse(JSON.stringify(params || {}));
   params_["up"] = "True"
 
@@ -176,7 +174,7 @@ function useStatsNodeLocks(params: GetURLParams): UseQueryResult<StatsLocksRespo
   return query;
 }
 
-function useStatsNodeJobs(params: GetURLParams): UseQueryResult<StatsJobsResponse[]> {
+function useStatsNodeJobs(params: URLSearchParams): UseQueryResult<StatsJobsResponse[]> {
   const params_ = JSON.parse(JSON.stringify(params || {}));
   params_["since_days"] = params_["since_days"] || 14;
 

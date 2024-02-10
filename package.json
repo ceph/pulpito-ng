@@ -2,17 +2,18 @@
   "name": "pulpito-ng",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "homepage": "https://zmc.github.io/pulpito-ng/",
   "dependencies": {
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.13.7",
-    "@mui/material": "^5.13.7",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.0",
+    "@mui/material": "^6.1.0",
     "@sentry/react": "^7.73.0",
     "@sentry/tracing": "^7.73.0",
     "@sentry/vite-plugin": "^2.8.0",
-    "@tanstack/react-query": "^4.29.19",
-    "@tanstack/react-query-devtools": "^4.29.19",
+    "@tanstack/react-query": "^5.55.4",
+    "@tanstack/react-query-devtools": "^5.55.4",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
@@ -22,29 +23,35 @@
     "@types/react-dom": "^18.2.6",
     "@types/react-helmet": "^6.1.6",
     "axios": "^1.4.0",
-    "color-convert": "^2.0.1",
+    "cross-env": "^7.0.3",
     "date-fns": "^2.30.0",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "json-to-pretty-yaml": "^1.2.2",
-    "material-react-table": "^2.0.0",
-    "mdi-material-ui": "^7.7.0",
-    "react": "^18.2.0",
+    "material-react-table": "^3.0.1",
+    "mdi-material-ui": "^7.9.2",
+    "react": "^18.3.1",
     "react-cookie": "^5.0.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "^18.3.1",
     "react-error-boundary": "^4.0.11",
     "react-helmet": "^6.1.0",
-    "react-router-dom": "^6.14.1",
     "react-simple-code-editor": "^0.13.1",
     "serve": "^14.2.0",
-    "use-query-params": "^2.2.1",
-    "usehooks-ts": "^2.9.1",
+    "tsx": "^4.19.0",
+    "usehooks-ts": "^2.13.0",
+    "vike": "^0.4.195",
+    "vike-react": "^0.5.5",
+    "vike-react-query": "^0.1.1",
     "web-vitals": "^3.3.2"
   },
   "scripts": {
-    "start": "vite",
+    "dev": "npm run server:dev",
+    "prod": "npm run lint && npm run build && npm run server:prod",
     "build": "vite build",
-    "serve": "vite preview",
-    "lint": "eslint src"
+    "server": "tsx ./src/server/index.ts",
+    "server:dev": "npm run server",
+    "server:prod": "cross-env NODE_ENV=production npm run server",
+    "lint": "eslint . --max-warnings 0"
   },
   "eslintConfig": {
     "extends": [
@@ -65,7 +72,10 @@
     ]
   },
   "devDependencies": {
-    "@types/react-router-dom": "^5.3.3",
+    "@types/compression": "^1.7.5",
+    "@types/express": "^5.0.0",
+    "@types/json-to-pretty-yaml": "^1.2.1",
+    "@types/prismjs": "^1.26.4",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
     "@typescript-eslint/typescript-estree": "^5.61.0",
@@ -75,5 +85,8 @@
     "prismjs": "^1.29.0",
     "typescript": "^5.1.6",
     "vite": "^5.0.12"
+  },
+  "imports": {
+    "#src/*": "./src/*"
   }
 }

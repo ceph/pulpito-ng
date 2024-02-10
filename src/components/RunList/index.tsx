@@ -1,11 +1,9 @@
 import { useMemo } from 'react';
+import { navigate } from 'vike/client/router'
+import { useData } from 'vike-react/useData'
+import { usePageContext } from 'vike-react/usePageContext'
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import type {
-  DecodedValueMap,
-  QueryParamConfigMap,
-  SetQuery,
-} from "use-query-params";
-import { useDebounce } from "usehooks-ts";
+import { useDebounceValue } from "usehooks-ts";
 import {
   useMaterialReactTable,
   MaterialReactTable,
@@ -18,7 +16,6 @@ import {
 import { type Theme } from "@mui/material/styles";
 import { parse } from "date-fns";
 
-import { useRuns } from "../../lib/paddles";
 import { formatDate, formatDay, formatDuration } from "../../lib/utils";
 import IconLink from "../../components/IconLink";
 import type {
@@ -189,20 +186,32 @@ function runStatusToThemeCategory(status: string): keyof Theme["palette"] {
   }
 };
 
-type RunListParams = {
-  [key: string]: number|string;
-}
-
 type RunListProps = {
-  params: DecodedValueMap<QueryParamConfigMap>;
-  setter: SetQuery<QueryParamConfigMap>;
+  params: Record<string,string>;
   tableOptions?: Partial<MRT_TableOptions<Run>>;
 }
 
+function getUrl(path: string, filters: MRT_ColumnFiltersState, pagination: MRT_PaginationState) {
+  const newUrl = new URL(path, window.location.origin);
+  filters.forEach(item => {
+    if ( ! item.id ) return;
+    if ( item.value instanceof Function ) return;
+    if ( item.value instanceof Date ) {
+      newUrl.searchParams.set("date", formatDay(item.value));
+    } else {
+      newUrl.searchParams.set(String(item.id), String(item.value));
+    }
+  });
+  if ( pagination.pageIndex ) newUrl.searchParams.set("page", String(pagination.pageIndex));
+  if ( pagination.pageSize != DEFAULT_PAGE_SIZE ) newUrl.searchParams.set("pageSize", String(pagination.pageSize));
+  return newUrl;
+}
+
 export default function RunList(props: RunListProps) {
-  const { params, setter, tableOptions } = props;
+  const context = usePageContext();
+  const { params, tableOptions } = props;
   const options = useDefaultTableOptions<Run>();
-  const debouncedParams = useDebounce(params, 500);
+  const [debouncedParams, _] = useDebounceValue(params, 500);
   const columnFilters: MRT_ColumnFiltersState = [];
   Object.entries(debouncedParams).forEach(param => {
     const [id, value] = param;
@@ -217,35 +226,20 @@ export default function RunList(props: RunListProps) {
     }
   });
   let pagination = {
-    pageIndex: params.page || 0,
-    pageSize: params.pageSize || DEFAULT_PAGE_SIZE,
+    pageIndex: Number(params.page || 0),
+    pageSize: Number(params.pageSize || DEFAULT_PAGE_SIZE),
   };
   const onColumnFiltersChange = (updater: MRT_Updater<MRT_ColumnFiltersState>) => {
     if ( ! ( updater instanceof Function ) ) return;
-    const result: RunListParams = {pageSize: pagination.pageSize};
-    const updated = updater(columnFilters);
-    updated.forEach(item => {
-      if ( ! item.id ) return;
-      if ( item.value instanceof Date ) {
-        result.date = formatDay(item.value);
-      } else if ( typeof item.value === "string" || typeof item.value === "number" ) {
-        result[item.id] = item.value
-      }
-    });
-    setter(result);
+    const newUrl = getUrl(context.urlPathname, updater(columnFilters), pagination);
+    navigate(newUrl.pathname + newUrl.search);
   };
   const onPaginationChange = (updater: MRT_Updater<MRT_PaginationState>) => {
     if ( ! ( updater instanceof Function ) ) return;
-    pagination = updater(pagination);
-    const result: Partial<RunListParams> = {
-      ...params,
-      page: pagination.pageIndex,
-    };
-    if ( pagination.pageSize != DEFAULT_PAGE_SIZE ) result.pageSize = pagination.pageSize;
-    setter(result);
+    const newUrl = getUrl(context.urlPathname, columnFilters, updater(pagination));
+    navigate(newUrl.pathname + newUrl.search);
   };
-  const query = useRuns(debouncedParams);
-  let data = query.data || [];
+  const data: Run[] = useData();
   const jobTotals = useMemo(() => {
     const result: Partial<RunResults> = {};
     RunResultKeys.forEach(
@@ -264,7 +258,7 @@ export default function RunList(props: RunListProps) {
   const table = useMaterialReactTable({
     ...options,
     columns,
-    data: data,
+    data: data || [],
     manualPagination: true,
     manualFiltering: true,
     onPaginationChange,
@@ -290,7 +284,6 @@ export default function RunList(props: RunListProps) {
     state: {
       columnFilters,
       pagination,
-      isLoading: query.isLoading || query.isFetching,
     },
     muiTableBodyRowProps: ({row}) => {
       const category = runStatusToThemeCategory(row.original.status);
@@ -299,6 +292,5 @@ export default function RunList(props: RunListProps) {
     },
     ...tableOptions,
   });
-  if (query.isError) return null;
   return <MaterialReactTable table={table} />
 }

@@ -1,53 +1,12 @@
-import { Link as RouterLink } from "react-router-dom";
-import { styled } from '@mui/material/styles';
-import { useTheme } from "@mui/material/styles";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
 import Divider from '@mui/material/Divider';
-
-const PREFIX = 'index';
-
-const classes = {
-  toolbarIcon: `${PREFIX}-toolbarIcon`,
-  drawerPaper: `${PREFIX}-drawerPaper`,
-  drawerLink: `${PREFIX}-drawerLink`
-};
-
-const StyledSwipeableDrawer = styled(SwipeableDrawer)((
-  {
-    theme
-  }
-) => ({
-  [`& .${classes.toolbarIcon}`]: {
-    ...theme.mixins.toolbar,
-    position: "sticky",
-    top: "0",
-    zIndex: theme.zIndex.drawer + 1,
-    background: theme.palette.background.paper,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    padding: "0 8px",
-  },
-
-  [`& .${classes.drawerPaper}`]: {
-    width: "150px",
-  },
-
-  [`& .${classes.drawerLink}`]: {
-    color: theme.palette.text.primary,
-    textDecoration: "none",
-    padding: "10px 20px",
-    fontSize: "16px",
-  }
-}));
+import './index.css';
 
 export default function Drawer(props) {
-  const theme = useTheme();
-
   return (
-    <StyledSwipeableDrawer
+    <SwipeableDrawer id="drawer"
       open={props.drawerOpen}
       onOpen={() => {
         props.setDrawerOpen(true);
@@ -58,11 +17,8 @@ export default function Drawer(props) {
       style={{
         height: "100%",
       }}
-      classes={{
-        paper: classes.drawerPaper,
-      }}
     >
-      <div className={classes.toolbarIcon}>
+      <div className="button">
         <IconButton
           onClick={() => {
             props.setDrawerOpen(false);
@@ -71,23 +27,23 @@ export default function Drawer(props) {
           <MenuIcon />
         </IconButton>
       </div>
-      <RouterLink to="/queue" className={classes.drawerLink}>
+      <a href="/queue">
         Queue
-      </RouterLink>
-      <RouterLink to="/runs" className={classes.drawerLink}>
+      </a>
+      <a href="/runs">
         Runs
-      </RouterLink>
+      </a>
       <Divider />
-      <RouterLink to="/nodes?machine_type=smithi" className={classes.drawerLink}>
+      <a href="/nodes?machine_type=smithi">
         Nodes
-      </RouterLink>
-      <RouterLink to="/stats/nodes/lock" className={classes.drawerLink}>
+      </a>
+      <a href="/stats/nodes/lock">
         Node Locks Stats
-      </RouterLink>
-      <RouterLink to="/stats/nodes/jobs" className={classes.drawerLink}>
+      </a>
+      <a href="/stats/nodes/jobs">
         Node Jobs Stats
-      </RouterLink>
+      </a>
       <Divider />
-    </StyledSwipeableDrawer>
+    </SwipeableDrawer>
   );
 }

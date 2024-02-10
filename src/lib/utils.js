@@ -1,5 +1,4 @@
 import { format } from "date-fns";
-import convert from "color-convert";
 
 function formatDate(orig) {
   if (!orig) return "";
@@ -37,16 +36,10 @@ function formatDuration(seconds) {
   return `${pad(hours)}:${pad(minutes)}:${pad(result)}`;
 }
 
-function colorTint(hex, delta) {
-  const hsl = convert.hex.hsl(hex);
-  hsl[2] += delta;
-  return "#" + convert.hsl.hex(hsl);
-}
-
 function dirName(path) {
   const array = path.split("/");
   array.splice(-1, 1, "");
   return array.join("/");
 }
 
-export { formatDate, formatDay, getDuration, formatDuration, colorTint, dirName };
+export { formatDate, formatDay, getDuration, formatDuration, dirName };

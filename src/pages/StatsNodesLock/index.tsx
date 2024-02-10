@@ -1,4 +1,4 @@
-import { useQueryParams, StringParam } from "use-query-params";
+import { useSearchParams } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import { Helmet } from "react-helmet";
 import {
@@ -33,11 +33,10 @@ export const columns: MRT_ColumnDef<StatsLocksResponse>[] = [
 ]
 
 export default function StatsNodesLock() {
-  // Avoid "warning  '_' is assigned a value but never used" by ignoring the setter
-  const params = useQueryParams({
-    machine_type: StringParam,
-  })[0];
-  const machine_type = params.machine_type;
+  const [params, _] = useSearchParams({
+    machine_type: "",
+  });
+  const machine_type = params.get("machine_type");
   const query = useStatsNodeLocks(params);
   const options = useDefaultTableOptions<StatsLocksResponse>();
   const data = query.data || [];

@@ -1,16 +1,19 @@
 import { Helmet } from "react-helmet";
-import { useQueryParams, BooleanParam, withDefault } from "use-query-params";
+import { useSearchParams } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 
 import RunList from "../../components/RunList";
 
 export default function Queue() {
-  const [params, setParams] = useQueryParams({
-    queued: withDefault(BooleanParam, true),
-  }, {
+  const [params, setParams] = useSearchParams({
+    queued: "true",
+  });
+  /*
+  , {
     removeDefaultsFromUrl: true,
     updateType: "push",
   });
+  */
   const tableOptions = {
     enableFilters: false,
     enablePagination: false,

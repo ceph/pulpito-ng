@@ -1,4 +1,4 @@
-import { useQueryParams, StringParam } from "use-query-params";
+import { useSearchParams } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import { Helmet } from "react-helmet";
 
@@ -10,10 +10,10 @@ import { useNodes } from "../../lib/paddles";
 
 
 export default function Nodes() {
-  const [params, setParams] = useQueryParams({
-    machine_type: StringParam,
+  const [params, setParams] = useSearchParams({
+    machine_type: "",
   });
-  const { machine_type } = params;
+  const machine_type = params.get("machine_type");
   const query = useNodes(machine_type || "");
   if (query.isError) return null;
 
