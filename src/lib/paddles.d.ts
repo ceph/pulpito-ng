@@ -49,6 +49,9 @@ export type Job = {
   os_type: string;
   os_version: string;
   owner: string;
+  sha1: string;
+  teuthology_branch: string;
+  description: string;
 };
 
 export type NodeRoles = string[];

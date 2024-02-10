@@ -1,118 +1,70 @@
+import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import type { UseQueryResult } from "@tanstack/react-query";
+import type { QueryOptions, UseQueryResult } from "@tanstack/react-query";
 
 import type { 
-  GetURLParams, 
-  Run, Job, 
-  Node, JobList,
-  StatsLocksResponse,
-  StatsJobsResponse,
+  GetURLParams,
 } from "./paddles.d";
 
 
 const PADDLES_SERVER =
   import.meta.env.VITE_PADDLES_SERVER || "https://paddles.front.sepia.ceph.com";
 
-function getURL(endpoint: string, params?: GetURLParams) {
-  // Because paddles' API is clunky, we have to do extra work. If it were
-  // more inuitive, we could replace everything until the next comment with
-  // just these lines:
-  //   const queryString = new URLSearchParams(params)).toString();
-  //   let uri = queryString? `${endpoint}?${queryString}` : endpoint;
-  const params_ = JSON.parse(JSON.stringify(params || {}));
-  let uri = endpoint;
-  let paramEntries = Object.entries(params_ || {});
-  paramEntries.forEach((entry) => {
+const _machine_types_str: string = import.meta.env.VITE_MACHINE_TYPE || 'smithi,mira';
+const MACHINE_TYPES = _machine_types_str.split(',')
+
+// for queries which mention 'page', use this default page size if another is not specified.
+const DEFAULT_PAGE_SIZE = 25;
+
+async function queryFn (params: QueryOptions) {
+  const queryKey = params.queryKey as [string, { url: string}];
+  return axios.get(queryKey[1].url).then((resp) => resp.data);
+}
+
+function getURL(endpoint: string, params?: Record<string, string>) {
+  const url = new URL(endpoint, PADDLES_SERVER);
+  Object.entries(params || {}).forEach((entry) => {
     const [key, value] = entry;
-    if (value === null || value === "") {
-      delete params_[key];
+    if ( [undefined, 'undefined', null, 'null', ''].includes(value) ) {
       return;
     }
     switch (key) {
       case "page":
-        params_[key] = Number(value) + 1;
+        url.searchParams.set(key, String(Number(value) + 1));
         break;
       case "pageSize":
-        params_.count = Number(value);
-        delete params_[key];
+        url.searchParams.set("count", String(Number(value)));
         break;
       case "queued":
-        uri += "queued/";
-        delete params_[key];
+        url.pathname += "/queued/";
         break;
       case "description":
-          break;
+        url.searchParams.set("description", value)
+        break;
+      case "fields":
+        url.searchParams.set("fields", value)
+        break
       case "machine_type":
+        url.searchParams.set("machine_type", value);
+        break;
+      case 'locked':
+        url.searchParams.set(key, value);
+        break
+      case 'up':
+        url.searchParams.set(key, value);
+        break
+      case "scheduled":
+        url.pathname += `/date/${value}`;
         break;
       default:
-        uri += `${key}/${value}/`;
-        delete params_[key];
+        url.pathname += `/${key}/${value}`;
     }
   });
-  const queryString = new URLSearchParams(params_).toString();
-  if (queryString) uri += `?${queryString}`;
-  // end "we could replace everything..."
-  return new URL(uri, PADDLES_SERVER).href;
-}
-
-function useRuns(params: GetURLParams): UseQueryResult<Run[]> {
-  let baseUrl = "/runs/";
-  const params_ = { ...params };
-  if (params_.pageSize) {
-    params_.count = params.pageSize;
-    delete params_.pageSize;
-  }
-  if (params_.machine_type) {
-    // this is to handle difference in machine_type filter
-    // in two endpoints /node/?machine_type=xyz and /runs/machine_type/xyz
-    baseUrl += "machine_type/" + params_.machine_type + "/";
-    delete params_.machine_type;
-  }
-  const url = getURL(baseUrl, params);
-  const query = useQuery(["runs", { url }], {
-    select: (data: Run[]) =>
-      data.map((item) => {
-        return { ...item, id: item.name };
-      }),
-  });
-  return query;
-}
-
-function useRun(name: string): UseQueryResult<Run> {
-  const url = getURL(`/runs/${name}/`);
-  const query = useQuery<Run, Error>(["run", { url }], {
-    select: (data: Run) => {
-      data.jobs.forEach((item) => {
-        item.id = item.job_id + "";
-      });
-      return data;
-    },
-  });
-  return query;
-}
-
-function useJob(name: string, job_id: number): UseQueryResult<Job> {
-  const url = getURL(`/runs/${name}/jobs/${job_id}/`);
-  const query = useQuery<Job, Error>(["job", { url }], {});
-  return query;
-}
-
-function useBranches() {
-  const url = getURL("/runs/branch/");
-  return useQuery(["branches", { url }]);
-}
-
-function useSuites() {
-  const url = getURL("/runs/suite/");
-  return useQuery(["suites", { url }]);
-}
-
-function useMachineTypes() {
-  const url = getURL("/nodes/machine_types/");
-  return useQuery(["machine_types", { url }], {
-    cacheTime: 60 * 60 * 24 * 30,
-    staleTime: 60 * 60 * 24 * 30,
-  });
+  if ( ! url.searchParams.get("count") ) {
+    url.searchParams.set("count", String(DEFAULT_PAGE_SIZE));
+  };
+  url.pathname = url.pathname.replace('//', '/');
+  return url;
 }
 
 function useJobHistory(description: string, pageSize: number): UseQueryResult<JobList> {
@@ -132,46 +84,7 @@ function useJobHistory(description: string, pageSize: number): UseQueryResult<Jo
   return query;
 }
 
-function useNodeJobs(name: string, params: GetURLParams): UseQueryResult<JobList> {
-  // 'page' and 'count' are mandatory query params for this paddles endpoint
-  params = { "page": params?.page || 0, "pageSize": params?.pageSize || 25 }  
-  const url = getURL(`/nodes/${name}/jobs/`, params);
-  const query = useQuery(["nodeJobs", { url }], {
-    select: (data: Job[]) => {
-      data.forEach((item) => {
-        item.id = item.job_id + "";
-      });
-      const resp: JobList = { 'jobs': data }
-      return resp;
-    },
-  });
-  return query;
-}
-
-function useNode(name: string): UseQueryResult<Node[]> {
-  const url = getURL(`/nodes/${name}/`);
-  const query = useQuery(["node", { url }], {
-    select: (node: Node) => {
-        node["description"] = (node['description'] || "").split('/').slice(-2).join('/');
-        return [{ ...node, id: node.name }];
-      }
-    });
-  return query;
-}
-
-function useNodes(machine_type: string): UseQueryResult<Node[]> {
-  const url = getURL(`/nodes/`, {machine_type});
-  const query = useQuery(["nodes", { url }], {
-    select: (data: Node[]) =>
-      data.map((item) => {
-        item["description"] = (item['description'] || "").split('/').slice(-2).join('/');
-        return { ...item, id: item.name };
-      }),
-  });
-  return query;
-}
-
-function useStatsNodeLocks(params: GetURLParams): UseQueryResult<StatsLocksResponse[]> {
+function useStatsNodeLocks(params: URLSearchParams): UseQueryResult<StatsLocksResponse[]> {
   const params_ = JSON.parse(JSON.stringify(params || {}));
   params_["up"] = "True"
 
@@ -179,7 +92,9 @@ function useStatsNodeLocks(params: GetURLParams): UseQueryResult<StatsLocksRespo
   let uri = `nodes/?${queryString}`;
   const url = new URL(uri, PADDLES_SERVER).href
 
-  const query = useQuery(["statsLocks", { url }], {
+  const query = useQuery({
+    queryKey: ["statsLocks", { url }],
+
     select: (data: Node[]) => {
       let users = new Map();
       data.forEach((node) => {
@@ -197,69 +112,16 @@ function useStatsNodeLocks(params: GetURLParams): UseQueryResult<StatsLocksRespo
         })
       }));
       return resp;
-    },
+    }
   });
   return query;
-}
-
-function useStatsNodeJobs(params: GetURLParams): UseQueryResult<StatsJobsResponse[]> {
-  const params_ = JSON.parse(JSON.stringify(params || {}));
-  params_["since_days"] = params_["since_days"] || 14;
-
-  const queryString = new URLSearchParams(params_).toString();
-  let uri = `nodes/job_stats/?${queryString}`;
-  const url = new URL(uri, PADDLES_SERVER).href;
-
-  const query = useQuery(["statsJobs", { url }], {
-    select: (data: {[name: string]: { [status: string]: number }}) => {
-      let resp: StatsJobsResponse[] = [];
-      for (let node in data) {
-        let name = node;
-        let status_dict = data[node];
-        let respObj: StatsJobsResponse = { 
-          id: name, name, 'total': 0,
-          'pass': status_dict['pass'] || 0, 
-          'fail': status_dict['fail'] || 0, 
-          'dead': status_dict['dead'] || 0, 
-          'unknown': status_dict['unknown'] || 0, 
-          'running': status_dict['running'] || 0,  
-        };
-        for (let status in status_dict) {
-          respObj["total"] += status_dict[status] || 0;
-        }
-        resp.push(respObj)
-      }
-      return resp;
-    },
-  });
-  return query;
-}
-
-function useStatuses() {
-  return {
-    data: [
-      "queued",
-      "waiting",
-      "running",
-      "finished pass",
-      "finished fail",
-      "finished dead",
-    ],
-  };
 }
 
 export {
-  useBranches,
-  useMachineTypes,
-  useRuns,
-  useRun,
-  useJob,
-  useSuites,
-  useStatuses,
-  useNode,
-  useNodeJobs,
-  useNodes,
+  DEFAULT_PAGE_SIZE,
+  MACHINE_TYPES,
+  getURL,
+  queryFn,
   useStatsNodeLocks,
-  useStatsNodeJobs,
   useJobHistory,
 };

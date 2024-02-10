@@ -8,13 +8,12 @@
   <meta name="description" content="Pulpito" />
   <link rel="apple-touch-icon" href="/favicon.ico" />
   <link rel="manifest" href="/manifest.json" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
   <style>
-    body:where([color-scheme="dark"]) {
+    @media (prefers-color-scheme: dark) {
       background-color: rgb(24, 24, 24);
     }
 
-    body:where([color-scheme="light"]) {
+    @media (prefers-color-scheme: light) {
       background-color: white;
     }
   </style>
@@ -23,21 +22,8 @@
 
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root"></div>
-  <script>
-    try {
-      let colorScheme = localStorage.getItem("theme");
-      const systemDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (!colorScheme) {
-        colorScheme = systemDarkMode ? "dark" : "light";
-      }
-      if (!!colorScheme) localStorage.setItem("theme", colorScheme);
-      document.getElementsByTagName("body")[0].setAttribute("color-scheme", colorScheme);
-    } catch (e) {
-      console.error(e);
-    }
-  </script>
-  <script type="module" src="/src/index.tsx"></script>
+  <script type="module" src="/src/entry-client.jsx"></script>
+  <div id="root"><!--app-html--></div>
 </body>
 
 </html>

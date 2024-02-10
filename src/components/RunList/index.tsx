@@ -1,18 +1,16 @@
 import { SetStateAction, useMemo } from 'react';
 import { useState } from "react";
+import { navigate } from 'vike/client/router'
+import { useData } from 'vike-react/useData'
+import { usePageContext } from 'vike-react/usePageContext'
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import type {
-  DecodedValueMap,
-  QueryParamConfigMap,
-  SetQuery,
-} from "use-query-params";
-import { useDebounce } from "usehooks-ts";
+import { useDebounceValue } from "usehooks-ts";
 import {
   useMaterialReactTable,
   MaterialReactTable,
-  MRT_TableHeadCellFilterContainer,
+  MRT_TableHeadCellFilterContainer as TableHeadCellFilterContainer,
   type MRT_ColumnDef,
   type MRT_PaginationState,
   type MRT_Updater,
@@ -23,8 +21,11 @@ import {
 import { type Theme } from "@mui/material/styles";
 import { parse } from "date-fns";
 
-import { useRuns } from "../../lib/paddles";
-import { formatDate, formatDay, formatDuration } from "../../lib/utils";
+import {
+  formatDate,
+  formatDuration,
+  getUrl,
+} from "../../lib/utils";
 import IconLink from "../../components/IconLink";
 import type {
   Run,
@@ -41,12 +42,6 @@ import Box from '@mui/material/Box';
 import Badge from '@mui/material/Badge';
 import Menu from '@mui/material/Menu';
 
-
-const DEFAULT_PAGE_SIZE = 25;
-const NON_FILTER_PARAMS = [
-  "page",
-  "pageSize",
-];
 
 const _columns: MRT_ColumnDef<Run>[] = [
   {
@@ -214,13 +209,8 @@ function runStatusToThemeCategory(status: string): keyof Theme["palette"] {
   }
 };
 
-type RunListParams = {
-  [key: string]: number|string;
-}
-
 type RunListProps = {
-  params: DecodedValueMap<QueryParamConfigMap>;
-  setter: SetQuery<QueryParamConfigMap>;
+  params: Record<string,string>;
   tableOptions?: Partial<MRT_TableOptions<Run>>;
 }
 
@@ -229,12 +219,13 @@ export default function RunList(props: RunListProps) {
   const [dropMenuAnchorEl, setDropMenuAnchor] = useState<null | HTMLElement>(null);
 
   const { params, setter, tableOptions } = props;
+  const context = usePageContext();
   const options = useDefaultTableOptions<Run>();
-  const debouncedParams = useDebounce(params, 500);
+  const [debouncedParams, _] = useDebounceValue(params, 500);
   const columnFilters: MRT_ColumnFiltersState = [];
   Object.entries(debouncedParams).forEach(param => {
     const [id, value] = param;
-    if ( NON_FILTER_PARAMS.includes(id) ) return;
+    if ( ["page", "pageSize"].includes(id) ) return;
     if ( id === "date" && !!value ) {
       columnFilters.push({
         id: "scheduled",
@@ -245,8 +236,8 @@ export default function RunList(props: RunListProps) {
     }
   });
   let pagination = {
-    pageIndex: params.page || 0,
-    pageSize: params.pageSize || DEFAULT_PAGE_SIZE,
+    pageIndex: Number(params.page || 0),
+    pageSize: Number(params.pageSize || DEFAULT_PAGE_SIZE),
   };
   const toggleFilterMenu = (event: { currentTarget: SetStateAction<HTMLElement | null>; }) => {
     if (dropMenuAnchorEl) {
@@ -259,30 +250,15 @@ export default function RunList(props: RunListProps) {
   }
   const onColumnFiltersChange = (updater: MRT_Updater<MRT_ColumnFiltersState>) => {
     if ( ! ( updater instanceof Function ) ) return;
-    const result: RunListParams = {pageSize: pagination.pageSize};
-    const updated = updater(columnFilters);
-    updated.forEach(item => {
-      if ( ! item.id ) return;
-      if ( item.value instanceof Date ) {
-        result.date = formatDay(item.value);
-      } else if ( typeof item.value === "string" || typeof item.value === "number" ) {
-        result[item.id] = item.value
-      }
-    });
-    setter(result);
+    const newUrl = getUrl(context.urlPathname, updater(columnFilters), pagination);
+    navigate(newUrl.pathname + newUrl.search);
   };
   const onPaginationChange = (updater: MRT_Updater<MRT_PaginationState>) => {
     if ( ! ( updater instanceof Function ) ) return;
-    pagination = updater(pagination);
-    const result: Partial<RunListParams> = {
-      ...params,
-      page: pagination.pageIndex,
-    };
-    if ( pagination.pageSize != DEFAULT_PAGE_SIZE ) result.pageSize = pagination.pageSize;
-    setter(result);
+    const newUrl = getUrl(context.urlPathname, columnFilters, updater(pagination));
+    navigate(newUrl.pathname + newUrl.search);
   };
-  const query = useRuns(debouncedParams);
-  let data = query.data || [];
+  const data: Run[] = useData();
   const jobTotals = useMemo(() => {
     const result: Partial<RunResults> = {};
     RunResultKeys.forEach(
@@ -297,19 +273,19 @@ export default function RunList(props: RunListProps) {
   }, [data])
   const columns = useMemo(() => _columns.map(col =>
     col.header in jobTotals? {...col, Footer: jobTotals[col.header as RunResult]} : col
-  ), [data]);
+  ), [jobTotals]);
   const table = useMaterialReactTable({
     ...options,
     columns,
-    data: data,
-    manualPagination: true,
+    data: data || [],
     manualFiltering: true,
     enableColumnActions: false,
+    manualPagination: true,
     onPaginationChange,
-    rowCount: Infinity,
     muiPaginationProps: {
       showLastButton: false,
     },
+    rowCount: Infinity,
     onColumnFiltersChange,
     columnFilterDisplayMode: 'custom',
     enableColumnFilters: false,
@@ -334,7 +310,6 @@ export default function RunList(props: RunListProps) {
     state: {
       columnFilters,
       pagination,
-      isLoading: query.isLoading || query.isFetching,
     },
     muiTableBodyRowProps: ({row}) => {
       const category = runStatusToThemeCategory(row.original.status);
@@ -367,7 +342,7 @@ export default function RunList(props: RunListProps) {
       <Typography variant="body2" gutterBottom color="gray" textAlign={"right"}>
         { table.getState().columnFilters.map((column) => {
             let filterValue = column.value; 
-            if (column.id == "scheduled") {
+            if (column.id === "scheduled") {
               const parsedDate = new Date(column.value as string);
               filterValue = (parsedDate.toISOString().split('T')[0])
             }
@@ -439,7 +414,7 @@ function FilterMenu({ isOpen, table}: FilterMenuProps) {
               if (FILTER_SECTIONS_COLUMNS[sectionIndex].includes(header.id)) {
                 return (
                   <Grid item sx={{maxWidth: 160}} key={header.id}  margin={".5em"}>        
-                    <MRT_TableHeadCellFilterContainer
+                    <TableHeadCellFilterContainer
                       header={header}
                       table={table}
                       style={{ backgroundColor: 'transparent', width: '100%' }}
