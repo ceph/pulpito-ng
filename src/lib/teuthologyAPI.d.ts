@@ -9,6 +9,5 @@ export type Session = {
 export type KillRunPayload = {
     "--run": string,
     "--owner": string,
-    "--machine-type": string,
-    "--user": string,
+    "--machine-type": string, 
 }
