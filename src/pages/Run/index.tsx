@@ -61,7 +61,6 @@ export default function Run() {
     "--run": data?.name || "",
     "--owner": run_owner,
     "--machine-type": data?.machine_type || "",
-    "--user": data?.user || "",
   }
   return (
     <Root className={classes.root}>
