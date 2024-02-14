@@ -32,7 +32,7 @@ export default function KillButton(props: KillButtonProps) {
   const [open, setOpen] = useState(false);
   const mutation: UseMutationResult = props.mutation;
   const sessionQuery = useSession();
-  const loggedUser = sessionQuery.data?.session.username;
+  const loggedUser = sessionQuery.data?.session?.username;
 
   if (loggedUser?.toLowerCase() != props.payload["--owner"].toLowerCase()) {
     // logged user and owner of the job should be equal (case insensitive)
@@ -53,6 +53,7 @@ export default function KillButton(props: KillButtonProps) {
           size="large"
           onClick={toggleDialog}
           disabled={(props.disabled || mutation.isLoading)}
+          sx={{ marginBottom: "12px" }}
         >
           {props.text}
         </Button>
@@ -73,27 +74,39 @@ function KillButtonDialog({mutation, open, handleClose, payload}: KillButtonDial
   return (
     <div>
       <Dialog onClose={handleClose} open={open} scroll="paper" fullWidth={true} maxWidth="sm">
-        <DialogTitle>Kill confirmation</DialogTitle>
+        <DialogTitle variant="h6">KILL CONFIRMATION</DialogTitle>
         <DialogContent>
-          { (mutation.data && mutation.data.data ) ? 
+          { (mutation.isSuccess && mutation.data ) ? 
             <div>
-            <Typography variant="h6" display="block" gutterBottom>
-              {mutation.isSuccess ? "Successful!": "Failed!"}
+            <Typography variant="h6" display="block" color="green" gutterBottom>
+              Successful!
             </Typography>
             <Paper>
               <Typography variant="caption" display="block" gutterBottom>
-                {mutation.data.data.logs}
+                {mutation.data?.data?.logs}
               </Typography>
             </Paper>
             </div> : 
             (mutation.isLoading) ? (
-              <Box sx={{ p: 1 }}>
-                <Typography variant="subtitle1" display="block" gutterBottom>
-                  <CircularProgress size={20} color="inherit" />
+              <div style={{display: "flex", alignItems: "center"}}>
+                <CircularProgress size={20} color="inherit" style={{marginRight: "12px"}} />
+                <Typography variant="subtitle1" display="block">
                   Killing run...
                 </Typography>
-              </Box>
+              </div>
             ) : 
+            (mutation.isError) ? (
+              <div>
+                <Typography variant="h6" display="block" color="red" gutterBottom>
+                  Failed!
+                </Typography>
+                <Paper>
+                  <Typography variant="caption" display="block" gutterBottom>
+                    {mutation.error?.response?.data?.detail}
+                  </Typography>
+                </Paper>
+              </div>
+            ) :  
             <div>
               <Typography variant="overline" display="block" gutterBottom>
                 Are you sure you want to kill this run/job?
