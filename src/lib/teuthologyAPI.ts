@@ -58,7 +58,7 @@ function useUserData(): Map<string, string> {
 }
 
 function useRunKill(): UseMutationResult {
-    const url = getURL("/kill?dry_run=false&logs=true");
+    const url = getURL("/kill?logs=true");
     const mutation: UseMutationResult = useMutation({
         mutationKey: ['run-kill', { url }],
         mutationFn: (payload) => (
