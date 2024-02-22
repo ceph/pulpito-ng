@@ -202,7 +202,7 @@ type JobListProps = {
 
 export default function JobList({ query, sortMode }: JobListProps) {
   const options = useDefaultTableOptions<Job>();
-  const data = query.data?.jobs || [];
+  const data = (query.data?.jobs || []).filter(item => item.id);
   const table = useMaterialReactTable({
     ...options,
     columns,

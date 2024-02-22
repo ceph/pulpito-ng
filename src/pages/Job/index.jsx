@@ -13,14 +13,12 @@ import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import FolderIcon from '@mui/icons-material/Folder';
 import formatDuration from "date-fns/formatDuration";
 import { isValid, parse } from "date-fns";
-import Editor from "react-simple-code-editor";
-import { highlight, languages } from "prismjs/components/prism-core";
-import "prismjs/components/prism-yaml";
 import "prismjs/themes/prism-tomorrow.css";
 import { Helmet } from "react-helmet";
 import YAML from "json-to-pretty-yaml";
 
 import Link from "../../components/Link";
+import CodeBlock from "../../components/CodeBlock";
 import { useJob } from "../../lib/paddles";
 import { getDuration, dirName } from "../../lib/utils";
 
@@ -150,25 +148,7 @@ function JobDetails({ query }) {
   if (query.isError) return "!!!";
   const code = YAML.stringify(query.data);
   return (
-    <Editor
-      value={code}
-      readOnly={true}
-      highlight={(code) => highlight(code, languages.yaml)}
-      style={{
-        fontFamily: [
-          "ui-monospace",
-          "SFMono-Regular",
-          '"SF Mono"',
-          "Menlo",
-          "Consolas",
-          "Liberation Mono",
-          '"Lucida Console"',
-          "Courier",
-          "monospace",
-        ].join(","),
-        textAlign: "initial",
-      }}
-    />
+    <CodeBlock value={code} language="yaml" />
   );
 }
 
