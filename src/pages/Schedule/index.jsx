@@ -26,7 +26,12 @@ import Snackbar from '@mui/material/Snackbar';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useUserData, useSchedule } from '../../lib/teuthologyAPI';
 import { useMutation } from "@tanstack/react-query";
-
+import Editor from "react-simple-code-editor";
+import { highlight, languages } from "prismjs/components/prism-core";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 export default function Schedule() {
   const keyOptions =
     [
@@ -36,11 +41,18 @@ export default function Schedule() {
       "--suite-branch",
       "--suite",
       "--subset",
-      "--machine",
+      "--sha1",
+      "--email",
+      "--machine-type",
       "--filter",
+      "--filter-out",
+      "--filter-all",
+      "--kernal",
+      "--flavor",
       "--distro",
-      "--rerun",
-      "--rerun-statuses",
+      "--distro-version",
+      "--newest",
+      "--num",
       "--limit",
       "--priority",
     ];
@@ -59,28 +71,35 @@ export default function Schedule() {
       2/<outof> ... <outof>-1/<outof> will schedule all \
       jobs in the suite (many more than once). If specified, \
       this value can be found in results.log.",
-    "--machine": "Machine type e.g., smithi, mira, gibba.",
+    "--sha1": "The ceph sha1 to run against (overrides -c) \
+      If both -S and -c are supplied, -S wins, and \
+      there is no validation that sha1 is contained \
+      in branch",
+    "--email": "When tests finish or time out, send an email \
+      here. May also be specified in ~/.teuthology.yaml \
+      as 'results_email'",
+    "--machine-type": "Machine type e.g., smithi, mira, gibba.",
     "--filter": "Only run jobs whose description contains at least one \
       of the keywords in the comma separated keyword string specified.",
+    "--filter-out": "Do not run jobs whose description contains any of \
+      the keywords in the comma separated keyword \
+      string specified.",
+    "--filter-all": "Only run jobs whose description contains each one \
+      of the keywords in the comma separated keyword \
+      string specified.",
+    "--kernal": "The kernel branch to run against, \
+      use 'none' to bypass kernel task. \
+      [default: distro]",
+    "--flavor": "The ceph packages shaman flavor to run with: \
+      ('default', 'crimson', 'notcmalloc', 'jaeger') \
+      [default: default]",
     "--distro": "Distribution to run against",
-    "--rerun": "Attempt to reschedule a run, selecting only those \
-    jobs whose status are mentioned by --rerun-status. \
-      Note that this is implemented by scheduling an \
-      entirely new suite and including only jobs whose \
-      descriptions match the selected ones. It does so \
-      using the same logic as --filter. \
-      Of all the flags that were passed when scheduling \
-      the original run, the resulting one will only \
-      inherit the --suite value. Any other arguments \
-      must be passed again while scheduling. By default, \
-      'seed' and 'subset' will be taken from results.log, \
-      but can be overide if passed again. \
-      This is important for tests involving random facet \
-      (path ends with '$' operator).",
-    "--rerun-statuses": "A comma-separated list of statuses to be used \
-      with --rerun. Supported statuses are: 'dead', \
-      'fail', 'pass', 'queued', 'running', 'waiting' \
-      [default: fail,dead]",
+    "--distro-version": "Distro version to run against",
+    "--newest": "Search for the newest revision built on all \
+      required distro/versions, starting from \
+      either --ceph or --sha1, backtracking \
+      up to <newest> commits [default: 0]",
+    "--num": "Number of times to run/queue the job [default: 1]",
     "--limit": "Queue at most this many jobs [default: 0]",
     "--priority": "Job priority (lower is sooner) 0 - 1000",
   }
@@ -88,17 +107,31 @@ export default function Schedule() {
   const [rowData, setRowData] = useLocalStorage("rowData", []);
   const [rowIndex, setRowIndex] = useLocalStorage("rowIndex", -1);
   const [commandBarValue, setCommandBarValue] = useState([]);
-  const userData = useUserData();
+  const username = useUserData().get("username");
 
   const [open, setOpenSuccess] = useState(false);
+  const [openWrn, setOpenWrn] = useState(false);
   const [openErr, setOpenErr] = useState(false);
-  const [ErrText, setErrText] = useState("");
+  const [logText, setLogText] = useLocalStorage("logText", "");
 
-  const handleOpenSuccess = () => {
-    setOpenSuccess(true);
+  const handleOpenSuccess = (data) => {
+    if (data && data.data) {
+      const code = data.data.logs.join("");
+      setLogText(code);
+    }
+
+    if (data.data.job_count < 1) {
+      setOpenWrn(true)
+    } else {
+      setOpenSuccess(true);
+    }
   };
-  const handleOpenErr = (errText) => {
-    setErrText(errText);
+  const handleOpenErr = (data) => {
+    console.log("handleOpenErr");
+    if (data && data.response.data.detail) {
+      const code = data.response.data.detail;
+      setLogText(code);
+    }
     setOpenErr(true);
   };
 
@@ -108,16 +141,19 @@ export default function Schedule() {
   const handleCloseErr = () => {
     setOpenErr(false);
   };
-
+  const handleCloseWrn = () => {
+    setOpenWrn(false);
+  };
   const clickRun = useMutation({
     mutationFn: async (commandValue) => {
       return await useSchedule(commandValue);
     },
-    onSuccess: () => {
-      handleOpenSuccess();
+    onSuccess: (data) => {
+      handleOpenSuccess(data);
     },
-    onError: () => {
-      handleOpenErr("Failed to Schedule Run");
+    onError: (err) => {
+      console.log(err);
+      handleOpenErr(err);
     }
   })
 
@@ -125,11 +161,11 @@ export default function Schedule() {
     mutationFn: async (commandValue) => {
       return await useSchedule(commandValue);
     },
-    onSuccess: () => {
-      handleOpenSuccess();
+    onSuccess: (data) => {
+      handleOpenSuccess(data);
     },
-    onError: () => {
-      handleOpenErr("Failed to Schedule Dry Run");
+    onError: (err) => {
+      handleOpenErr(err);
     }
   })
 
@@ -138,11 +174,11 @@ export default function Schedule() {
       commandValue['--force-priority'] = true;
       return await useSchedule(commandValue);
     },
-    onSuccess: () => {
-      handleOpenSuccess();
+    onSuccess: (data) => {
+      handleOpenSuccess(data);
     },
-    onError: () => {
-      handleOpenErr("Failed to Schedule run with --force-priority");
+    onError: (err) => {
+      handleOpenErr(err);
     }
   })
 
@@ -151,18 +187,18 @@ export default function Schedule() {
   }, [rowData])
 
   function getCommandValue(dry_run) {
+    setLogText("");
     let retCommandValue = {};
     commandBarValue.map((data) => {
       if (data.checked) {
         retCommandValue[data.key] = data.value;
       }
     })
-    let username = userData.get("username");
     if (!username) {
       console.log("User is not logged in");
       return {};
     } else {
-      retCommandValue['--user'] = userData.get("username");
+      retCommandValue['--user'] = username;
     }
     if (dry_run) {
       retCommandValue['--dry-run'] = true;
@@ -231,6 +267,7 @@ export default function Schedule() {
 
   return (
     <div>
+      {username ? <></> : <Alert variant="filled" severity="error">User is not logged in ... feature disabled.</Alert>}
       <Helmet>
         <title>Schedule - Pulpito</title>
       </Helmet>
@@ -253,23 +290,44 @@ export default function Schedule() {
           />
         </Tooltip>
         <div style={{ display: "flex", paddingLeft: "20px" }}>
+          <Snackbar open={open} onClose={handleCloseSuccess}>
+            <Alert
+              onClose={handleCloseSuccess}
+              severity="success"
+              variant="filled"
+              sx={{ width: '100%' }}
+            >
+              Schedule Success!
+            </Alert>
+          </Snackbar>
+          <Snackbar open={openErr} onClose={handleCloseErr}>
+            <Alert
+              onClose={handleCloseErr}
+              severity="error"
+              variant="filled"
+              sx={{ width: '100%' }}
+            >
+              Schedule Failed!
+            </Alert>
+          </Snackbar>
+          <Snackbar open={openWrn} onClose={handleCloseWrn}>
+            <Alert
+              onClose={handleCloseWrn}
+              severity="warning"
+              variant="filled"
+              sx={{ width: '100%' }}
+            >
+              Warning! 0 Jobs Scheduled
+            </Alert>
+          </Snackbar>
           <Tooltip title="Execute command with regards to the --priority value" arrow>
-            <Snackbar open={open} onClose={handleCloseSuccess}>
-              <Alert
-                onClose={handleCloseSuccess}
-                severity="success"
-                variant="filled"
-                sx={{ width: '100%' }}
-              >
-                Run Scheduled!
-              </Alert>
-            </Snackbar>
             {clickRun.isLoading ? (
               <CircularProgress />
             ) : <Button // Run Button
-              style={{ height: "50px", width: "100px", backgroundColor: "#33b249", color: "#fff" }}
+              style={{ height: "50px", width: "100px" }}
               variant="contained"
-              disabled={clickDryRun.isLoading || clickForcePriority.isLoading}
+              color="success"
+              disabled={clickDryRun.isLoading || clickForcePriority.isLoading || !username}
               onClick={() => {
                 clickRun.mutate(getCommandValue(false)
                 )
@@ -277,16 +335,6 @@ export default function Schedule() {
             >
               Run
             </Button>}
-            <Snackbar open={openErr} onClose={handleCloseErr}>
-              <Alert
-                onClose={handleCloseErr}
-                severity="error"
-                variant="filled"
-                sx={{ width: '100%' }}
-              >
-                {ErrText}
-              </Alert>
-            </Snackbar>
           </Tooltip>
           <Tooltip title="Execute command without regards to the --priority value " arrow>
             {clickForcePriority.isLoading ? (
@@ -296,7 +344,7 @@ export default function Schedule() {
                 style={{ height: "50px", width: "100px", marginLeft: "20px" }}
                 variant="contained"
                 color="error"
-                disabled={clickDryRun.isLoading || clickRun.isLoading}
+                disabled={clickDryRun.isLoading || clickRun.isLoading || !username}
                 onClick={() => {
                   clickForcePriority.mutate(getCommandValue(false))
                 }}
@@ -306,12 +354,12 @@ export default function Schedule() {
           </Tooltip>
           <Tooltip title="Simulate the execution of the command to see what kind of jobs are scheduled, how many there are and etc." arrow>
             {clickDryRun.isLoading ? <CircularProgress /> : (<Button // Dry Run Button
-              style={{ height: "50px", width: "100px", backgroundColor: "#1976D2", color: "#fff", marginLeft: "20px" }}
+              style={{ height: "50px", width: "100px", marginLeft: "20px" }}
               variant="contained"
-              disabled={clickRun.isLoading || clickForcePriority.isLoading}
-              onClick={() => {
-                clickDryRun.mutate(getCommandValue(true)
-                )
+              color="primary"
+              disabled={clickRun.isLoading || clickForcePriority.isLoading || !username}
+              onClick={async () => {
+                clickDryRun.mutate(getCommandValue(true));
               }}
             >
               Dry Run
@@ -420,6 +468,35 @@ export default function Schedule() {
           </AddIcon>
         </Fab >
       </Tooltip>
+      <Accordion
+        TransitionProps={{ unmountOnExit: true }}
+        style={{ marginTop: "20px" }}
+      >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Logs</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          {clickDryRun.isLoading | clickRun.isLoading | clickForcePriority.isLoading ? <CircularProgress /> : <Editor
+            value={logText}
+            readOnly={true}
+            highlight={(logText) => highlight(logText, languages.yaml)}
+            style={{
+              fontFamily: [
+                "ui-monospace",
+                "SFMono-Regular",
+                '"SF Mono"',
+                "Menlo",
+                "Consolas",
+                "Liberation Mono",
+                '"Lucida Console"',
+                "Courier",
+                "monospace",
+              ].join(","),
+              textAlign: "initial",
+            }}
+          />}
+        </AccordionDetails>
+      </Accordion>
     </div >
   );
 }
