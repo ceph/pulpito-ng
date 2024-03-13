@@ -31,7 +31,7 @@ async function useSchedule(commandValue: any) {
     if (username) {
         commandValue['--owner'] = username;
     }
-    await axios.post(url, commandValue, {
+    return await axios.post(url, commandValue, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
     }).then((resp) => {
@@ -39,7 +39,7 @@ async function useSchedule(commandValue: any) {
         return resp;
     }, (error) => {
         console.log(error);
-        throw new Error(error);
+        throw error;
     });
 }
 
