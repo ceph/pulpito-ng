@@ -10,7 +10,7 @@ import type { NodeParams } from "../../lib/paddles.d";
 import { useNode, useNodeJobs } from "../../lib/paddles";
 
 export default function Node() {
-  const [params, _] = useQueryParams({
+  const [params, setParams] = useQueryParams({
     page: NumberParam,
     pageSize: NumberParam,
   });
@@ -23,7 +23,7 @@ export default function Node() {
 
   if (jobsQuery === null) return <Typography>404</Typography>;
   if (jobsQuery.isError) return null;
-  
+
   return (
     <div>
       <Helmet>
@@ -36,7 +36,13 @@ export default function Node() {
       <div>
         <div>
           <NodeList query={detailsQuery} />
-          <JobList query={jobsQuery} sortMode={"time"} />
+          <JobList
+            query={jobsQuery}
+            params={params}
+            setter={setParams}
+            manualPagination={true}
+            sortMode={"time"}
+          />
         </div>
       </div>
     </div>

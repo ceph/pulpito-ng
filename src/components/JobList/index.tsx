@@ -2,11 +2,18 @@ import { ReactNode } from "react";
 import DescriptionIcon from "@mui/icons-material/Description";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import type {
+  DecodedValueMap,
+  QueryParamConfigMap,
+  SetQuery,
+} from "use-query-params";
 import {
   useMaterialReactTable,
   MaterialReactTable,
   type MRT_ColumnDef,
   type MRT_Row,
+  type MRT_PaginationState,
+  type MRT_Updater,
 } from 'material-react-table';
 import type { UseQueryResult } from "@tanstack/react-query";
 import { type Theme } from "@mui/material/styles";
@@ -20,6 +27,8 @@ import useDefaultTableOptions from "../../lib/table";
 
 import sentryIcon from "./assets/sentry.svg";
 
+
+const DEFAULT_PAGE_SIZE = 25;
 
 const columns: MRT_ColumnDef<Job>[] = [
   {
@@ -196,18 +205,53 @@ function JobDetailPanel(props: JobDetailPanelProps): ReactNode {
 };
 
 type JobListProps = {
+  params: DecodedValueMap<QueryParamConfigMap>;
+  setter: SetQuery<QueryParamConfigMap>;
+  manualPagination: Boolean;
   query: UseQueryResult<Run> | UseQueryResult<NodeJobs>;
   sortMode?: "time" | "id";
 }
 
-export default function JobList({ query, sortMode }: JobListProps) {
+export default function JobList({
+  query,
+  params,
+  setter,
+  manualPagination,
+  sortMode,
+}: JobListProps) {
   const options = useDefaultTableOptions<Job>();
   const data = query.data?.jobs || [];
+  const onPaginationChange = (updater: MRT_Updater<MRT_PaginationState>) => {
+    if (!(updater instanceof Function)) return;
+    const newParams = updater({
+      pageSize: params.pageSize,
+      pageIndex: params.page,
+    });
+    setter({
+      page: newParams.pageIndex || 0,
+      pageSize: newParams.pageSize || DEFAULT_PAGE_SIZE,
+    });
+  };
+  options.state = {};
+  if (manualPagination === true) {
+    options.manualPagination = true;
+    options.rowCount = Infinity;
+    options.onPaginationChange = onPaginationChange;
+    options.state.pagination = {
+      pageIndex: params.page || 0,
+      pageSize: params.pageSize || DEFAULT_PAGE_SIZE,
+    };
+  } else {
+    options.initialState = {
+      pagination: { pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE },
+    };
+  }
+  options.state.isLoading = query.isLoading || query.isFetching;
   const table = useMaterialReactTable({
+    rowCount: data.length,
     ...options,
     columns,
     data: data,
-    rowCount: data.length,
     enableFacetedValues: true,
     initialState: {
       ...options.initialState,
@@ -217,19 +261,12 @@ export default function JobList({ query, sortMode }: JobListProps) {
         duration: false,
         waiting: false,
       },
-      pagination: {
-        pageIndex: 0,
-        pageSize: 25,
-      },
       sorting: [
         {
           id: sortMode === "time"? "started" : "job_id",
           desc: true,
         },
       ],
-    },
-    state: {
-      isLoading: query.isLoading || query.isFetching,
     },
     renderDetailPanel: JobDetailPanel,
     muiTableBodyRowProps: ({row, isDetailPanel}) => {
