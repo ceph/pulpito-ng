@@ -16,7 +16,6 @@ import Alert from "../Alert";
 
 type KillButtonProps = {
   mutation: UseMutationResult;
-  text: string;
   payload: KillRunPayload;
   disabled?: boolean;
 };
@@ -34,14 +33,16 @@ export default function KillButton(props: KillButtonProps) {
   const sessionQuery = useSession();
   const loggedUser = sessionQuery.data?.session?.username;
 
-  if (loggedUser?.toLowerCase() != props.payload["--owner"].toLowerCase()) {
-    // logged user and owner of the job should be equal (case insensitive)
-    return null
-  }
+  const isOwner = (loggedUser?.toLowerCase() == props.payload["--owner"].toLowerCase())
 
   const toggleDialog = () => {
     setOpen(!open);
   };
+
+  const refreshAndtoggle = () => {
+    toggleDialog();
+    mutation.reset();
+  }
   
 
   return (
@@ -51,11 +52,11 @@ export default function KillButton(props: KillButtonProps) {
           variant="contained"
           color="error"
           size="large"
-          onClick={toggleDialog}
+          onClick={refreshAndtoggle}
           disabled={(props.disabled || mutation.isLoading)}
           sx={{ marginBottom: "12px" }}
         >
-          {props.text}
+          {(isOwner) ? "Kill" : "Kill As Admin"}
         </Button>
         <KillButtonDialog
           mutation={mutation}
@@ -78,14 +79,14 @@ function KillButtonDialog({mutation, open, handleClose, payload}: KillButtonDial
         <DialogContent>
           { (mutation.isSuccess && mutation.data ) ? 
             <div>
-            <Typography variant="h6" display="block" color="green" gutterBottom>
-              Successful!
-            </Typography>
-            <Paper>
-              <Typography variant="caption" display="block" gutterBottom>
-                {mutation.data?.data?.logs}
+              <Typography variant="h6" display="block" color="green" gutterBottom>
+                Successful!
               </Typography>
-            </Paper>
+              <Paper>
+                <Typography variant="caption" display="block" gutterBottom>
+                  {mutation.data?.data?.logs}
+                </Typography>
+              </Paper>
             </div> : 
             (mutation.isLoading) ? (
               <div style={{display: "flex", alignItems: "center"}}>
