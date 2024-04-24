@@ -84,7 +84,6 @@ export default function Run() {
       </div>
       <KillButton 
         mutation={killMutation} 
-        text="Kill run" 
         payload={killPayload} 
         disabled={(data?.status.includes("finished"))} 
       />
