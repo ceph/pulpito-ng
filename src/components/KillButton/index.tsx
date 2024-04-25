@@ -33,7 +33,8 @@ export default function KillButton(props: KillButtonProps) {
   const sessionQuery = useSession();
   const loggedUser = sessionQuery.data?.session?.username;
 
-  const isOwner = (loggedUser?.toLowerCase() == props.payload["--owner"].toLowerCase())
+  const owner = props.payload["--owner"].toLowerCase()
+  const isOwner = (loggedUser?.toLowerCase() == owner) || (`scheduled_${loggedUser?.toLowerCase()}@teuthology` == owner)
 
   const toggleDialog = () => {
     setOpen(!open);
