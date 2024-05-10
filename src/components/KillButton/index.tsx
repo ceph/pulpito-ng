@@ -8,6 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
+import Tooltip from '@mui/material/Tooltip';
 
 import { KillRunPayload } from "../../lib/teuthologyAPI.d";
 import { useSession } from "../../lib/teuthologyAPI";
@@ -32,7 +33,7 @@ export default function KillButton(props: KillButtonProps) {
   const mutation: UseMutationResult = props.mutation;
   const sessionQuery = useSession();
   const loggedUser = sessionQuery.data?.session?.username;
-
+  const isUserAdmin = sessionQuery.data?.session?.isUserAdmin;
   const owner = props.payload["--owner"].toLowerCase()
   const isOwner = (loggedUser?.toLowerCase() == owner) || (`scheduled_${loggedUser?.toLowerCase()}@teuthology` == owner)
 
@@ -49,16 +50,21 @@ export default function KillButton(props: KillButtonProps) {
   return (
   <div>
       <div style={{ display: "flex" }}>
+      <Tooltip arrow title={(isUserAdmin ? "User has admin privileges": "User does not have admin privileges")}>
+        <span>
         <Button
           variant="contained"
           color="error"
           size="large"
           onClick={refreshAndtoggle}
-          disabled={(props.disabled || mutation.isLoading)}
+          disabled={((props.disabled || mutation.isLoading) ||
+                     (!isOwner && !isUserAdmin))}
           sx={{ marginBottom: "12px" }}
         >
           {(isOwner) ? "Kill" : "Kill As Admin"}
         </Button>
+        </span>
+      </Tooltip>
         <KillButtonDialog
           mutation={mutation}
           payload={props.payload}
