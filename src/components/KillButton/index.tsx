@@ -10,6 +10,7 @@ import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Tooltip from '@mui/material/Tooltip';
 
+import CodeBlock from "../CodeBlock";
 import { KillRunPayload } from "../../lib/teuthologyAPI.d";
 import { useSession } from "../../lib/teuthologyAPI";
 import Alert from "../Alert";
@@ -81,18 +82,16 @@ export default function KillButton(props: KillButtonProps) {
 function KillButtonDialog({mutation, open, handleClose, payload}: KillButtonDialogProps) {
   return (
     <div>
-      <Dialog onClose={handleClose} open={open} scroll="paper" fullWidth={true} maxWidth="sm">
+      <Dialog onClose={handleClose} open={open} scroll="paper" fullWidth={true} maxWidth="md">
         <DialogTitle variant="h6">KILL CONFIRMATION</DialogTitle>
-        <DialogContent>
+        <DialogContent dividers>
           { (mutation.isSuccess && mutation.data ) ? 
             <div>
               <Typography variant="h6" display="block" color="green" gutterBottom>
                 Successful!
               </Typography>
               <Paper>
-                <Typography variant="caption" display="block" gutterBottom>
-                  {mutation.data?.data?.logs}
-                </Typography>
+                <CodeBlock value={mutation.data?.data?.logs || ""} language="python" />
               </Paper>
             </div> : 
             (mutation.isLoading) ? (
@@ -109,9 +108,7 @@ function KillButtonDialog({mutation, open, handleClose, payload}: KillButtonDial
                   Failed!
                 </Typography>
                 <Paper>
-                  <Typography variant="caption" display="block" gutterBottom>
-                    {mutation.error?.response?.data?.detail}
-                  </Typography>
+                  <CodeBlock value={(mutation.error?.response?.data?.detail) || ""} language="python" />
                 </Paper>
               </div>
             ) :  
