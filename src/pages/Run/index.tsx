@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 import { format } from "date-fns";
 import { Helmet } from "react-helmet";
 
-import type { Run as Run_, RunParams } from "../../lib/paddles.d";
+import type { RunWithJobs as Run_, RunParams } from "../../lib/paddles.d";
 
 import { useRun } from "../../lib/paddles";
 import JobList from "../../components/JobList";

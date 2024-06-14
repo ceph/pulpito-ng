@@ -4,6 +4,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import type { 
   GetURLParams, 
   Run, Job, 
+  RunWithJobs,
   Node, NodeJobs,
   StatsLocksResponse,
   StatsJobsResponse,
@@ -69,10 +70,10 @@ function useRuns(params: GetURLParams): UseQueryResult<Run[]> {
   return query;
 }
 
-function useRun(name: string): UseQueryResult<Run> {
+function useRun(name: string): UseQueryResult<RunWithJobs> {
   const url = getURL(`/runs/${name}/`);
-  const query = useQuery<Run, Error>(["run", { url }], {
-    select: (data: Run) => {
+  const query = useQuery<RunWithJobs, Error>(["run", { url }], {
+    select: (data: RunWithJobs) => {
       data.jobs.forEach((item) => {
         item.id = item.job_id + "";
       });
