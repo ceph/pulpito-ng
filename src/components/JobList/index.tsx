@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import DescriptionIcon from "@mui/icons-material/Description";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -202,7 +202,9 @@ type JobListProps = {
 
 export default function JobList({ query, sortMode }: JobListProps) {
   const options = useDefaultTableOptions<Job>();
-  const data = (query.data?.jobs || []).filter(item => item.id);
+  const data = useMemo(() => {
+    return (query.data?.jobs || []).filter(item => !! item.id);
+  }, [query, sortMode]);
   const table = useMaterialReactTable({
     ...options,
     columns,
