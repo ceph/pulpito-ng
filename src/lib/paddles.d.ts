@@ -64,7 +64,6 @@ export type Run = {
   name: string;
   branch: string;
   suite: string;
-  jobs: Job[];
   scheduled: string;
   user: string;
   started: string;
@@ -77,6 +76,11 @@ export type Run = {
   machine_type: string;
   status: RunStatus;
 };
+
+
+interface RunWithJobs extends Run {
+  jobs: Job[]; 
+}
 
 export type Node = {
   name: string;
