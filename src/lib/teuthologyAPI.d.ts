@@ -11,4 +11,5 @@ export type KillRunPayload = {
     "--run": string,
     "--owner": string,
     "--machine-type": string, 
+    "--preserve-queue": boolean,
 }

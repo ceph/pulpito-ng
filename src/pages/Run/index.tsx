@@ -61,6 +61,7 @@ export default function Run() {
     "--run": data?.name || "",
     "--owner": run_owner,
     "--machine-type": data?.machine_type || "",
+    "--preserve-queue": true,
   }
   return (
     <Root className={classes.root}>
