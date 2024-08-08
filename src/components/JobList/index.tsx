@@ -39,7 +39,7 @@ const columns: MRT_ColumnDef<Job>[] = [
         <div>
           {log_url? (
             <IconLink to={dirName(log_url)}>
-              <DescriptionIcon fontSize="small" />
+              <DescriptionIcon fontSize="small" style={{marginLeft: '5px'}} />
             </IconLink>
           ) : null}
           {sentry_url ? (
@@ -47,7 +47,7 @@ const columns: MRT_ColumnDef<Job>[] = [
               <img
                 src={`${sentryIcon}`}
                 alt="Sentry icon"
-                style={{height: '20px', width: '20px'}}
+                style={{height: '20px', width: '20px', marginLeft: '5px'}}
               />
             </IconLink>
           ) : null}
