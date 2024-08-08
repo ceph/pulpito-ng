@@ -38,6 +38,7 @@ export default function useDefaultTableOptions<TData extends MRT_RowData>(): Par
           paddingRight: 0,
           paddingTop: '5px',
           color: "black",
+          borderLeft: "0.3px solid " + theme.palette.background.default,
         },
         'tr td:has(svg)': {
           padding: 0,
