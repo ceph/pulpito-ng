@@ -33,6 +33,20 @@ const NON_FILTER_PARAMS = [
 
 const columns: MRT_ColumnDef<Run>[] = [
   {
+    accessorKey: "name",
+    header: "link",
+    maxSize: 12,
+    enableColumnFilter: false,
+    enableColumnActions: false,
+    Cell: ({ row }) => {
+      return (
+        <IconLink to={`/runs/${row.original.name}`}>
+          <OpenInNewIcon fontSize="small" style={{marginLeft: "5px"}} />
+        </IconLink>
+      );
+    },
+  },
+  {
     header: "status",
     accessorKey: "status",
     filterVariant: "select",
@@ -40,25 +54,15 @@ const columns: MRT_ColumnDef<Run>[] = [
       return row.original.status.replace("finished ", "");
     },
     filterSelectOptions: Object.values(RunStatuses),
+    size: 40,
+    enableColumnActions: false,
   },
   {
     accessorKey: "user",
     header: "user",
-    size: 60,
+    maxSize: 45,
     enableColumnFilter: false,
-  },
-  {
-    accessorKey: "name",
-    header: "link",
-    size: 30,
-    enableColumnFilter: false,
-    Cell: ({ row }) => {
-      return (
-        <IconLink to={`/runs/${row.original.name}`}>
-          <OpenInNewIcon fontSize="small" />
-        </IconLink>
-      );
-    },
+    enableColumnActions: false,
   },
   {
     id: "scheduled",
@@ -66,7 +70,11 @@ const columns: MRT_ColumnDef<Run>[] = [
     accessorFn: (row: Run) => formatDate(row.scheduled),
     filterVariant: 'date',
     sortingFn: "datetime",
-    size: 125,
+    Cell: ({ row }) => {
+      const date_: string[] = row.original.scheduled.split(" ");
+      return <div> {date_[0]} <br /> {date_[1]} </div>
+    },
+    size: 50,
   },
   {
     id: "started",
@@ -95,7 +103,7 @@ const columns: MRT_ColumnDef<Run>[] = [
     },
     enableColumnFilter: false,
     sortingFn: "datetime",
-    size: 70,
+    size: 30,
   },
   {
     accessorKey: "suite",
@@ -115,8 +123,10 @@ const columns: MRT_ColumnDef<Run>[] = [
   {
     accessorKey: "sha1",
     header: "hash",
-    size: 30,
-    maxSize: 50,
+    maxSize: 30,
+    Cell: ({ row }) => {
+      return row.original.sha1.slice(0, 8);
+    },
   },
   {
     accessorKey: "results.queued",
@@ -133,25 +143,25 @@ const columns: MRT_ColumnDef<Run>[] = [
   {
     accessorKey: "results.fail",
     header: "fail",
-    size: 40,
+    size: 30,
     enableColumnFilter: false,
   },
   {
     accessorKey: "results.dead",
     header: "dead",
-    size: 40,
+    size: 30,
     enableColumnFilter: false,
   },
   {
     accessorKey: "results.running",
     header: "running",
-    size: 40,
+    size: 30,
     enableColumnFilter: false,
   },
   {
     accessorKey: "results.waiting",
     header: "waiting",
-    size: 40,
+    size: 30,
     enableColumnFilter: false,
   },
 ];
