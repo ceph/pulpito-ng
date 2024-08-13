@@ -72,7 +72,7 @@ export type Run = {
   updated: string;
   started: string;
   runtime: string;
-  sha1: string;
+  sha1: string | null;
   results: RunResults;
   machine_type: string;
   status: RunStatus;
