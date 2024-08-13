@@ -125,7 +125,7 @@ const columns: MRT_ColumnDef<Run>[] = [
     header: "hash",
     maxSize: 30,
     Cell: ({ row }) => {
-      return row.original.sha1.slice(0, 8);
+      return row.original.sha1?.slice(0, 8);
     },
   },
   {
