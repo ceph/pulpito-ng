@@ -1,4 +1,7 @@
+import { useState } from "react";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
 import type {
   DecodedValueMap,
   QueryParamConfigMap,
@@ -8,6 +11,7 @@ import { useDebounce } from "usehooks-ts";
 import {
   useMaterialReactTable,
   MaterialReactTable,
+  MRT_TableHeadCellFilterContainer,
   type MRT_ColumnDef,
   type MRT_PaginationState,
   type MRT_Updater,
@@ -30,6 +34,14 @@ const NON_FILTER_PARAMS = [
   "page",
   "pageSize",
 ];
+const FILTER_COLUMNS = [
+  "status",
+  "scheduled",
+  "suite",
+  "branch",
+  "machine_type",
+  "sha1",
+]
 
 const columns: MRT_ColumnDef<Run>[] = [
   {
@@ -37,7 +49,6 @@ const columns: MRT_ColumnDef<Run>[] = [
     header: "link",
     maxSize: 12,
     enableColumnFilter: false,
-    enableColumnActions: false,
     Cell: ({ row }) => {
       return (
         <IconLink to={`/runs/${row.original.name}`}>
@@ -54,15 +65,13 @@ const columns: MRT_ColumnDef<Run>[] = [
       return row.original.status.replace("finished ", "");
     },
     filterSelectOptions: Object.values(RunStatuses),
-    size: 40,
-    enableColumnActions: false,
+    maxSize: 25,
   },
   {
     accessorKey: "user",
     header: "user",
     maxSize: 45,
     enableColumnFilter: false,
-    enableColumnActions: false,
   },
   {
     id: "scheduled",
@@ -74,7 +83,7 @@ const columns: MRT_ColumnDef<Run>[] = [
       const date_: string[] = row.original.scheduled.split(" ");
       return <div> {date_[0]} <br /> {date_[1]} </div>
     },
-    size: 50,
+    size: 35,
   },
   {
     id: "started",
@@ -82,7 +91,7 @@ const columns: MRT_ColumnDef<Run>[] = [
     accessorFn: (row: Run) => formatDate(row.started),
     enableColumnFilter: false,
     sortingFn: "datetime",
-    size: 125,
+    size: 35,
   },
   {
     id: "posted",
@@ -90,7 +99,7 @@ const columns: MRT_ColumnDef<Run>[] = [
     accessorFn: (row: Run) => formatDate(row.posted),
     enableColumnFilter: false,
     sortingFn: "datetime",
-    size: 125,
+    maxSize: 35,
   },
   {
     id: "runtime",
@@ -108,12 +117,12 @@ const columns: MRT_ColumnDef<Run>[] = [
   {
     accessorKey: "suite",
     header: "suite",
-    size: 70,
+    size: 50,
   },
   {
     accessorKey: "branch",
     header: "branch",
-    maxSize: 75,
+    maxSize: 70,
   },
   {
     accessorKey: "machine_type",
@@ -187,6 +196,11 @@ type RunListProps = {
 }
 
 export default function RunList(props: RunListProps) {
+  const [openFilterMenu, setOpenFilterMenu] = useState(false);
+
+  const toggleFilterMenu = (isOpen: boolean) => () => {
+    setOpenFilterMenu(isOpen);
+  };
   const { params, setter, tableOptions } = props;
   const options = useDefaultTableOptions<Run>();
   const debouncedParams = useDebounce(params, 500);
@@ -239,12 +253,17 @@ export default function RunList(props: RunListProps) {
     data: data,
     manualPagination: true,
     manualFiltering: true,
+    enableColumnActions: false,
     onPaginationChange,
     rowCount: Infinity,
     muiPaginationProps: {
       showLastButton: false,
     },
     onColumnFiltersChange,
+    columnFilterDisplayMode: 'custom',
+    muiFilterTextFieldProps: ({ column }) => ({
+      label: `Filter by ${column.columnDef.header}`,
+    }),
     initialState: {
       ...options.initialState,
       columnVisibility: {
@@ -271,5 +290,32 @@ export default function RunList(props: RunListProps) {
     ...tableOptions,
   });
   if (query.isError) return null;
-  return <MaterialReactTable table={table} />
+  return (
+      <div>
+        { openFilterMenu? (
+          <Grid container spacing={3} style={{padding: "10px"}}>
+            {table.getLeafHeaders().map((header) => {
+              console.log(header.id)
+              if (FILTER_COLUMNS.includes(header.id)) {
+                return (
+                  <Grid item xs={2}>
+                    <MRT_TableHeadCellFilterContainer
+                      key={header.id}
+                      header={header}
+                      table={table}
+                      style={{backgroundColor: "None"}}
+                      in
+                    />
+                  </Grid>
+                )
+                }
+            })}
+          </Grid>) 
+        : ""}
+        <Button onClick={toggleFilterMenu(!openFilterMenu)} >
+          {openFilterMenu ? "Hide": "Show"} Filters
+        </Button>
+        <MaterialReactTable table={table} />
+      </div>
+    )
 }
