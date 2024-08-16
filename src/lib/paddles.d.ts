@@ -46,13 +46,9 @@ export type Job = {
 
 export type NodeRoles = string[];
 
-export type RunResults = {
-  queued: number;
-  pass: number;
-  fail: number;
-  dead: number;
-  running: number;
-}
+export const RunResultKeys = JobStatuses.concat(["total"]);
+export type RunResult = (typeof RunResultKeys)[number];
+export type RunResults = Record<RunResult, number>;
 
 export const RunStatuses = [
   "queued", "waiting", "running", "finished dead", "finished fail", "finished pass"

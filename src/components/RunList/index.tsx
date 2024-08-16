@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import type {
   DecodedValueMap,
@@ -20,8 +21,15 @@ import { parse } from "date-fns";
 import { useRuns } from "../../lib/paddles";
 import { formatDate, formatDay, formatDuration } from "../../lib/utils";
 import IconLink from "../../components/IconLink";
-import type { Run } from "../../lib/paddles.d";
-import { RunStatuses } from "../../lib/paddles.d";
+import type {
+  Run,
+  RunResult,
+  RunResults,
+} from "../../lib/paddles.d";
+import {
+  RunResultKeys,
+  RunStatuses,
+} from "../../lib/paddles.d";
 import useDefaultTableOptions from "../../lib/table";
 
 
@@ -31,7 +39,7 @@ const NON_FILTER_PARAMS = [
   "pageSize",
 ];
 
-const columns: MRT_ColumnDef<Run>[] = [
+const _columns: MRT_ColumnDef<Run>[] = [
   {
     accessorKey: "name",
     header: "link",
@@ -164,6 +172,11 @@ const columns: MRT_ColumnDef<Run>[] = [
     size: 30,
     enableColumnFilter: false,
   },
+  {
+    accessorKey: "results.total",
+    header: "total",
+    size: 30,
+  },
 ];
 
 function runStatusToThemeCategory(status: string): keyof Theme["palette"] {
@@ -198,9 +211,9 @@ export default function RunList(props: RunListProps) {
       columnFilters.push({
         id: "scheduled",
         value: parse(value, "yyyy-MM-dd", new Date())
-      }) 
+      })
     } else {
-      columnFilters.push({id, value}) 
+      columnFilters.push({id, value})
     }
   });
   let pagination = {
@@ -233,6 +246,21 @@ export default function RunList(props: RunListProps) {
   };
   const query = useRuns(debouncedParams);
   let data = query.data || [];
+  const jobTotals = useMemo(() => {
+    const result: Partial<RunResults> = {};
+    RunResultKeys.forEach(
+      status => {
+        let sub = result[status] || 0;
+        data.forEach(run => {
+          sub += run.results[status]
+        });
+        result[status] = sub;
+    });
+    return result;
+  }, [data])
+  const columns = useMemo(() => _columns.map(col =>
+    col.header in jobTotals? {...col, Footer: jobTotals[col.header as RunResult]} : col
+  ), [data]);
   const table = useMaterialReactTable({
     ...options,
     columns,
@@ -250,6 +278,7 @@ export default function RunList(props: RunListProps) {
       columnVisibility: {
         started: false,
         posted: false,
+        'results.total': false,
       },
       sorting: [
         {
