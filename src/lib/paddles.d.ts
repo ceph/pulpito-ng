@@ -23,9 +23,15 @@ export const JobStatuses = [
 
 export type JobStatus = (typeof JobStatuses)[number];
 
+export type Task = {
+  [key: string]: any;
+}
+
 export type Job = {
   id?: string;
   job_id: number;
+  tasks: Task;
+  description: string;
   name: string;
   suite: string;
   branch: string;
