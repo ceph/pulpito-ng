@@ -69,7 +69,11 @@ function useRunKill(): UseMutationResult {
         mutationKey: ['run-kill', { url }],
         mutationFn: (payload) => (
             axios.post(url, data, {
-                withCredentials: true
+                withCredentials: true,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                }
             })
         ),
         retry: 0,
