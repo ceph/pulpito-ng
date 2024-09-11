@@ -58,11 +58,17 @@ function useUserData(): Map<string, string> {
 }
 
 function useRunKill(): UseMutationResult {
-    const url = getURL("/kill/?logs=true");
+    const data = {
+        "name": "Foo",
+        "description": "An optional description",
+        "price": 45.2,
+        "tax": 3.5
+    }
+    const url = getURL("/kill/test/");
     const mutation: UseMutationResult = useMutation({
         mutationKey: ['run-kill', { url }],
         mutationFn: (payload) => (
-            axios.post(url, payload, {
+            axios.post(url, data, {
                 withCredentials: true
             })
         ),
