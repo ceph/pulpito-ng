@@ -37,6 +37,17 @@ export default function KillButton(props: KillButtonProps) {
   const isUserAdmin = sessionQuery.data?.session?.isUserAdmin;
   const owner = props.payload["--owner"].toLowerCase()
   const isOwner = (loggedUser?.toLowerCase() == owner) || (`scheduled_${loggedUser?.toLowerCase()}@teuthology` == owner)
+  const isButtonDisabled = ((props.disabled) || (!isOwner && !isUserAdmin))
+
+  const getHelperMessage = () => {
+    if (isButtonDisabled) {
+      if (!isOwner && !isUserAdmin) return "You don't have admin privileges to kill runs owned by another user. ";
+      return "All jobs in the run have already finished";
+    } else {
+      if (!isOwner && isUserAdmin) return "Use admin privileges to kill another user's run.";
+      return "Terminate all jobs in this run";
+    }
+  }
 
   const toggleDialog = () => {
     setOpen(!open);
@@ -51,18 +62,17 @@ export default function KillButton(props: KillButtonProps) {
   return (
   <div>
       <div style={{ display: "flex" }}>
-      <Tooltip arrow title={(isUserAdmin ? "User has admin privileges": "User does not have admin privileges")}>
+      <Tooltip arrow title={getHelperMessage()}>
         <span>
         <Button
           variant="contained"
           color="error"
           size="large"
           onClick={refreshAndtoggle}
-          disabled={((props.disabled || mutation.isLoading) ||
-                     (!isOwner && !isUserAdmin))}
+          disabled={isButtonDisabled}
           sx={{ marginBottom: "12px" }}
         >
-          {(isOwner) ? "Kill" : "Kill As Admin"}
+          {(isOwner) ? "Kill Run" : "Kill Run As Admin"}
         </Button>
         </span>
       </Tooltip>
