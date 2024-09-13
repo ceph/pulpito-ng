@@ -88,6 +88,7 @@ export default function Run() {
         payload={killPayload} 
         disabled={(data?.status.includes("finished"))} 
       />
+      <button onClick={() => killMutation.mutate({})}>Test me</button>
       <JobList query={query} params={params} setter={setParams} />
     </Root>
   );
