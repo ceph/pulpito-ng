@@ -5,19 +5,18 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import GitHubIcon from '@mui/icons-material/GitHub';
 
-import { doLogin, doLogout, useSession, useUserData } from "../../lib/teuthologyAPI";
+import { doLogin, doLogout, useSession } from "../../lib/teuthologyAPI";
 
 
 export default function Login() {
   const sessionQuery = useSession();
-  const userData = useUserData();
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
+  const [dropMenuAnchor, setDropMenuAnchor] = useState(null);
+  const open = Boolean(dropMenuAnchor);
   const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
+    setDropMenuAnchor(event.currentTarget);
   };
   const handleClose = () => {
-    setAnchorEl(null);
+    setDropMenuAnchor(null);
   };
 
   if ( ! sessionQuery.isSuccess ) return null;
@@ -27,26 +26,21 @@ export default function Login() {
       {sessionQuery.data?.session
         ? <div>
             <Avatar
-              alt={userData.get("username") || ""} 
-              src={userData.get("avatar_url") || ""}
+              alt={sessionQuery.data?.session?.username || ""} 
+              src={sessionQuery.data?.session?.avatar_url || ""}
               onClick={handleClick} 
-              aria-controls={open ? 'basic-menu' : undefined} 
-              aria-expanded={open ? 'true' : undefined} 
             />
             <Menu
-              id="basic-menu"
-              anchorEl={anchorEl}
+              anchorEl={dropMenuAnchor}
               open={open}
               onClose={handleClose}
-              MenuListProps={{
-                'aria-labelledby': 'basic-button',
-              }}
             >
               <MenuItem onClick={doLogout}>Logout</MenuItem>
             </Menu>
         </div>
         : <Button 
             variant="contained" 
+            color="success"
             onClick={doLogin}
             startIcon={<GitHubIcon fontSize="small" /> }
             disabled={sessionQuery.isError}
