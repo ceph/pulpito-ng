@@ -69,7 +69,6 @@ const _columns: MRT_ColumnDef<Run>[] = [
     accessorKey: "user",
     header: "user",
     maxSize: 45,
-    enableColumnFilter: false,
     enableColumnActions: false,
   },
   {
