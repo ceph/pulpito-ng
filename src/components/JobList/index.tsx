@@ -71,6 +71,30 @@ const columns: MRT_ColumnDef<Job>[] = [
     },
   },
   {
+    header: "tasks",
+    id: "tasks",
+    accessorFn: (row: Job) => {
+      const tasks = Object.values(row.tasks || {});
+      const task_list = tasks.map(task => {
+          if (Object.keys(tasks).length > 0) 
+            return Object.keys(task)[0];
+          return [];
+        });
+      const result = task_list.join(', ');
+      return result;
+    },
+    size: 200,
+    filterFn: 'contains',
+    enableColumnFilter: true,
+  },
+  {
+    header: "description",
+    size: 200,
+    accessorFn: (row: Job) => row.description + "",
+    filterFn: 'contains',
+    enableColumnFilter: true,
+  },
+  {
     header: "posted",
     id: "posted",
     accessorFn: (row: Job) => formatDate(row.posted),
@@ -101,7 +125,7 @@ const columns: MRT_ColumnDef<Job>[] = [
     accessorFn: (row: Job) => {
       const start = Date.parse(row.started);
       const end = Date.parse(row.updated);
-      if (!end || !start) return null;
+      if (!end || !start) return "";
       return formatDuration(Math.round((end - start) / 1000));
     },
     enableColumnFilter: false,
@@ -121,7 +145,7 @@ const columns: MRT_ColumnDef<Job>[] = [
     accessorFn: (row: Job) => {
       const start = Date.parse(row.started);
       const end = Date.parse(row.updated);
-      if (!end || !start || !row.duration) return null;
+      if (!end || !start || !row.duration) return "";
       return formatDuration(Math.round((end - start) / 1000 - row.duration));
     },
     enableColumnFilter: false,
@@ -209,8 +233,15 @@ export default function JobList({ query, sortMode }: JobListProps) {
     ...options,
     columns,
     data: data,
-    rowCount: data.length,
     enableFacetedValues: true,
+    enableGlobalFilter: true,
+    enableGlobalFilterRankedResults: false,
+    positionGlobalFilter: "left",
+    globalFilterFn: 'contains',
+    muiSearchTextFieldProps: {
+      placeholder: 'Search across all fields',
+      sx: { minWidth: '200px' },
+    },
     initialState: {
       ...options.initialState,
       columnVisibility: {
@@ -218,6 +249,8 @@ export default function JobList({ query, sortMode }: JobListProps) {
         updated: false,
         duration: false,
         waiting: false,
+        tasks: false,
+        description: false,
       },
       pagination: {
         pageIndex: 0,
@@ -229,6 +262,7 @@ export default function JobList({ query, sortMode }: JobListProps) {
           desc: true,
         },
       ],
+      showGlobalFilter: true,
     },
     state: {
       isLoading: query.isLoading || query.isFetching,
