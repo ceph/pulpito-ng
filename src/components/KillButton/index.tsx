@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { UseMutationResult } from "@tanstack/react-query";
+import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -11,15 +11,14 @@ import Typography from "@mui/material/Typography";
 import Tooltip from '@mui/material/Tooltip';
 
 import CodeBlock from "../CodeBlock";
+import type { Run as RunResponse } from "../../lib/paddles.d";
 import { KillRunPayload } from "../../lib/teuthologyAPI.d";
-import { useSession } from "../../lib/teuthologyAPI";
+import { useSession, useRunKill } from "../../lib/teuthologyAPI";
 import Alert from "../Alert";
 
 
 type KillButtonProps = {
-  mutation: UseMutationResult;
-  payload: KillRunPayload;
-  disabled?: boolean;
+  query: UseQueryResult<RunResponse>;
 };
 
 type KillButtonDialogProps = {
@@ -29,13 +28,21 @@ type KillButtonDialogProps = {
   handleClose: () => void;
 };
 
-export default function KillButton(props: KillButtonProps) {
+export default function KillButton({query: runQuery}: KillButtonProps) {
+  const killMutation = useRunKill();
   const [open, setOpen] = useState(false);
-  const mutation: UseMutationResult = props.mutation;
   const sessionQuery = useSession();
+  const data: RunResponse | undefined = runQuery.data;
+  const run_owner = data?.jobs[0].owner || "";
+  const killPayload: KillRunPayload = {
+    "--run": data?.name || "",
+    "--owner": run_owner,
+    "--machine-type": data?.machine_type || "",
+    "--preserve-queue": true,
+  }
   const loggedUser = sessionQuery.data?.session?.username;
   const isUserAdmin = sessionQuery.data?.session?.isUserAdmin;
-  const owner = props.payload["--owner"].toLowerCase()
+  const owner = killPayload["--owner"].toLowerCase()
   const isOwner = (loggedUser?.toLowerCase() == owner) || (`scheduled_${loggedUser?.toLowerCase()}@teuthology` == owner)
   const isButtonDisabled = (!isOwner && !isUserAdmin)
 
@@ -53,11 +60,14 @@ export default function KillButton(props: KillButtonProps) {
   };
 
   const refreshAndtoggle = () => {
+    if (open && !killMutation.isIdle) { // on closing confirmation dialog after kill-run
+      runQuery.refetch();
+    }
     toggleDialog();
-    mutation.reset();
+    killMutation.reset();
   }
 
-  if (props.disabled || !(sessionQuery.data?.session?.username)) {
+  if ((data?.status.includes("finished")) || !(sessionQuery.data?.session?.username)) {
     // run finished or user logged out
     return null;
   }
@@ -81,14 +91,14 @@ export default function KillButton(props: KillButtonProps) {
         </span>
       </Tooltip>
         <KillButtonDialog
-          mutation={mutation}
-          payload={props.payload}
+          mutation={killMutation}
+          payload={killPayload}
           open={open}
-          handleClose={toggleDialog}
+          handleClose={refreshAndtoggle}
         />
       </div>
-      { (mutation.isError) ? <Alert severity="error" message="Unable to kill run" /> : null }     
-      { (mutation.isSuccess) ? <Alert severity="success" message={`Run killed successfully! \n`} /> : null }
+      { (killMutation.isError) ? <Alert severity="error" message="Unable to kill run" /> : null }     
+      { (killMutation.isSuccess) ? <Alert severity="success" message={`Run killed successfully! \n`} /> : null }
   </div>
   );
 };

@@ -9,11 +9,9 @@ import { Helmet } from "react-helmet";
 import type { Run as Run_, RunParams } from "../../lib/paddles.d";
 
 import { useRun } from "../../lib/paddles";
-import { useRunKill } from "../../lib/teuthologyAPI";
 import JobList from "../../components/JobList";
 import Link from "../../components/Link";
 import KillButton from "../../components/KillButton";
-import { KillRunPayload } from '../../lib/teuthologyAPI.d';
 
 const PREFIX = "index";
 
@@ -46,7 +44,6 @@ export default function Run() {
     pageSize: NumberParam,
   });
   const { name } = useParams<RunParams>();
-  const killMutation = useRunKill();
   const query = useRun(name === undefined ? "" : name);
   if (query === null) return <Typography>404</Typography>;
   if (query.isError) return null;
@@ -56,13 +53,6 @@ export default function Run() {
   const date = query.data?.scheduled
     ? format(new Date(query.data.scheduled), "yyyy-MM-dd")
     : null;
-  const run_owner = data?.jobs[0].owner || "";
-  const killPayload: KillRunPayload = {
-    "--run": data?.name || "",
-    "--owner": run_owner,
-    "--machine-type": data?.machine_type || "",
-    "--preserve-queue": true,
-  }
   return (
     <Root className={classes.root}>
       <Helmet>
@@ -83,11 +73,7 @@ export default function Run() {
           date
         </FilterLink>
       </div>
-      <KillButton 
-        mutation={killMutation} 
-        payload={killPayload} 
-        disabled={(data?.status.includes("finished"))} 
-      />
+      <KillButton query={query} />
       <JobList query={query} params={params} setter={setParams} />
     </Root>
   );
