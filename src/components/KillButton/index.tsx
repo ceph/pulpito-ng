@@ -37,14 +37,13 @@ export default function KillButton(props: KillButtonProps) {
   const isUserAdmin = sessionQuery.data?.session?.isUserAdmin;
   const owner = props.payload["--owner"].toLowerCase()
   const isOwner = (loggedUser?.toLowerCase() == owner) || (`scheduled_${loggedUser?.toLowerCase()}@teuthology` == owner)
-  const isButtonDisabled = ((props.disabled) || (!isOwner && !isUserAdmin))
+  const isButtonDisabled = (!isOwner && !isUserAdmin)
 
   const getHelperMessage = () => {
     if (isButtonDisabled) {
-      if (!isOwner && !isUserAdmin) return "You don't have admin privileges to kill runs owned by another user. ";
-      return "All jobs in the run have already finished";
+      return `User (${loggedUser}) does not have admin privileges to kill runs owned by another user (${owner}). `;
     } else {
-      if (!isOwner && isUserAdmin) return "Use admin privileges to kill another user's run.";
+      if (!isOwner && isUserAdmin) return `Use admin privileges to kill run owned by '${owner}'. `;
       return "Terminate all jobs in this run";
     }
   }
@@ -56,6 +55,11 @@ export default function KillButton(props: KillButtonProps) {
   const refreshAndtoggle = () => {
     toggleDialog();
     mutation.reset();
+  }
+
+  if (props.disabled || !(sessionQuery.data?.session?.username)) {
+    // run finished or user logged out
+    return null;
   }
   
 
