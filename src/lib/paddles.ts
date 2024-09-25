@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import type { UseQueryResult } from "@tanstack/react-query";
+import axios from "axios";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import type { QueryOptions, UseQueryResult, UseSuspenseQueryResult } from "@tanstack/react-query";
 
 import type { 
   Run, Job, 
@@ -12,58 +13,51 @@ import type {
 const PADDLES_SERVER =
   import.meta.env.VITE_PADDLES_SERVER || "https://paddles.front.sepia.ceph.com";
 
-function getURL(endpoint: string, params?: URLSearchParams) {
-  // Because paddles' API is clunky, we have to do extra work. If it were
-  // more inuitive, we could replace everything until the next comment with
-  // just these lines:
-  //   const queryString = new URLSearchParams(params)).toString();
-  //   let uri = queryString? `${endpoint}?${queryString}` : endpoint;
-  const params_ = JSON.parse(JSON.stringify(params || {}));
+async function queryFn (params: QueryOptions) {
+  const queryKey = params.queryKey as [string, { url: string}];
+  return axios.get(queryKey[1].url).then((resp) => resp.data);
+}
+
+function getURL(endpoint: string, params?: Record<string, string>) {
+  const url = new URL(endpoint, PADDLES_SERVER);
   let uri = endpoint;
-  let paramEntries = Object.entries(params_ || {});
-  paramEntries.forEach((entry) => {
+  Object.entries(params).forEach((entry) => {
     const [key, value] = entry;
     if (value === null || value === "") {
-      delete params_[key];
       return;
     }
     switch (key) {
       case "page":
-        params_[key] = Number(value) + 1;
+        url.searchParams.set(key, Number(value) + 1);
         break;
       case "pageSize":
-        params_.count = Number(value);
-        delete params_[key];
+        url.searchParams.set("count", Number(value));
         break;
       case "queued":
-        uri += "queued/";
-        delete params_[key];
+        url.pathname += "/queued/";
         break;
       case "machine_type":
+        url.searchParams.set("machine_type", value);
         break;
       default:
-        uri += `${key}/${value}/`;
-        delete params_[key];
+        url.pathname += `/${key}/${value}/`;
     }
   });
-  const queryString = new URLSearchParams(params_).toString();
-  if (queryString) uri += `?${queryString}`;
-  // end "we could replace everything..."
-  return new URL(uri, PADDLES_SERVER).href;
+  return url;
 }
 
-function useRuns(params: URLSearchParams): UseQueryResult<Run[]> {
+function useRuns(params: Record<string, string>): UseQueryResult<Run[]> {
+  console.log("useRuns", params)
   const params_ = Object.fromEntries(Object.entries(params));
-  if (params_.get("pageSize")) {
-    params_.set("count", params.get("pageSize"));
-    delete params_.pageSize;
-  }
-  const url = getURL("/runs/", params);
-  const query = useQuery(["runs", { url }], {
+  const url = getURL("/runs/", params_);
+  const query = useQuery({
+    queryKey: ["runs", { url }],
+    // queryFn: queryFn,
     select: (data: Run[]) =>
       data.map((item) => {
         return { ...item, id: item.name };
-      }),
+      })
+    ,
   });
   return query;
 }
@@ -221,6 +215,8 @@ function useStatuses() {
 }
 
 export {
+  getURL,
+  queryFn,
   useBranches,
   useMachineTypes,
   useRuns,
