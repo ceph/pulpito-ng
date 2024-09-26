@@ -2,12 +2,8 @@ import { Config } from 'vike-react/Config'
 import { useData } from 'vike-react/useData'
 import Grid from '@mui/material/Grid2';
 import Typography from "@mui/material/Typography";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import FolderIcon from '@mui/icons-material/Folder';
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
@@ -164,17 +160,14 @@ export default function Job() {
       <Config title={`Job ${data.job_id} - Pulpito`} />
       <JobHeader data={data} />
       <Grid size={12}>
-        <Accordion
-          TransitionProps={{ unmountOnExit: true }}
+        <details
           style={{ marginTop: "20px" }}
         >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <summary>
             <Typography>Full job details</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
+          </summary>
             <JobDetails data={data} />
-          </AccordionDetails>
-        </Accordion>
+        </details>
       </Grid>
     </Grid>
   );

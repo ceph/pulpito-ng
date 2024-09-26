@@ -125,6 +125,22 @@ body {
   }
 }
 
+/* Accordion */
+details {
+  background-color: var(--mui-palette-background-paper);
+  border-radius: var(--mui-shape-borderRadius);
+  padding: calc(var(--mui-spacing) * 2);
+
+  summary * {
+    display: inline-block;
+  }
+
+}
+
+details>div {
+  margin-top: calc(var(--mui-spacing) * 2);
+}
+
 [data-mui-color-scheme="dark"] {
 
   /* @media (prefers-color-scheme: dark) { */
