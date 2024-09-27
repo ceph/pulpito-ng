@@ -5,6 +5,7 @@ WORKDIR /app
 COPY ["package.json", "package-lock.json*", "./"]
 RUN \
   mkdir -p /app/node_modules/.vite && \
-  npm install
+  npm install && \
+  npm run build
 COPY . .
 CMD sh /app/start_container.sh
