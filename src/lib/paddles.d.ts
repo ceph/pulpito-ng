@@ -48,6 +48,7 @@ export type Job = {
   roles: NodeRoles[];
   os_type: string;
   os_version: string;
+  owner: string;
 };
 
 export type NodeRoles = string[];
@@ -78,6 +79,7 @@ export type Run = {
   results: RunResults;
   machine_type: string;
   status: RunStatus;
+  user: string;
 };
 
 export type Node = {

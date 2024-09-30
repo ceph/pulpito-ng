@@ -11,6 +11,7 @@ import type { Run as Run_, RunParams } from "../../lib/paddles.d";
 import { useRun } from "../../lib/paddles";
 import JobList from "../../components/JobList";
 import Link from "../../components/Link";
+import KillButton from "../../components/KillButton";
 
 const PREFIX = "index";
 
@@ -72,6 +73,7 @@ export default function Run() {
           date
         </FilterLink>
       </div>
+      <KillButton query={query} />
       <JobList query={query} params={params} setter={setParams} />
     </Root>
   );

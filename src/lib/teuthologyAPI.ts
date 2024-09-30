@@ -1,7 +1,8 @@
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import { Cookies } from "react-cookie";
-import type { UseQueryResult } from "@tanstack/react-query";
+import { Session } from "./teuthologyAPI.d"
 
 const TEUTHOLOGY_API_SERVER = 
     import.meta.env.VITE_TEUTHOLOGY_API || "";
@@ -25,9 +26,9 @@ function doLogout() {
     window.location.href = url;
 }
 
-function useSession(): UseQueryResult {
+function useSession(): UseQueryResult<Session> {
     const url = getURL("/");
-    const query = useQuery({
+    const query = useQuery<Session, Error>({
         queryKey: ['ping-api', { url }],
         queryFn: () => (
             axios.get(url, {
@@ -56,9 +57,24 @@ function useUserData(): Map<string, string> {
     return new Map();
 }
 
+function useRunKill(): UseMutationResult {
+    const url = getURL("/kill/?logs=true");
+    const mutation: UseMutationResult = useMutation({
+        mutationKey: ['run-kill', { url }],
+        mutationFn: (payload) => (
+            axios.post(url, payload, {
+                withCredentials: true
+            })
+        ),
+        retry: 0,
+    });
+    return mutation;
+}
+
 export {
     doLogin,
     doLogout,
     useSession,
-    useUserData
+    useUserData,
+    useRunKill,
 }
