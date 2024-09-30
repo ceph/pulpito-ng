@@ -8,14 +8,14 @@ const TEUTHOLOGY_API_SERVER =
     import.meta.env.VITE_TEUTHOLOGY_API || "";
 const GH_USER_COOKIE = "GH_USER";
 
-function getURL(relativeURL: URL|string): string {
-    if ( ! TEUTHOLOGY_API_SERVER ) return "";
-    return new URL(relativeURL, TEUTHOLOGY_API_SERVER).toString();
+function getURL(relativeURL: URL|string): URL {
+    return new URL(relativeURL, TEUTHOLOGY_API_SERVER);
 }
 
-function doLogin() {
+function doLogin(destinationUrl: string) {
     const url = getURL("/login/");
-    if ( url ) window.location.href = url;
+    url.searchParams.set("dest", destinationUrl);
+    window.location.href = url.toString();
 }
 
 function doLogout() {
@@ -23,7 +23,7 @@ function doLogout() {
     cookies.remove(GH_USER_COOKIE);
     
     const url = getURL("/logout/");
-    window.location.href = url;
+    window.location.href = url.toString();
 }
 
 function useSession(): UseQueryResult<Session> {
@@ -31,12 +31,12 @@ function useSession(): UseQueryResult<Session> {
     const query = useQuery<Session, Error>({
         queryKey: ['ping-api', { url }],
         queryFn: () => (
-            axios.get(url, {
+            axios.get(url.toString(), {
                 withCredentials: true
             }).then((resp) => resp.data)
         ),
         retry: 1,
-        enabled: url !== "",
+        enabled: url.toString() !== "",
     });
     return query;
 }

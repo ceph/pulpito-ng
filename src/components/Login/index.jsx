@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePageContext } from 'vike-react/usePageContext'
 import Button from "@mui/material/Button";
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
@@ -9,6 +10,7 @@ import { doLogin, doLogout, useSession } from "../../lib/teuthologyAPI";
 
 
 export default function Login() {
+  const context = usePageContext();
   const sessionQuery = useSession();
   const [dropMenuAnchor, setDropMenuAnchor] = useState(null);
   const open = Boolean(dropMenuAnchor);
@@ -40,8 +42,7 @@ export default function Login() {
         </div>
         : <Button 
             variant="contained" 
-            color="success"
-            onClick={doLogin}
+            onClick={() => (doLogin(context.urlOriginal))}
             startIcon={<GitHubIcon fontSize="small" /> }
             disabled={sessionQuery.isError}
           >
