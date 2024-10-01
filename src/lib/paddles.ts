@@ -19,7 +19,7 @@ async function queryFn (params: QueryOptions) {
 }
 
 function getURL(endpoint: string, params?: Record<string, string>) {
-  const url = new URL(endpoint,PADDLES_SERVER);
+  const url = new URL(endpoint, PADDLES_SERVER);
   let uri = endpoint;
   Object.entries(params).forEach((entry) => {
     const [key, value] = entry;
