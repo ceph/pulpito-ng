@@ -1,3 +1,4 @@
+import { Config } from 'vike-react/Config'
 import { useData } from 'vike-react/useData'
 import Grid from '@mui/material/Grid2';
 import Typography from "@mui/material/Typography";
@@ -9,7 +10,6 @@ import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import formatDuration from "date-fns/formatDuration";
-import { Helmet } from "react-helmet";
 import YAML from "json-to-pretty-yaml";
 
 import Link from "#src/components/Link";
@@ -157,9 +157,7 @@ export default function Job() {
   const data: Job = useData();
   return (
     <Grid container spacing={2}>
-      <Helmet>
-        <title>{`Job ${data.job_id} - Pulpito`}</title>
-      </Helmet>
+      <Config title={`Job ${data.job_id} - Pulpito`} />
       <JobHeader data={data} />
       <Grid size={12}>
         <details

@@ -37,9 +37,6 @@ function Layout(props: any) {
           <CookiesProvider>
             <QueryClientProvider client={queryClient}>
               <div className="App">
-                <Helmet>
-                  <title>Pulpito</title>
-                </Helmet>
                 <header className="App-header">
                   <AppBar
                     setDrawerOpen={setDrawerOpen}

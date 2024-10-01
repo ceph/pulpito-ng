@@ -1,9 +1,9 @@
 import { PropsWithChildren } from 'react'
+import { Config } from 'vike-react/Config'
 import { usePageContext } from 'vike-react/usePageContext'
 import { useData } from 'vike-react/useData'
 import Typography from "@mui/material/Typography";
 import { format } from "date-fns";
-import { Helmet } from "react-helmet";
 
 import type { Run } from "#src/lib/paddles.d";
 
@@ -37,9 +37,7 @@ export default function Page() {
     : null;
   return (
     <div className={classes.root}>
-      <Helmet>
-        <title>{`${name} - Pulpito`}</title>
-      </Helmet>
+      <Config title={`${name} - Pulpito`} />
       <Typography variant="h5" style={{ margin: "20px 0px" }}>
         {name}
       </Typography>
