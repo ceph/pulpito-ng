@@ -286,6 +286,7 @@ export default function RunList(props: RunListProps) {
           desc: true,
         },
       ],
+      showColumnFilters: false,
     },
     state: {
       columnFilters,
