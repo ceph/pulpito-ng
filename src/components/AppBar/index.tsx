@@ -6,14 +6,7 @@ import Typography from "@mui/material/Typography";
 
 import Login from "../Login";
 
-
-const PREFIX = 'index';
-
-const classes = {
-  appBar: `${PREFIX}-appBar`,
-  title: `${PREFIX}-title`,
-  toolbarIcon: `${PREFIX}-toolbarIcon`
-};
+import './index.css';
 
 type AppBarProps = {
   setDrawerOpen: Function,
@@ -21,7 +14,7 @@ type AppBarProps = {
 
 export default function AppBar(props: AppBarProps) {
   return (
-    <MuiAppBar position="static" className={classes.appBar}>
+    <MuiAppBar id="appbar" position="static">
       <Toolbar>
         <IconButton
           edge="start"
@@ -35,11 +28,11 @@ export default function AppBar(props: AppBarProps) {
           <MenuIcon />
         </IconButton>
         <Typography
+          id="title"
           component="h1"
           variant="h6"
           color="inherit"
           noWrap
-          className={classes.title}
         >
           <a
             href="/"
