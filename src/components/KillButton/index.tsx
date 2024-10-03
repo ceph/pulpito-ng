@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 
 import CodeBlock from "../CodeBlock";
 import type { Run as RunResponse } from "../../lib/paddles.d";
-import { KillRunPayload } from "../../lib/teuthologyAPI.d";
+import { KillRunPayload, KillRunResult } from "../../lib/teuthologyAPI.d";
 import { useSession, useRunKill } from "../../lib/teuthologyAPI";
 import Alert from "../Alert";
 
@@ -22,7 +22,7 @@ type KillButtonProps = {
 };
 
 type KillButtonDialogProps = {
-  mutation: UseMutationResult;
+  mutation: UseMutationResult<KillRunResult>;
   payload: KillRunPayload;
   open: boolean;
   handleClose: () => void;

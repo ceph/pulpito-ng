@@ -13,3 +13,8 @@ export type KillRunPayload = {
     "--machine-type": string, 
     "--preserve-queue": boolean,
 }
+
+export type KillRunResult = {
+    kill: string;
+    logs?: string;
+}
