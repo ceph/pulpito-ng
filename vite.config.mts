@@ -18,6 +18,14 @@ if (process.env.NODE_ENV == "production") {
 }
 
 export default {
+  // optimizeDeps: {
+  //   include: [
+  //     '@mui/material',
+  //     '@mui/utils',
+  //     '@emotion/react',
+  //     '@emotion/styled',
+  //   ],
+  // },
   plugins: [
     react(),
     vike({
