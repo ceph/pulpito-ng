@@ -11,8 +11,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import theme from "../lib/theme";
 
-import { Helmet } from "react-helmet";
-
 import AppBar from "../components/AppBar";
 import Drawer from "../components/Drawer";
 
