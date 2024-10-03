@@ -62,7 +62,7 @@ function useRunKill(): UseMutationResult<KillRunResult> {
     const mutation: UseMutationResult<KillRunResult> = useMutation({
         mutationKey: ['run-kill', { url }],
         mutationFn: (payload) => (
-            axios.post(url, payload, {
+            axios.post(url.toString(), payload, {
                 withCredentials: true
             })
         ),
