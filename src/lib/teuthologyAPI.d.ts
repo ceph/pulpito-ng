@@ -3,7 +3,9 @@ export type Session = {
     session: {
         id: int,
         username: string,
-        isUserAdmin: boolean,
+        isUserAdmin?: boolean,
+        role: string,
+        state: string,
     }
 }
 
