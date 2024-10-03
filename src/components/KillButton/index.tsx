@@ -39,7 +39,7 @@ export default function KillButton({data}: KillButtonProps) {
     "--preserve-queue": true,
   }
   const loggedUser = sessionQuery.data?.session?.username;
-  const isUserAdmin = sessionQuery.data?.session?.isUserAdmin;
+  const isUserAdmin = sessionQuery.data?.session?.role === "admin";
   const owner = killPayload["--owner"].toLowerCase()
   const isOwner = (loggedUser?.toLowerCase() == owner) || (`scheduled_${loggedUser?.toLowerCase()}@teuthology` == owner)
   const isButtonDisabled = (!isOwner && !isUserAdmin)
