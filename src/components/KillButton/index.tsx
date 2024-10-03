@@ -1,7 +1,6 @@
 import { useState } from "react";
-import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
+import type { UseMutationResult } from "@tanstack/react-query";
 import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -18,7 +17,7 @@ import Alert from "../Alert";
 
 
 type KillButtonProps = {
-  query: UseQueryResult<RunResponse>;
+  data: RunResponse;
 };
 
 type KillButtonDialogProps = {
@@ -28,11 +27,10 @@ type KillButtonDialogProps = {
   handleClose: () => void;
 };
 
-export default function KillButton({query: runQuery}: KillButtonProps) {
+export default function KillButton({data}: KillButtonProps) {
   const killMutation = useRunKill();
   const [open, setOpen] = useState(false);
   const sessionQuery = useSession();
-  const data: RunResponse | undefined = runQuery.data;
   const run_owner = data?.jobs[0].owner || "";
   const killPayload: KillRunPayload = {
     "--run": data?.name || "",
@@ -60,9 +58,6 @@ export default function KillButton({query: runQuery}: KillButtonProps) {
   };
 
   const refreshAndtoggle = () => {
-    if (open && !killMutation.isIdle) { // on closing confirmation dialog after kill-run
-      runQuery.refetch();
-    }
     toggleDialog();
     killMutation.reset();
   }
@@ -71,7 +66,7 @@ export default function KillButton({query: runQuery}: KillButtonProps) {
     // run finished or user logged out
     return null;
   }
-  
+
 
   return (
   <div>
@@ -97,7 +92,7 @@ export default function KillButton({query: runQuery}: KillButtonProps) {
           handleClose={refreshAndtoggle}
         />
       </div>
-      { (killMutation.isError) ? <Alert severity="error" message="Unable to kill run" /> : null }     
+      { (killMutation.isError) ? <Alert severity="error" message="Unable to kill run" /> : null }
       { (killMutation.isSuccess) ? <Alert severity="success" message={`Run killed successfully! \n`} /> : null }
   </div>
   );
@@ -109,33 +104,33 @@ function KillButtonDialog({mutation, open, handleClose, payload}: KillButtonDial
       <Dialog onClose={handleClose} open={open} scroll="paper" fullWidth={true} maxWidth="md">
         <DialogTitle variant="h6">KILL CONFIRMATION</DialogTitle>
         <DialogContent dividers>
-          { (mutation.isSuccess && mutation.data ) ? 
+          { (mutation.isSuccess && mutation.data ) ?
             <div>
               <Typography variant="h6" display="block" color="green" gutterBottom>
                 Successful!
               </Typography>
               <Paper>
-                <CodeBlock value={mutation.data?.data?.logs || ""} language="python" />
+                <CodeBlock value={mutation.data.logs || ""} language="python" />
               </Paper>
-            </div> : 
-            (mutation.isLoading) ? (
+            </div> :
+            (mutation.isPending) ? (
               <div style={{display: "flex", alignItems: "center"}}>
                 <CircularProgress size={20} color="inherit" style={{marginRight: "12px"}} />
                 <Typography variant="subtitle1" display="block">
                   Killing run...
                 </Typography>
               </div>
-            ) : 
+            ) :
             (mutation.isError) ? (
               <div>
                 <Typography variant="h6" display="block" color="red" gutterBottom>
                   Failed!
                 </Typography>
                 <Paper>
-                  <CodeBlock value={(mutation.error?.response?.data?.detail) || ""} language="python" />
+                  <CodeBlock value={(mutation.error?.message) || ""} language="python" />
                 </Paper>
               </div>
-            ) :  
+            ) :
             <div>
               <Typography variant="overline" display="block" gutterBottom>
                 Are you sure you want to kill this run/job?
@@ -153,5 +148,5 @@ function KillButtonDialog({mutation, open, handleClose, payload}: KillButtonDial
         </DialogContent>
       </Dialog>
     </div>
-  ) 
+  )
 }

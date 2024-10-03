@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import type { Run } from "#src/lib/paddles.d";
 
 import JobList from "#src/components/JobList";
+import KillButton from "#src/components/KillButton";
 import Link from "#src/components/Link";
 
 const PREFIX = "index";
@@ -53,6 +54,7 @@ export default function Page() {
           date
         </FilterLink>
       </div>
+      <KillButton data={data} />
       <JobList />
     </div>
   );

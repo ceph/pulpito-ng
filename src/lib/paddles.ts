@@ -64,75 +64,90 @@ function useRuns(params: Record<string, string>): UseQueryResult<Run[]> {
 
 function useRun(name: string): UseQueryResult<Run> {
   const url = getURL(`/runs/${name}/`);
-  const query = useQuery<Run, Error>(["run", { url }], {
+  const query = useQuery({
+    queryKey: ["run", { url }],
+
     select: (data: Run) => {
       data.jobs.forEach((item) => {
         item.id = item.job_id + "";
       });
       return data;
-    },
+    }
   });
   return query;
 }
 
 function useJob(name: string, job_id: number): UseQueryResult<Job> {
   const url = getURL(`/runs/${name}/jobs/${job_id}/`);
-  const query = useQuery<Job, Error>(["job", { url }], {});
+  const query = useQuery({
+    queryKey: ["job", { url }]
+  });
   return query;
 }
 
 function useBranches() {
   const url = getURL("/runs/branch/");
-  return useQuery(["branches", { url }]);
+  return useQuery({
+    queryKey: ["branches", { url }]
+  });
 }
 
 function useSuites() {
   const url = getURL("/runs/suite/");
-  return useQuery(["suites", { url }]);
+  return useQuery({
+    queryKey: ["suites", { url }]
+  });
 }
 
 function useMachineTypes() {
   const url = getURL("/nodes/machine_types/");
-  return useQuery(["machine_types", { url }], {
+  return useQuery({
+    queryKey: ["machine_types", { url }],
     cacheTime: 60 * 60 * 24 * 30,
-    staleTime: 60 * 60 * 24 * 30,
+    staleTime: 60 * 60 * 24 * 30
   });
 }
 
 function useNodeJobs(name: string, params: URLSearchParams): UseQueryResult<NodeJobs> {
   // 'page' and 'count' are mandatory query params for this paddles endpoint
   const url = getURL(`/nodes/${name}/jobs/`, params);
-  const query = useQuery(["nodeJobs", { url }], {
+  const query = useQuery({
+    queryKey: ["nodeJobs", { url }],
+
     select: (data: Job[]) => {
       data.forEach((item) => {
         item.id = item.job_id + "";
       });
       const resp: NodeJobs = { 'jobs': data }
       return resp;
-    },
+    }
   });
   return query;
 }
 
 function useNode(name: string): UseQueryResult<Node[]> {
   const url = getURL(`/nodes/${name}/`);
-  const query = useQuery(["node", { url }], {
+  const query = useQuery({
+    queryKey: ["node", { url }],
+
     select: (node: Node) => {
         node["description"] = (node['description'] || "").split('/').slice(-2).join('/');
         return [{ ...node, id: node.name }];
       }
-    });
+  });
   return query;
 }
 
 function useNodes(machine_type: string): UseQueryResult<Node[]> {
   const url = getURL(`/nodes/`, new URLSearchParams({machine_type}));
-  const query = useQuery(["nodes", { url }], {
+  const query = useQuery({
+    queryKey: ["nodes", { url }],
+
     select: (data: Node[]) =>
       data.map((item) => {
         item["description"] = (item['description'] || "").split('/').slice(-2).join('/');
         return { ...item, id: item.name };
-      }),
+      })
   });
   return query;
 }
@@ -145,7 +160,9 @@ function useStatsNodeLocks(params: URLSearchParams): UseQueryResult<StatsLocksRe
   let uri = `nodes/?${queryString}`;
   const url = new URL(uri, PADDLES_SERVER).href
 
-  const query = useQuery(["statsLocks", { url }], {
+  const query = useQuery({
+    queryKey: ["statsLocks", { url }],
+
     select: (data: Node[]) => {
       let users = new Map();
       data.forEach((node) => {
@@ -163,7 +180,7 @@ function useStatsNodeLocks(params: URLSearchParams): UseQueryResult<StatsLocksRe
         })
       }));
       return resp;
-    },
+    }
   });
   return query;
 }
@@ -176,7 +193,9 @@ function useStatsNodeJobs(params: URLSearchParams): UseQueryResult<StatsJobsResp
   let uri = `nodes/job_stats/?${queryString}`;
   const url = new URL(uri, PADDLES_SERVER).href;
 
-  const query = useQuery(["statsJobs", { url }], {
+  const query = useQuery({
+    queryKey: ["statsJobs", { url }],
+
     select: (data: {[name: string]: { [status: string]: number }}) => {
       let resp: StatsJobsResponse[] = [];
       for (let node in data) {
@@ -196,7 +215,7 @@ function useStatsNodeJobs(params: URLSearchParams): UseQueryResult<StatsJobsResp
         resp.push(respObj)
       }
       return resp;
-    },
+    }
   });
   return query;
 }
