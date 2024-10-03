@@ -2,7 +2,7 @@ import axios from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import { Cookies } from "react-cookie";
-import { Session } from "./teuthologyAPI.d"
+import { Session, KillRunResult } from "./teuthologyAPI.d"
 
 const TEUTHOLOGY_API_SERVER = 
     import.meta.env.VITE_TEUTHOLOGY_API || "";
@@ -57,9 +57,9 @@ function useUserData(): Map<string, string> {
     return new Map();
 }
 
-function useRunKill(): UseMutationResult {
+function useRunKill(): UseMutationResult<KillRunResult> {
     const url = getURL("/kill/?logs=true");
-    const mutation: UseMutationResult = useMutation({
+    const mutation: UseMutationResult<KillRunResult> = useMutation({
         mutationKey: ['run-kill', { url }],
         mutationFn: (payload) => (
             axios.post(url, payload, {
