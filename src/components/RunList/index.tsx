@@ -239,8 +239,7 @@ export default function RunList(props: RunListProps) {
     const newUrl = getUrl(context.urlPathname, columnFilters, updater(pagination));
     navigate(newUrl.pathname + newUrl.search);
   };
-  const query = useRuns(debouncedParams);
-  let data = query.data || [];
+  const data: Run[] = useData();
   const jobTotals = useMemo(() => {
     const result: Partial<RunResults> = {};
     RunResultKeys.forEach(
@@ -256,9 +255,6 @@ export default function RunList(props: RunListProps) {
   const columns = useMemo(() => _columns.map(col =>
     col.header in jobTotals? {...col, Footer: jobTotals[col.header as RunResult]} : col
   ), [data]);
-  const query = useRuns(debouncedParams);
-  let data = query.data || [];
-  const data: Run[] = useData();
   const table = useMaterialReactTable({
     ...options,
     columns,
