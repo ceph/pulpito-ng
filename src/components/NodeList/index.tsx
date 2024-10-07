@@ -1,13 +1,11 @@
-import type { UseQueryResult } from "@tanstack/react-query";
 import {
   useMaterialReactTable,
   MaterialReactTable,
   type MRT_ColumnDef,
 } from 'material-react-table';
-import Link from '@mui/material/Link';
 
-import type { Node } from "../../lib/paddles.d";
-import { formatDate } from "../../lib/utils";
+import type { Node } from "#src/lib/paddles.d";
+import { formatDate } from "#src/lib/utils";
 import useDefaultTableOptions from "../../lib/table";
 
 
@@ -18,7 +16,13 @@ export const columns: MRT_ColumnDef<Node>[] = [
     size: 40,
     Cell: ( { row } ) => {
       const name = row.original.name;
-      return <Link href={`/nodes/${name}/`} color="inherit">{name?.split(".")[0]}</Link>;
+      return <a
+        href={`/nodes/${name}/`}
+        style={{color: "inherit"}}
+        target="_blank"
+      >
+        {name?.split(".")[0]}
+      </a>;
     },
   },
   {
@@ -43,7 +47,7 @@ export const columns: MRT_ColumnDef<Node>[] = [
     header: "locked since",
     filterVariant: 'date',
     sortingFn: "datetime",
-    accessorFn: (row: Node) => formatDate(row.locked_since),
+    accessorFn: (row: Node) => row.locked_since? formatDate(row.locked_since): "",
     size: 55,
     enableColumnFilter: false,
   },
@@ -78,16 +82,11 @@ export const columns: MRT_ColumnDef<Node>[] = [
   },
 ];
 
-interface NodeListProps {
-  query: UseQueryResult<Node[]>;
-}
-
-export default function NodeList({ query }: NodeListProps) {
+export default function NodeList({nodes}: {nodes: Node[]}) {
   const options = useDefaultTableOptions<Node>();
   options.state = {};
   options.state.columnVisibility = {};
-  const data = query.data || [];
-  if ( data.length <= 1 ) {
+  if ( nodes.length <= 1 ) {
     options.enableFilters = false;
     options.enablePagination = false;
     options.enableTableFooter = false;
@@ -97,17 +96,17 @@ export default function NodeList({ query }: NodeListProps) {
       name: false,
     };
   }
-  if ( new Set(data.map(node => node.machine_type)).size === 1 ) {
+  if ( new Set(nodes.map(node => node.machine_type)).size === 1 ) {
     options.state.columnVisibility.machine_type = false;
   }
-  if ( new Set(data.map(node => node.arch)).size === 1 ) {
+  if ( new Set(nodes.map(node => node.arch)).size === 1 ) {
     options.state.columnVisibility.arch = false;
   }
   const table = useMaterialReactTable({
     ...options,
     columns,
-    data: data,
-    rowCount: data.length,
+    data: nodes,
+    rowCount: nodes.length,
     enableFacetedValues: true,
     initialState: {
       ...options.initialState,
@@ -128,7 +127,6 @@ export default function NodeList({ query }: NodeListProps) {
     },
     state: {
       ...options.state,
-      isLoading: query.isLoading || query.isFetching,
     },
     muiTableBodyRowProps: ({row}) => {
       let className = "info";

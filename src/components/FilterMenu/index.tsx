@@ -1,19 +1,29 @@
 import TextField from "@mui/material/TextField";
 import Autocomplete from '@mui/material/Autocomplete';
+import type { FilterOptionsState } from "@mui/material/useAutocomplete";
 
 
-export default function FilterMenu({type, value, setter, optionsHook, width}) {
+interface FilterMenuProps {
+  type: string;
+  value: string;
+  params: Record<string, string>;
+  optionsHook: Function;
+}
+
+
+export default function FilterMenu({type, value, params, optionsHook}: FilterMenuProps) {
   const query = optionsHook();
   if (query.isError) console.error(query.error);
   const style = {textTransform: "capitalize"};
   const label = type.replaceAll("_", " ");
-  if ( width ) style.width = width;
-  const onChange = (_, newValue) => {
-    setter({[type]: newValue})
+  const onChange = (_: any, newValue: string | null) => {
+    // setter({[type]: newValue})
+    // const newUrl = getUrl(context.urlPathname, updater(columnFilters), pagination);
+    // navigate(newUrl.pathname + newUrl.search);
   };
-  const filterOptions = (options, { inputValue }) => {
+  const filterOptions = (options: string[], { inputValue }: FilterOptionsState<string>) => {
     if (!inputValue) return options;
-    let result = [];
+    let result: string[] = [];
     result.push(...options.filter((item) => item === inputValue));
     result.push(
       ...options.filter((item) => {
@@ -40,8 +50,6 @@ export default function FilterMenu({type, value, setter, optionsHook, width}) {
       onChange={onChange}
       options={query.data || []}
       renderInput={(params) => <TextField {...params} label={label} />}
-      className={classes.filterMenu}
-      style={style}
       size="small"
     />
   );
