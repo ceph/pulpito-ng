@@ -20,18 +20,17 @@ async function queryFn (params: QueryOptions) {
 
 function getURL(endpoint: string, params?: Record<string, string>) {
   const url = new URL(endpoint, PADDLES_SERVER);
-  let uri = endpoint;
-  Object.entries(params).forEach((entry) => {
+  Object.entries(params || {}).forEach((entry) => {
     const [key, value] = entry;
     if (value === null || value === "") {
       return;
     }
     switch (key) {
       case "page":
-        url.searchParams.set(key, Number(value) + 1);
+        url.searchParams.set(key, String(Number(value) + 1));
         break;
       case "pageSize":
-        url.searchParams.set("count", Number(value));
+        url.searchParams.set("count", String(Number(value)));
         break;
       case "queued":
         url.pathname += "/queued/";
@@ -79,7 +78,7 @@ function useRun(name: string): UseQueryResult<Run> {
 
 function useJob(name: string, job_id: number): UseQueryResult<Job> {
   const url = getURL(`/runs/${name}/jobs/${job_id}/`);
-  const query = useQuery({
+  const query: UseQueryResult<Job> = useQuery({
     queryKey: ["job", { url }]
   });
   return query;
@@ -103,14 +102,13 @@ function useMachineTypes() {
   const url = getURL("/nodes/machine_types/");
   return useQuery({
     queryKey: ["machine_types", { url }],
-    cacheTime: 60 * 60 * 24 * 30,
     staleTime: 60 * 60 * 24 * 30
   });
 }
 
 function useNodeJobs(name: string, params: URLSearchParams): UseQueryResult<NodeJobs> {
   // 'page' and 'count' are mandatory query params for this paddles endpoint
-  const url = getURL(`/nodes/${name}/jobs/`, params);
+  const url = getURL(`/nodes/${name}/jobs/`, Object.fromEntries(params.entries()));
   const query = useQuery({
     queryKey: ["nodeJobs", { url }],
 
@@ -139,7 +137,7 @@ function useNode(name: string): UseQueryResult<Node[]> {
 }
 
 function useNodes(machine_type: string): UseQueryResult<Node[]> {
-  const url = getURL(`/nodes/`, new URLSearchParams({machine_type}));
+  const url = getURL(`/nodes/`, {machine_type});
   const query = useQuery({
     queryKey: ["nodes", { url }],
 
