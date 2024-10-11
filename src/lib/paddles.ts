@@ -13,6 +13,9 @@ import type {
 const PADDLES_SERVER =
   import.meta.env.VITE_PADDLES_SERVER || "https://paddles.front.sepia.ceph.com";
 
+// for queries which mention 'page', use this default page size if another is not specified.
+const DEFAULT_PAGE_SIZE = 25;
+
 async function queryFn (params: QueryOptions) {
   const queryKey = params.queryKey as [string, { url: string}];
   return axios.get(queryKey[1].url).then((resp) => resp.data);
@@ -42,6 +45,9 @@ function getURL(endpoint: string, params?: Record<string, string>) {
         url.pathname += `/${key}/${value}/`;
     }
   });
+  if ( ! url.searchParams.get("pageSize") ) {
+    url.searchParams.set("count", String(DEFAULT_PAGE_SIZE));
+  };
   return url;
 }
 
@@ -232,6 +238,7 @@ function useStatuses() {
 }
 
 export {
+  DEFAULT_PAGE_SIZE,
   getURL,
   queryFn,
   useBranches,

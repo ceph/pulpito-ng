@@ -16,7 +16,11 @@ import {
 import { type Theme } from "@mui/material/styles";
 import { parse } from "date-fns";
 
-import { formatDate, formatDay, formatDuration } from "../../lib/utils";
+import {
+  formatDate,
+  formatDuration,
+  getUrl,
+} from "../../lib/utils";
 import IconLink from "../../components/IconLink";
 import type {
   Run,
@@ -27,14 +31,11 @@ import {
   RunResultKeys,
   RunStatuses,
 } from "../../lib/paddles.d";
+import {
+  DEFAULT_PAGE_SIZE
+} from "#src/lib/paddles";
 import useDefaultTableOptions from "../../lib/table";
 
-
-const DEFAULT_PAGE_SIZE = 25;
-const NON_FILTER_PARAMS = [
-  "page",
-  "pageSize",
-];
 
 const _columns: MRT_ColumnDef<Run>[] = [
   {
@@ -191,22 +192,6 @@ type RunListProps = {
   tableOptions?: Partial<MRT_TableOptions<Run>>;
 }
 
-function getUrl(path: string, filters: MRT_ColumnFiltersState, pagination: MRT_PaginationState) {
-  const newUrl = new URL(path, window.location.origin);
-  filters.forEach(item => {
-    if ( ! item.id ) return;
-    if ( item.value instanceof Function ) return;
-    if ( item.value instanceof Date ) {
-      newUrl.searchParams.set("date", formatDay(item.value));
-    } else {
-      newUrl.searchParams.set(String(item.id), String(item.value));
-    }
-  });
-  if ( pagination.pageIndex ) newUrl.searchParams.set("page", String(pagination.pageIndex));
-  if ( pagination.pageSize != DEFAULT_PAGE_SIZE ) newUrl.searchParams.set("pageSize", String(pagination.pageSize));
-  return newUrl;
-}
-
 export default function RunList(props: RunListProps) {
   const context = usePageContext();
   const { params, tableOptions } = props;
@@ -215,7 +200,7 @@ export default function RunList(props: RunListProps) {
   const columnFilters: MRT_ColumnFiltersState = [];
   Object.entries(debouncedParams).forEach(param => {
     const [id, value] = param;
-    if ( NON_FILTER_PARAMS.includes(id) ) return;
+    if ( ["page", "pageSize"].includes(id) ) return;
     if ( id === "date" && !!value ) {
       columnFilters.push({
         id: "scheduled",

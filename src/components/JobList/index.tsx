@@ -225,14 +225,14 @@ type JobListProps = {
 }
 
 export default function JobList({ sortMode }: JobListProps) {
-  const run: Run = useData();
+  const data_: Run = useData();
   const options = useDefaultTableOptions<Job>();
   const data = useMemo(() => {
-    return (run?.jobs || []).filter(item => {
+    return (data_?.jobs || []).filter(item => {
       item.id = String(item.job_id);
       return !! item.id;
     });
-  }, [run, sortMode]);
+  }, [data_, sortMode]);
   const table = useMaterialReactTable({
     ...options,
     columns,
