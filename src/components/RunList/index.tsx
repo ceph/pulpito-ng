@@ -18,6 +18,7 @@ import {
   type MRT_Updater,
   type MRT_ColumnFiltersState,
   type MRT_TableOptions,
+  type MRT_TableInstance,
 } from 'material-react-table';
 import { type Theme } from "@mui/material/styles";
 import { parse } from "date-fns";
@@ -35,6 +36,8 @@ import {
   RunStatuses,
 } from "../../lib/paddles.d";
 import useDefaultTableOptions from "../../lib/table";
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -42,14 +45,6 @@ const NON_FILTER_PARAMS = [
   "page",
   "pageSize",
 ];
-const FILTER_COLUMNS = [
-  "status",
-  "scheduled",
-  "suite",
-  "branch",
-  "machine_type",
-  "sha1",
-]
 
 const _columns: MRT_ColumnDef<Run>[] = [
   {
@@ -135,7 +130,7 @@ const _columns: MRT_ColumnDef<Run>[] = [
   },
   {
     accessorKey: "machine_type",
-    header: "machine_type",
+    header: "machine type",
     size: 30,
   },
   {
@@ -291,8 +286,10 @@ export default function RunList(props: RunListProps) {
     },
     onColumnFiltersChange,
     columnFilterDisplayMode: 'custom',
+    enableColumnFilters: false,
     muiFilterTextFieldProps: ({ column }) => ({
-      label: `Filter by ${column.columnDef.header}`,
+      label: column.columnDef.header,
+      placeholder: '',
     }),
     initialState: {
       ...options.initialState,
@@ -323,30 +320,76 @@ export default function RunList(props: RunListProps) {
   if (query.isError) return null;
   return (
       <div>
-        { openFilterMenu? (
-          <Grid container spacing={3} style={{padding: "10px"}}>
-            {table.getLeafHeaders().map((header) => {
-              console.log(header.id)
-              if (FILTER_COLUMNS.includes(header.id)) {
-                return (
-                  <Grid item xs={2}>
-                    <MRT_TableHeadCellFilterContainer
-                      key={header.id}
-                      header={header}
-                      table={table}
-                      style={{backgroundColor: "None"}}
-                      in
-                    />
-                  </Grid>
-                )
-                }
-            })}
-          </Grid>) 
-        : ""}
         <Button onClick={toggleFilterMenu(!openFilterMenu)} >
           {openFilterMenu ? "Hide": "Show"} Filters
         </Button>
+        <FilterMenu isOpen={openFilterMenu} table={table} />
         <MaterialReactTable table={table} />
       </div>
     )
+}
+
+
+// FilterMenu
+
+type FilterMenuProps = {
+  isOpen: boolean; 
+  table: MRT_TableInstance<Run>;
+};
+
+
+const FILTER_SECTIONS = ["run", "build", "result"]
+const FILTER_SECTIONS_COLUMNS = [
+  ["scheduled", "suite", "machine_type", "user"],
+  ["branch", "sha1"],
+  ["status"],
+]
+
+function FilterMenu({ isOpen, table}: FilterMenuProps) {
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <Box
+      sx={{
+        padding: '0.5em',
+        margin: '1em',
+        border: '2px dashed grey',
+        borderRadius: '8px',
+        maxWidth: '100%',
+      }}
+    >
+      {FILTER_SECTIONS_COLUMNS.map((_, sectionIndex) => (
+        <Box
+          key={`section-${sectionIndex}`}
+          sx={{
+            marginBottom: '1.5em',
+            paddingBottom: '0.5em',
+            marginLeft: '0.5em',
+          }}
+        >
+          <Typography variant="body2" gutterBottom color="gray">
+            Filter by {FILTER_SECTIONS[sectionIndex]} details...
+          </Typography>
+          <Grid container spacing={1} alignItems="center">
+            {table.getLeafHeaders().map((header) => {
+              if (FILTER_SECTIONS_COLUMNS[sectionIndex].includes(header.id)) {
+                return (
+                  <Grid item xs={2} key={header.id}  marginLeft={"1.5em"}>
+                    <MRT_TableHeadCellFilterContainer
+                      header={header}
+                      table={table}
+                      style={{ backgroundColor: 'transparent', width: '100%' }}
+                    />
+                  </Grid>
+                );
+              }
+              return null;
+            })}
+          </Grid>
+        </Box>
+      ))}
+    </Box>
+  ) 
 }
