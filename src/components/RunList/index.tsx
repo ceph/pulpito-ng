@@ -38,6 +38,7 @@ import {
 import useDefaultTableOptions from "../../lib/table";
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import Badge from '@mui/material/Badge';
 
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -320,9 +321,14 @@ export default function RunList(props: RunListProps) {
   if (query.isError) return null;
   return (
       <div>
-        <Button onClick={toggleFilterMenu(!openFilterMenu)} >
-          {openFilterMenu ? "Hide": "Show"} Filters
-        </Button>
+        <Badge
+          color="primary" 
+          badgeContent={table.getState().columnFilters.reduce((count, filter) => (filter.value ? count + 1 : count), 0)}
+        >
+            <Button onClick={toggleFilterMenu(!openFilterMenu)}>
+              {openFilterMenu ? "Hide": "Show"} Filters
+            </Button>
+        </Badge>
         <FilterMenu isOpen={openFilterMenu} table={table} />
         <MaterialReactTable table={table} />
       </div>
