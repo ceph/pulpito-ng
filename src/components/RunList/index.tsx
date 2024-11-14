@@ -69,7 +69,6 @@ const _columns: MRT_ColumnDef<Run>[] = [
     accessorKey: "user",
     header: "user",
     maxSize: 45,
-    enableColumnFilter: false,
     enableColumnActions: false,
   },
   {
@@ -176,6 +175,7 @@ const _columns: MRT_ColumnDef<Run>[] = [
     accessorKey: "results.total",
     header: "total",
     size: 30,
+    enableColumnFilter: false,
   },
 ];
 
