@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
+import Button from "@mui/material/Button";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
@@ -21,6 +22,8 @@ import Link from "../../components/Link";
 import CodeBlock from "../../components/CodeBlock";
 import { useJob } from "../../lib/paddles";
 import { getDuration, dirName } from "../../lib/utils";
+import JobHistory from "../../components/JobHistory";
+import { useState } from "react";
 
 function StatusIcon({ status }) {
   const theme = useTheme();
@@ -155,6 +158,7 @@ function JobDetails({ query }) {
 export default function Job() {
   const { name, job_id } = useParams();
   const query = useJob(name, job_id);
+  const [showJobHistory, toggleShowJobHistory] = useState(false);
   return (
     <Grid container spacing={2}>
       <Helmet>
@@ -173,6 +177,15 @@ export default function Job() {
             <JobDetails query={query} />
           </AccordionDetails>
         </Accordion>
+        <Button variant={"text"} sx={{"marginTop": "10px"}}
+                onClick={() => toggleShowJobHistory(!showJobHistory)}>
+          {showJobHistory ? "Hide": "Show"} history
+        </Button>
+        { showJobHistory ?
+            (query.data?.description ? <JobHistory description={query.data.description} /> : null)
+            :null
+        }
+        
       </Grid>
     </Grid>
   );
