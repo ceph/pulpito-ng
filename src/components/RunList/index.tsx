@@ -324,25 +324,39 @@ export default function RunList(props: RunListProps) {
       if ( category ) return { className: category };
       return {};
     },
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ padding: '4px' }}>
+        <Badge
+          color="primary" 
+          overlap="circular"
+          badgeContent={table.getState().columnFilters.reduce((count, filter) => (filter.value ? count + 1 : count), 0)}
+        >
+          <Button 
+            id="filter-button"
+            onClick={toggleFilterMenu}
+          >
+              Filters
+          </Button>
+        </Badge>
+      </Box>
+    ),
     ...tableOptions,
   });
   
   if (query.isError) return null;
   return (
-      <div>
-        
+  <div>
     <div>
-      <Badge
-          color="primary" 
-          badgeContent={table.getState().columnFilters.reduce((count, filter) => (filter.value ? count + 1 : count), 0)}
-      >
-        <Button 
-          id="filter-button"
-          onClick={toggleFilterMenu}
-        >
-            Filters Runs
-        </Button>
-      </Badge>
+      <Typography variant="body2" gutterBottom color="gray" textAlign={"right"}>
+        { table.getState().columnFilters.map((column) => {
+            let filterValue = column.value; 
+            if (column.id == "scheduled") {
+              const parsedDate = new Date(column.value as string);
+              filterValue = (parsedDate.toISOString().split('T')[0])
+            }
+            return (column.value ? `${column.id}: '${filterValue}' ` : "")
+          } )} 
+      </Typography>
       <Menu
         id="filter-menu"
         anchorEl={dropMenuAnchorEl}
@@ -354,9 +368,9 @@ export default function RunList(props: RunListProps) {
       >
         <FilterMenu isOpen={openFilterMenu} table={table} />
       </Menu>
-      </div>
-        <MaterialReactTable table={table} />
-      </div>
+    </div>
+    <MaterialReactTable table={table} />
+  </div>
     )
 }
 
