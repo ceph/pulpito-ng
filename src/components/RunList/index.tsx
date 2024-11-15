@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { SetStateAction, useMemo } from 'react';
 import { useState } from "react";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Grid from '@mui/material/Grid';
@@ -39,6 +39,7 @@ import useDefaultTableOptions from "../../lib/table";
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Badge from '@mui/material/Badge';
+import Menu from '@mui/material/Menu';
 
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -207,11 +208,9 @@ type RunListProps = {
 }
 
 export default function RunList(props: RunListProps) {
-  const [openFilterMenu, setOpenFilterMenu] = useState(false);
+  const [openFilterMenu, setOpenFilterMenu] = useState<boolean>(false);
+  const [dropMenuAnchorEl, setDropMenuAnchor] = useState<null | HTMLElement>(null);
 
-  const toggleFilterMenu = (isOpen: boolean) => () => {
-    setOpenFilterMenu(isOpen);
-  };
   const { params, setter, tableOptions } = props;
   const options = useDefaultTableOptions<Run>();
   const debouncedParams = useDebounce(params, 500);
@@ -232,6 +231,15 @@ export default function RunList(props: RunListProps) {
     pageIndex: params.page || 0,
     pageSize: params.pageSize || DEFAULT_PAGE_SIZE,
   };
+  const toggleFilterMenu = (event: { currentTarget: SetStateAction<HTMLElement | null>; }) => {
+    if (dropMenuAnchorEl) {
+      setDropMenuAnchor(null);
+      setOpenFilterMenu(false);
+    } else {
+      setDropMenuAnchor(event.currentTarget);
+      setOpenFilterMenu(true);
+    }
+  }
   const onColumnFiltersChange = (updater: MRT_Updater<MRT_ColumnFiltersState>) => {
     if ( ! ( updater instanceof Function ) ) return;
     const result: RunListParams = {pageSize: pagination.pageSize};
@@ -318,18 +326,35 @@ export default function RunList(props: RunListProps) {
     },
     ...tableOptions,
   });
+  
   if (query.isError) return null;
   return (
       <div>
-        <Badge
+        
+    <div>
+      <Badge
           color="primary" 
           badgeContent={table.getState().columnFilters.reduce((count, filter) => (filter.value ? count + 1 : count), 0)}
+      >
+        <Button 
+          id="filter-button"
+          onClick={toggleFilterMenu}
         >
-            <Button onClick={toggleFilterMenu(!openFilterMenu)}>
-              {openFilterMenu ? "Hide": "Show"} Filters
-            </Button>
-        </Badge>
+            Filters Runs
+        </Button>
+      </Badge>
+      <Menu
+        id="filter-menu"
+        anchorEl={dropMenuAnchorEl}
+        open={openFilterMenu}
+        onClose={toggleFilterMenu}
+        MenuListProps={{
+          'aria-labelledby': 'filter-button',
+        }}
+      >
         <FilterMenu isOpen={openFilterMenu} table={table} />
+      </Menu>
+      </div>
         <MaterialReactTable table={table} />
       </div>
     )
@@ -359,19 +384,17 @@ function FilterMenu({ isOpen, table}: FilterMenuProps) {
   return (
     <Box
       sx={{
-        padding: '0.5em',
-        margin: '1em',
+        padding: '1em',
+        margin: '0px 0.5em',
         border: '2px dashed grey',
         borderRadius: '8px',
-        maxWidth: '100%',
       }}
     >
       {FILTER_SECTIONS_COLUMNS.map((_, sectionIndex) => (
         <Box
           key={`section-${sectionIndex}`}
           sx={{
-            marginBottom: '1.5em',
-            paddingBottom: '0.5em',
+            marginBottom: '1em',
             marginLeft: '0.5em',
           }}
         >
@@ -382,7 +405,7 @@ function FilterMenu({ isOpen, table}: FilterMenuProps) {
             {table.getLeafHeaders().map((header) => {
               if (FILTER_SECTIONS_COLUMNS[sectionIndex].includes(header.id)) {
                 return (
-                  <Grid item xs={2} key={header.id}  marginLeft={"1.5em"}>
+                  <Grid item xs={2} key={header.id}  marginLeft={"1.2em"}>
                     <MRT_TableHeadCellFilterContainer
                       header={header}
                       table={table}
