@@ -4,7 +4,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import type { 
   GetURLParams, 
   Run, Job, 
-  Node, NodeJobs,
+  Node, JobList,
   StatsLocksResponse,
   StatsJobsResponse,
 } from "./paddles.d";
@@ -40,6 +40,8 @@ function getURL(endpoint: string, params?: GetURLParams) {
         uri += "queued/";
         delete params_[key];
         break;
+      case "description":
+          break;
       case "machine_type":
         break;
       default:
@@ -106,7 +108,24 @@ function useMachineTypes() {
   });
 }
 
-function useNodeJobs(name: string, params: GetURLParams): UseQueryResult<NodeJobs> {
+function useJobHistory(description: string, pageSize: number): UseQueryResult<JobList> {
+  const url = getURL(`/jobs/`, { 'description': description, "pageSize": pageSize });
+  const query = useQuery(["job-history", { url }], {
+    select: (data: Job[]) => {
+      data.forEach((item) => {
+        item.id = item.job_id + "";
+      });
+      const resp: JobList = { 'jobs': data }
+      return resp;
+    },
+    cacheTime: 60 * 60,
+    staleTime: 60 * 60,
+    retry: 1,
+  });
+  return query;
+}
+
+function useNodeJobs(name: string, params: GetURLParams): UseQueryResult<JobList> {
   // 'page' and 'count' are mandatory query params for this paddles endpoint
   params = { "page": params?.page || 0, "pageSize": params?.pageSize || 25 }  
   const url = getURL(`/nodes/${name}/jobs/`, params);
@@ -115,7 +134,7 @@ function useNodeJobs(name: string, params: GetURLParams): UseQueryResult<NodeJob
       data.forEach((item) => {
         item.id = item.job_id + "";
       });
-      const resp: NodeJobs = { 'jobs': data }
+      const resp: JobList = { 'jobs': data }
       return resp;
     },
   });
@@ -235,4 +254,5 @@ export {
   useNodes,
   useStatsNodeLocks,
   useStatsNodeJobs,
+  useJobHistory,
 };

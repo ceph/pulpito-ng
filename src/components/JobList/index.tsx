@@ -14,7 +14,7 @@ import { type Theme } from "@mui/material/styles";
 import { formatDate, formatDuration } from "../../lib/utils";
 import IconLink from "../../components/IconLink";
 import Link from "../../components/Link";
-import type { Job, NodeJobs, Run } from "../../lib/paddles.d";
+import type { Job, JobList, Run } from "../../lib/paddles.d";
 import { dirName } from "../../lib/utils";
 import useDefaultTableOptions from "../../lib/table";
 
@@ -220,7 +220,7 @@ function JobDetailPanel(props: JobDetailPanelProps): ReactNode {
 };
 
 type JobListProps = {
-  query: UseQueryResult<Run> | UseQueryResult<NodeJobs>;
+  query: UseQueryResult<Run> | UseQueryResult<JobList>;
   sortMode?: "time" | "id";
 }
 

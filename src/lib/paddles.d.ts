@@ -95,7 +95,7 @@ export type Node = {
   machine_type: string;
 };
 
-export type NodeJobs = {
+export type JobList = {
   jobs?: Job[];
 }
 
