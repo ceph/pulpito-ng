@@ -56,12 +56,19 @@ function getURL(endpoint: string, params?: GetURLParams) {
 }
 
 function useRuns(params: GetURLParams): UseQueryResult<Run[]> {
+  let baseUrl = "/runs/";
   const params_ = { ...params };
   if (params_.pageSize) {
     params_.count = params.pageSize;
     delete params_.pageSize;
   }
-  const url = getURL("/runs/", params);
+  if (params_.machine_type) {
+    // this is to handle difference in machine_type filter
+    // in two endpoints /node/?machine_type=xyz and /runs/machine_type/xyz
+    baseUrl += "machine_type/" + params_.machine_type + "/";
+    delete params_.machine_type;
+  }
+  const url = getURL(baseUrl, params);
   const query = useQuery(["runs", { url }], {
     select: (data: Run[]) =>
       data.map((item) => {

@@ -24,6 +24,19 @@ export default function useDefaultTableOptions<TData extends MRT_RowData>(): Par
     mrtTheme: {
       baseBackgroundColor: theme.palette.background.default,
     },
+    muiTableHeadCellProps: {
+      sx: {
+        '& .Mui-TableHeadCell-Content': { 
+          fontSize: "0.8em",
+        }, 
+        '& .MuiTableSortLabel-root': {
+          display: "none",
+        },
+        '&:hover .MuiTableSortLabel-root': {
+          display: "block",
+        },
+      },
+    },
     muiTableBodyCellProps: {
       sx: {
         color: "black",
