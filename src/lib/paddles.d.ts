@@ -80,6 +80,7 @@ export type Run = {
   machine_type: string;
   status: RunStatus;
   user: string;
+  priority: number;
 };
 
 export type Node = {
