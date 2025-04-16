@@ -13,7 +13,7 @@ import type {
 const PADDLES_SERVER =
   import.meta.env.VITE_PADDLES_SERVER || "https://paddles.front.sepia.ceph.com";
 
-function getURL(endpoint: string, params?: GetURLParams) {
+function getURL(endpoint: string, params?: GetURLParams, onlyQueryParams: boolean = false) {
   // Because paddles' API is clunky, we have to do extra work. If it were
   // more inuitive, we could replace everything until the next comment with
   // just these lines:
@@ -28,6 +28,7 @@ function getURL(endpoint: string, params?: GetURLParams) {
       delete params_[key];
       return;
     }
+    if (!onlyQueryParams) {
     switch (key) {
       case "page":
         params_[key] = Number(value) + 1;
@@ -44,11 +45,10 @@ function getURL(endpoint: string, params?: GetURLParams) {
           break;
       case "machine_type":
         break;
-      // case "user":
-      //     break;
       default:
         uri += `${key}/${value}/`;
         delete params_[key];
+    }
     }
   });
   const queryString = new URLSearchParams(params_).toString();
@@ -118,9 +118,7 @@ function useMachineTypes() {
 }
 
 function useJobs(params: GetURLParams): UseQueryResult<JobList> {
-  // const params = {}
-  // const params_ = { ...params };
-  const url = getURL(`/jobs/`, params);
+  const url = getURL(`/jobs/`, params, true);
   const query = useQuery(["jobs", { url }], {
     select: (data: Job[]) => {
       data.forEach((item) => {

@@ -74,7 +74,7 @@ export default function Run() {
         </FilterLink>
       </div>
       <KillButton query={query} />
-      <JobList query={query} params={params} setter={setParams} />
+      <JobList query={query} params={params} setter={setParams} defaultColumns={["os_type", "os_version"]} />
     </Root>
   );
 }

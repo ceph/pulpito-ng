@@ -17,7 +17,7 @@ export default function Jobs() {
         posted_before: StringParam 
     });
 
-    const jobHistoryQuery = useJobs(params);
+    const jobsQuery = useJobs(params);
 
     return (
         <div>
@@ -25,7 +25,7 @@ export default function Jobs() {
                 Jobs
             </Typography>
             <JobList 
-                query={jobHistoryQuery} 
+                query={jobsQuery} 
                 params={params} 
                 setter={setParams} 
                 sortMode="time" 

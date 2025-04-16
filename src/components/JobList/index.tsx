@@ -1,7 +1,13 @@
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, useState, SetStateAction } from "react";
+import { parse } from "date-fns";
+import { useDebounce } from "usehooks-ts";
 import DescriptionIcon from "@mui/icons-material/Description";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import Badge from '@mui/material/Badge';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Menu from '@mui/material/Menu';
 import type {
   DecodedValueMap,
   QueryParamConfigMap,
@@ -10,10 +16,12 @@ import type {
 import {
   useMaterialReactTable,
   MaterialReactTable,
+  MRT_TableHeadCellFilterContainer,
   type MRT_ColumnDef,
   type MRT_Row,
   type MRT_Updater,
   type MRT_ColumnFiltersState,
+  type MRT_TableInstance,
 } from 'material-react-table';
 import type { UseQueryResult } from "@tanstack/react-query";
 import { type Theme } from "@mui/material/styles";
@@ -33,24 +41,24 @@ const columns: MRT_ColumnDef<Job>[] = [
   {
     header: "user",
     accessorKey: "user",
-    size: 100,
+    maxSize: 100,
   },
   {
     header: "priority",
     accessorKey: "priority",
-    size: 70,
+    maxSize: 70,
     enableColumnFilter: false,
   },
   {
     header: "status",
     accessorKey: "status",
-    size: 120,
+    maxSize: 120,
     filterVariant: "select",
   },
   {
     header: "links",
     id: "links",
-    size: 75,
+    maxSize: 75,
     Cell: ({ row }) => {
       const log_url = row.original.log_href;
       const sentry_url = row.original.sentry_event;
@@ -77,7 +85,7 @@ const columns: MRT_ColumnDef<Job>[] = [
   {
     header: "job ID",
     accessorKey: "job_id",
-    size: 110,
+    maxSize: 110,
     Cell: ({ row }) => {
       return (
         <Link
@@ -108,7 +116,7 @@ const columns: MRT_ColumnDef<Job>[] = [
   },
   {
     header: "description",
-    size: 200,
+    minSize: 200,
     accessorFn: (row: Job) => row.description + "",
     filterFn: 'contains',
     enableColumnFilter: true,
@@ -127,7 +135,7 @@ const columns: MRT_ColumnDef<Job>[] = [
     accessorFn: (row: Job) => formatDate(row.updated),
     filterVariant: 'date',
     sortingFn: "datetime",
-    size: 150,
+    maxSize: 150,
   },
   {
     header: "started",
@@ -135,12 +143,12 @@ const columns: MRT_ColumnDef<Job>[] = [
     accessorFn: (row: Job) => formatDate(row.started),
     filterVariant: 'date',
     sortingFn: "datetime",
-    size: 150,
+    maxSize: 150,
   },
   {
     header: "runtime",
     id: "runtime",
-    size: 110,
+    maxSize: 110,
     accessorFn: (row: Job) => {
       const start = Date.parse(row.started);
       const end = Date.parse(row.updated);
@@ -176,12 +184,14 @@ const columns: MRT_ColumnDef<Job>[] = [
   },
   {
     header: "OS type",
+    accessorKey: "os_type",
     size: 85,
     accessorFn: (row: Job) => row.os_type + "",
     filterVariant: "select",
   },
   {
     header: "OS version",
+    accessorKey: "os_version",
     accessorFn: (row: Job) => row.os_version + "",
     size: 85,
     filterVariant: "select",
@@ -251,17 +261,33 @@ type JobListProps = {
 }
 
 export default function JobList({ params, setter, query, sortMode, defaultColumns = [] }: JobListProps) {
+  const [openFilterMenu, setOpenFilterMenu] = useState<boolean>(false);
+  const [dropMenuAnchorEl, setDropMenuAnchor] = useState<null | HTMLElement>(null);
+
   const options = useDefaultTableOptions<Job>();
   const data = useMemo(() => {
     return (query.data?.jobs || []).filter(item => !! item.id);
   }, [query, sortMode]);
+  const debouncedParams = useDebounce(params, 500);
   let columnFilters: MRT_ColumnFiltersState = [];
+  Object.entries(debouncedParams).forEach(param => {
+    const [id, value] = param;
+    // if ( NON_FILTER_PARAMS.includes(id) ) return;
+    if ( id === "date" && !!value ) {
+      columnFilters.push({
+        id: "scheduled",
+        value: parse(value, "yyyy-MM-dd", new Date())
+      })
+    } else {
+      columnFilters.push({id, value})
+    }
+  });
   const onColumnFiltersChange = (updater: MRT_Updater<MRT_ColumnFiltersState>) => {
     if ( ! ( updater instanceof Function ) ) return;
     const result: JobListParams = {pageSize: params.pageSize};
     const updated = updater(columnFilters);
     updated.forEach(item => {
-      // if ( ! item.id ) return;
+      if ( ! item.id ) return;
       if ( item.value instanceof Date ) {
         result.date = formatDay(item.value);
       } else if ( typeof item.value === "string" || typeof item.value === "number" ) {
@@ -270,8 +296,33 @@ export default function JobList({ params, setter, query, sortMode, defaultColumn
     });
     setter(result);
   }
+  const toggleFilterMenu = (event: { currentTarget: SetStateAction<HTMLElement | null>; }) => {
+    if (dropMenuAnchorEl) {
+      setDropMenuAnchor(null);
+      setOpenFilterMenu(false);
+    } else {
+      setDropMenuAnchor(event.currentTarget);
+      setOpenFilterMenu(true);
+    }
+  }
 
-  const defaultColumn_ = (defaultColumns.map((col) => { return {col: true}}))
+  let defaultColumn_ = {
+      posted: false,
+      updated: false,
+      duration: false,
+      waiting: false,
+      tasks: false,
+      description: false,
+      os_version: false,
+      os_type: false,
+
+      user: false,
+      priority: false,
+  }
+  if (defaultColumns) {
+    defaultColumns.map((col: string) => defaultColumn_[col] = true)
+  }
+  // const defaultColumn_ = (defaultColumns.map((col) => { return {col: true}}))
   const table = useMaterialReactTable({
     ...options,
     columns,
@@ -279,28 +330,31 @@ export default function JobList({ params, setter, query, sortMode, defaultColumn
     enableFacetedValues: true,
     enableGlobalFilter: true,
     enableGlobalFilterRankedResults: false,
-    positionGlobalFilter: "left",
+    positionGlobalFilter: "right",
     globalFilterFn: 'contains',
     muiSearchTextFieldProps: {
       placeholder: 'Search across all fields',
       sx: { minWidth: '200px' },
     },
+    // columnFilterDisplayMode: 'popover',
+    // muiFilterTextFieldProps: {
+    //   // sx: { m: '0 0', width: '100%' },
+    //   variant: 'outlined',
+    //   // placeholder: '',
+    //   size: 'small',
+    //   fullWidth: true
+    // },
+    muiFilterTextFieldProps: ({ column }) => ({
+      label: column.columnDef.header,
+      placeholder: '',
+    }),
+    enableColumnActions: false,
     manualFiltering: true,
     onColumnFiltersChange,
     onPaginationChange: setter,
     initialState: {
       ...options.initialState,
-      columnVisibility: {
-        posted: false,
-        updated: false,
-        duration: false,
-        waiting: false,
-        tasks: false,
-        description: false,
-        // user: false,
-        // priority: false,
-        // ...defaultColumn_
-      },
+      columnVisibility: defaultColumn_, 
       pagination: {
         pageIndex: 0,
         pageSize: DEFAULT_PAGE_SIZE,
@@ -314,6 +368,7 @@ export default function JobList({ params, setter, query, sortMode, defaultColumn
       showGlobalFilter: true,
     },
     state: {
+      columnFilters,
       isLoading: query.isLoading || query.isFetching,
       pagination: {
         pageIndex: params.page || 0,
@@ -329,23 +384,113 @@ export default function JobList({ params, setter, query, sortMode, defaultColumn
       if ( category ) return { className: category };
       return {};
     },
-    // renderTopToolbarCustomActions: ({ table }) => (
-    //   <Box sx={{ padding: '4px' }}>
-    //     <Badge
-    //       color="primary" 
-    //       overlap="circular"
-    //       badgeContent={table.getState().columnFilters.reduce((count, filter) => (filter.value ? count + 1 : count), 0)}
-    //     >
-    //       <Button 
-    //         id="filter-button"
-    //         onClick={toggleFilterMenu}
-    //       >
-    //           Filters
-    //       </Button>
-    //     </Badge>
-    //   </Box>
-    // ),
+    columnFilterDisplayMode: 'custom',
+    enableColumnFilters: false,
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ padding: '4px' }}>
+        <Badge
+          color="primary" 
+          overlap="circular"
+          badgeContent={table.getState().columnFilters.reduce((count, filter) => (filter.value ? count + 1 : count), 0)}
+        >
+          <Button 
+            id="filter-button"
+            onClick={toggleFilterMenu}
+          >
+              Filters
+          </Button>
+        </Badge>
+      </Box>
+    ),
   });
   if (query.isError) return null;
-  return <MaterialReactTable table={table} />
+  return (
+  <div>
+    <div>
+      <Typography variant="body2" gutterBottom color="gray" textAlign={"right"}>
+        { table.getState().columnFilters.map((column) => {
+            let filterValue = column.value; 
+            if (column.id == "scheduled") {
+              const parsedDate = new Date(column.value as string);
+              filterValue = (parsedDate.toISOString().split('T')[0])
+            }
+            
+            return (column.value ? `${column.id}: '${filterValue}' ` : "")
+          })} 
+      </Typography>
+      <Menu
+        id="filter-menu"
+        anchorEl={dropMenuAnchorEl}
+        open={openFilterMenu}
+        onClose={toggleFilterMenu}
+        MenuListProps={{
+          'aria-labelledby': 'filter-button',
+        }}
+      >
+        <FilterMenu isOpen={openFilterMenu} table={table} />
+      </Menu>
+    </div>
+    <MaterialReactTable table={table} />
+  </div>
+  )
 }
+
+type FilterMenuProps = {
+  isOpen: boolean; 
+  table: MRT_TableInstance<Job>;
+};
+
+const FILTER_SECTIONS = ["job", "machine", "time"]
+const FILTER_SECTIONS_COLUMNS = [
+  ["user", "description", "tasks", "job_id"],
+  ["machine_type", "nodes", "os_type", "os_version"],
+  ["posted", "started", "updated"],
+]
+
+function FilterMenu({ isOpen, table}: FilterMenuProps) {
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <Box
+      sx={{
+        padding: '1em',
+        margin: '0px 0.5em',
+        border: '2px dashed grey',
+        borderRadius: '8px',
+      }}
+    >
+      {FILTER_SECTIONS_COLUMNS.map((_, sectionIndex) => (
+        <Box
+          key={`section-${sectionIndex}`}
+          sx={{
+            marginBottom: '1em',
+            marginLeft: '0.5em',
+          }}
+        >
+          <Typography variant="body2" gutterBottom color="gray">
+            Filter by {FILTER_SECTIONS[sectionIndex]} details...
+          </Typography>
+          <Grid container spacing={1} alignItems="center">
+            {table.getLeafHeaders().map((header) => {
+              if (FILTER_SECTIONS_COLUMNS[sectionIndex].includes(header.id)) {
+                return (
+                  <Grid item xs={2} key={header.id}  marginLeft={"1.2em"}>
+                    <MRT_TableHeadCellFilterContainer
+                      header={header}
+                      table={table}
+                      style={{ backgroundColor: 'transparent', width: '100%' }}
+                    />
+                  </Grid>
+                );
+              }
+              return null;
+            })}
+          </Grid>
+        </Box>
+      ))}
+    </Box>
+  ) 
+}
+
