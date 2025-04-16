@@ -44,6 +44,8 @@ function getURL(endpoint: string, params?: GetURLParams) {
           break;
       case "machine_type":
         break;
+      // case "user":
+      //     break;
       default:
         uri += `${key}/${value}/`;
         delete params_[key];
@@ -115,9 +117,11 @@ function useMachineTypes() {
   });
 }
 
-function useJobHistory(description: string, pageSize: number): UseQueryResult<JobList> {
-  const url = getURL(`/jobs/`, { 'description': description, "pageSize": pageSize });
-  const query = useQuery(["job-history", { url }], {
+function useJobs(params: GetURLParams): UseQueryResult<JobList> {
+  // const params = {}
+  // const params_ = { ...params };
+  const url = getURL(`/jobs/`, params);
+  const query = useQuery(["jobs", { url }], {
     select: (data: Job[]) => {
       data.forEach((item) => {
         item.id = item.job_id + "";
@@ -261,5 +265,5 @@ export {
   useNodes,
   useStatsNodeLocks,
   useStatsNodeJobs,
-  useJobHistory,
+  useJobs,
 };

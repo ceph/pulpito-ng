@@ -2,11 +2,18 @@ import { ReactNode, useMemo } from "react";
 import DescriptionIcon from "@mui/icons-material/Description";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import type {
+  DecodedValueMap,
+  QueryParamConfigMap,
+  SetQuery,
+} from "use-query-params";
 import {
   useMaterialReactTable,
   MaterialReactTable,
   type MRT_ColumnDef,
   type MRT_Row,
+  type MRT_Updater,
+  type MRT_ColumnFiltersState,
 } from 'material-react-table';
 import type { UseQueryResult } from "@tanstack/react-query";
 import { type Theme } from "@mui/material/styles";
@@ -15,13 +22,25 @@ import { formatDate, formatDuration } from "../../lib/utils";
 import IconLink from "../../components/IconLink";
 import Link from "../../components/Link";
 import type { Job, JobList, Run } from "../../lib/paddles.d";
-import { dirName } from "../../lib/utils";
+import { dirName, formatDay } from "../../lib/utils";
 import useDefaultTableOptions from "../../lib/table";
 
 import sentryIcon from "./assets/sentry.svg";
 
+const DEFAULT_PAGE_SIZE = 25;
 
 const columns: MRT_ColumnDef<Job>[] = [
+  {
+    header: "user",
+    accessorKey: "user",
+    size: 100,
+  },
+  {
+    header: "priority",
+    accessorKey: "priority",
+    size: 70,
+    enableColumnFilter: false,
+  },
   {
     header: "status",
     accessorKey: "status",
@@ -219,16 +238,40 @@ function JobDetailPanel(props: JobDetailPanelProps): ReactNode {
   )
 };
 
-type JobListProps = {
-  query: UseQueryResult<Run> | UseQueryResult<JobList>;
-  sortMode?: "time" | "id";
+type JobListParams = {
+  [key: string]: number|string;
 }
 
-export default function JobList({ query, sortMode }: JobListProps) {
+type JobListProps = {
+  params: DecodedValueMap<QueryParamConfigMap>;
+  setter: SetQuery<QueryParamConfigMap>;
+  query: UseQueryResult<Run> | UseQueryResult<JobList>;
+  sortMode?: "time" | "id";
+  defaultColumns?: string[]; 
+}
+
+export default function JobList({ params, setter, query, sortMode, defaultColumns = [] }: JobListProps) {
   const options = useDefaultTableOptions<Job>();
   const data = useMemo(() => {
     return (query.data?.jobs || []).filter(item => !! item.id);
   }, [query, sortMode]);
+  let columnFilters: MRT_ColumnFiltersState = [];
+  const onColumnFiltersChange = (updater: MRT_Updater<MRT_ColumnFiltersState>) => {
+    if ( ! ( updater instanceof Function ) ) return;
+    const result: JobListParams = {pageSize: params.pageSize};
+    const updated = updater(columnFilters);
+    updated.forEach(item => {
+      // if ( ! item.id ) return;
+      if ( item.value instanceof Date ) {
+        result.date = formatDay(item.value);
+      } else if ( typeof item.value === "string" || typeof item.value === "number" ) {
+        result[item.id] = item.value
+      }
+    });
+    setter(result);
+  }
+
+  const defaultColumn_ = (defaultColumns.map((col) => { return {col: true}}))
   const table = useMaterialReactTable({
     ...options,
     columns,
@@ -242,6 +285,9 @@ export default function JobList({ query, sortMode }: JobListProps) {
       placeholder: 'Search across all fields',
       sx: { minWidth: '200px' },
     },
+    manualFiltering: true,
+    onColumnFiltersChange,
+    onPaginationChange: setter,
     initialState: {
       ...options.initialState,
       columnVisibility: {
@@ -251,10 +297,13 @@ export default function JobList({ query, sortMode }: JobListProps) {
         waiting: false,
         tasks: false,
         description: false,
+        // user: false,
+        // priority: false,
+        // ...defaultColumn_
       },
       pagination: {
         pageIndex: 0,
-        pageSize: 25,
+        pageSize: DEFAULT_PAGE_SIZE,
       },
       sorting: [
         {
@@ -266,6 +315,10 @@ export default function JobList({ query, sortMode }: JobListProps) {
     },
     state: {
       isLoading: query.isLoading || query.isFetching,
+      pagination: {
+        pageIndex: params.page || 0,
+        pageSize: params.pageSize || DEFAULT_PAGE_SIZE,
+      },
     },
     renderDetailPanel: JobDetailPanel,
     muiTableBodyRowProps: ({row, isDetailPanel}) => {
@@ -276,6 +329,22 @@ export default function JobList({ query, sortMode }: JobListProps) {
       if ( category ) return { className: category };
       return {};
     },
+    // renderTopToolbarCustomActions: ({ table }) => (
+    //   <Box sx={{ padding: '4px' }}>
+    //     <Badge
+    //       color="primary" 
+    //       overlap="circular"
+    //       badgeContent={table.getState().columnFilters.reduce((count, filter) => (filter.value ? count + 1 : count), 0)}
+    //     >
+    //       <Button 
+    //         id="filter-button"
+    //         onClick={toggleFilterMenu}
+    //       >
+    //           Filters
+    //       </Button>
+    //     </Badge>
+    //   </Box>
+    // ),
   });
   if (query.isError) return null;
   return <MaterialReactTable table={table} />
