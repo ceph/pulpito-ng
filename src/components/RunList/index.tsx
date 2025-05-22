@@ -417,16 +417,18 @@ function FilterMenu({ isOpen, table}: FilterMenuProps) {
           sx={{
             marginBottom: '1em',
             marginLeft: '0.5em',
-          }}
-        >
+          }} 
+          >
+       
           <Typography variant="body2" gutterBottom color="gray">
             Filter by {FILTER_SECTIONS[sectionIndex]} details...
           </Typography>
-          <Grid container spacing={1} alignItems="center">
+          <Grid container spacing={1} alignItems={"center"} >
+      
             {table.getLeafHeaders().map((header) => {
               if (FILTER_SECTIONS_COLUMNS[sectionIndex].includes(header.id)) {
                 return (
-                  <Grid item xs={2} key={header.id}  marginLeft={"1.2em"}>
+                  <Grid item sx={{maxWidth: 160}} key={header.id}  margin={".5em"}>        
                     <MRT_TableHeadCellFilterContainer
                       header={header}
                       table={table}
