@@ -8,6 +8,7 @@ import Drawer from "./components/Drawer";
 import Runs from "./pages/Runs";
 import Run from "./pages/Run";
 import Job from "./pages/Job";
+import Jobs from "./pages/Jobs";
 import Queue from "./pages/Queue";
 import Nodes from "./pages/Nodes";
 import Node from "./pages/Node";
@@ -44,6 +45,7 @@ function App(props: AppProps) {
             <Route path="/" element={<Runs />} />
             <Route path="/nodes" element={<Nodes />} />
             <Route path="/nodes/:name" element={<Node />} />
+            <Route path="/jobs" element={<Jobs />} />
             <Route path="/stats/nodes/jobs" element={<StatsNodesJobs />} />
             <Route path="/stats/nodes/lock" element={<StatsNodesLock />} />
             <Route path="/runs" element={<Runs />} />

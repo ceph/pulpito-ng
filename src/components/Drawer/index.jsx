@@ -77,6 +77,9 @@ export default function Drawer(props) {
       <RouterLink to="/runs" className={classes.drawerLink}>
         Runs
       </RouterLink>
+      <RouterLink to="/jobs" className={classes.drawerLink}>
+        Jobs
+      </RouterLink>
       <Divider />
       <RouterLink to="/nodes?machine_type=smithi" className={classes.drawerLink}>
         Nodes
