@@ -81,6 +81,7 @@ export type Run = {
   status: RunStatus;
   user: string;
   priority: number;
+  flavor: string;
 };
 
 export type Node = {

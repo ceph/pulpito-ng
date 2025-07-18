@@ -138,6 +138,11 @@ const _columns: MRT_ColumnDef<Run>[] = [
     maxSize: 70,
   },
   {
+    accessorKey: "flavor",
+    header: "flavor",
+    maxSize: 20,
+  },
+  {
     accessorKey: "machine_type",
     header: "machine type",
     size: 30,
