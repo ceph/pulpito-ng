@@ -26,6 +26,7 @@ import { parse } from "date-fns";
 import { useRuns } from "../../lib/paddles";
 import { formatDate, formatDay, formatDuration } from "../../lib/utils";
 import IconLink from "../../components/IconLink";
+import TableFilterMenu from "../../components/TableFilterMenu";
 import type {
   Run,
   RunResult,
@@ -47,6 +48,11 @@ const NON_FILTER_PARAMS = [
   "page",
   "pageSize",
 ];
+const FILTER_SECTIONS: { [key: string]: string[] } = {
+  "run": ["scheduled", "suite", "machine_type", "user"],
+  "build": ["branch", "sha1"],
+  "result": ["status"],
+}
 
 const _columns: MRT_ColumnDef<Run>[] = [
   {
@@ -378,7 +384,7 @@ export default function RunList(props: RunListProps) {
           'aria-labelledby': 'filter-button',
         }}
       >
-        <FilterMenu isOpen={openFilterMenu} table={table} />
+        <TableFilterMenu isOpen={openFilterMenu} table={table} filterSections={FILTER_SECTIONS}  />
       </Menu>
     </div>
     <MaterialReactTable table={table} />
@@ -386,67 +392,3 @@ export default function RunList(props: RunListProps) {
     )
 }
 
-
-// FilterMenu
-
-type FilterMenuProps = {
-  isOpen: boolean; 
-  table: MRT_TableInstance<Run>;
-};
-
-
-const FILTER_SECTIONS = ["run", "build", "result"]
-const FILTER_SECTIONS_COLUMNS = [
-  ["scheduled", "suite", "machine_type", "user"],
-  ["branch", "sha1"],
-  ["status"],
-]
-
-function FilterMenu({ isOpen, table}: FilterMenuProps) {
-  if (!isOpen) {
-    return null;
-  }
-
-  return (
-    <Box
-      sx={{
-        padding: '1em',
-        margin: '0px 0.5em',
-        border: '2px dashed grey',
-        borderRadius: '8px',
-      }}
-    >
-      {FILTER_SECTIONS_COLUMNS.map((_, sectionIndex) => (
-        <Box
-          key={`section-${sectionIndex}`}
-          sx={{
-            marginBottom: '1em',
-            marginLeft: '0.5em',
-          }} 
-          >
-       
-          <Typography variant="body2" gutterBottom color="gray">
-            Filter by {FILTER_SECTIONS[sectionIndex]} details...
-          </Typography>
-          <Grid container spacing={1} alignItems={"center"} >
-      
-            {table.getLeafHeaders().map((header) => {
-              if (FILTER_SECTIONS_COLUMNS[sectionIndex].includes(header.id)) {
-                return (
-                  <Grid item sx={{maxWidth: 160}} key={header.id}  margin={".5em"}>        
-                    <MRT_TableHeadCellFilterContainer
-                      header={header}
-                      table={table}
-                      style={{ backgroundColor: 'transparent', width: '100%' }}
-                    />
-                  </Grid>
-                );
-              }
-              return null;
-            })}
-          </Grid>
-        </Box>
-      ))}
-    </Box>
-  ) 
-}
