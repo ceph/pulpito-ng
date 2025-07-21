@@ -138,9 +138,14 @@ const _columns: MRT_ColumnDef<Run>[] = [
     maxSize: 70,
   },
   {
+    id: "flavors",
     accessorKey: "flavor",
     header: "flavor",
-    maxSize: 20,
+    maxSize: 25,
+    Cell: ({ row }) => {
+      if (!row.original.flavor) return "-";
+      return row.original.flavor;
+    },
   },
   {
     accessorKey: "machine_type",
@@ -398,7 +403,7 @@ type FilterMenuProps = {
 const FILTER_SECTIONS = ["run", "build", "result"]
 const FILTER_SECTIONS_COLUMNS = [
   ["scheduled", "suite", "machine_type", "user"],
-  ["branch", "sha1"],
+  ["branch", "sha1", "flavors"],
   ["status"],
 ]
 

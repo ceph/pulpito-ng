@@ -15,6 +15,7 @@ export default function Runs() {
     status: StringParam,
     suite: StringParam,
     user: StringParam,
+    flavors: StringParam,
   }, {
     removeDefaultsFromUrl: true,
     updateType: "push",
