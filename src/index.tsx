@@ -54,17 +54,22 @@ type DarkModeState = {
 
 function useDarkMode(): [boolean, Function] {
   const systemDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const [state, setState] = React.useState({
-    system: systemDarkMode,
-    user: localStorage.getItem("theme") === "dark",
-  } as DarkModeState);
+  const [darkMode, setDarkMode] = React.useState<boolean>(() => {
+    const storedPreference = localStorage.getItem("theme");
+    return storedPreference ? storedPreference === "dark" : systemDarkMode;
+  });
 
-  function setDarkMode(value: boolean) {
-    localStorage.setItem("theme", value? "dark" : "light");
-    setState({ ...state, user: value });
+  React.useEffect(() => {
+    document.body.setAttribute("color-scheme",darkMode ? "dark" : "light");
+  }, [darkMode]);
+
+  function toggleDarkMode() {
+    const newMode = !darkMode;
+    localStorage.setItem("theme", newMode ? "dark" : "light");
+    setDarkMode(newMode);
   }
-  const darkMode = state.user === undefined ? systemDarkMode : state.user;
-  return [darkMode, setDarkMode];
+
+  return[darkMode, toggleDarkMode];
 }
 
 export default function Root() {
