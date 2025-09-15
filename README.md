@@ -24,7 +24,8 @@ In [teuthology's docker-compose](https://github.com/ceph/teuthology/blob/main/do
     build:
       context: ../../../pulpito-ng
     environment:
-      REACT_APP_PADDLES_SERVER: http://0.0.0.0:8080
+      VITE_TEUTHOLOGY_API: http://0.0.0.0:8082
+      VITE_PADDLES_SERVER: http://0.0.0.0:8080
     depends_on:
       paddles:
         condition: service_healthy
