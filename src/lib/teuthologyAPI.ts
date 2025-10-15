@@ -4,26 +4,44 @@ import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import { Cookies } from "react-cookie";
 import { Session } from "./teuthologyAPI.d"
 
-const TEUTHOLOGY_API_SERVER = 
+const TEUTHOLOGY_API_SERVER =
     import.meta.env.VITE_TEUTHOLOGY_API || "";
 const GH_USER_COOKIE = "GH_USER";
 
-function getURL(relativeURL: URL|string): string {
-    if ( ! TEUTHOLOGY_API_SERVER ) return "";
+function getURL(relativeURL: URL | string): string {
+    if (!TEUTHOLOGY_API_SERVER) return "";
     return new URL(relativeURL, TEUTHOLOGY_API_SERVER).toString();
 }
 
 function doLogin() {
     const url = getURL("/login/");
-    if ( url ) window.location.href = url;
+    if (url) window.location.href = url;
 }
 
 function doLogout() {
     const cookies = new Cookies();
     cookies.remove(GH_USER_COOKIE);
-    
+
     const url = getURL("/logout/");
     window.location.href = url;
+}
+
+async function useSchedule(commandValue: any) {
+    const url = getURL("/suite?logs=true");
+    const username = useUserData().get("username");
+    if (username) {
+        commandValue['--owner'] = username;
+    }
+    return await axios.post(url, commandValue, {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" },
+    }).then((resp) => {
+        console.log(resp);
+        return resp;
+    }, (error) => {
+        console.log(error);
+        throw error;
+    });
 }
 
 function useSession(): UseQueryResult<Session> {
@@ -74,6 +92,7 @@ function useRunKill(): UseMutationResult {
 export {
     doLogin,
     doLogout,
+    useSchedule,
     useSession,
     useUserData,
     useRunKill,
