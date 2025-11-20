@@ -6,7 +6,7 @@ import {
 
 import type { Node } from "#src/lib/paddles.d";
 import { formatDate } from "#src/lib/utils";
-import useDefaultTableOptions from "../../lib/table";
+import { useDefaultTableOptions } from "../../lib/table";
 
 
 export const columns: MRT_ColumnDef<Node>[] = [

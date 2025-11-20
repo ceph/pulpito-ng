@@ -1,6 +1,4 @@
-import { SetStateAction, useMemo } from 'react';
-import { useState } from "react";
-import { navigate } from 'vike/client/router'
+import { useMemo, useState, SetStateAction } from 'react';
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -12,19 +10,14 @@ import {
   MaterialReactTable,
   MRT_TableHeadCellFilterContainer as TableHeadCellFilterContainer,
   type MRT_ColumnDef,
-  type MRT_PaginationState,
-  type MRT_Updater,
-  type MRT_ColumnFiltersState,
   type MRT_TableOptions,
   type MRT_TableInstance,
 } from 'material-react-table';
 import { type Theme } from "@mui/material/styles";
-import { parse } from "date-fns";
 
 import {
   formatDate,
   formatDuration,
-  getUrl,
 } from "../../lib/utils";
 import IconLink from "../../components/IconLink";
 import type {
@@ -36,11 +29,17 @@ import {
   RunResultKeys,
   RunStatuses,
 } from "../../lib/paddles.d";
-import useDefaultTableOptions from "../../lib/table";
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Badge from '@mui/material/Badge';
 import Menu from '@mui/material/Menu';
+// import useDefaultTableOptions, {getColumnFiltersCallback, getPaginationCallback} from "../../lib/table";
+import {
+  getColumnFiltersCallback,
+  getPaginationCallback,
+  parseParams,
+  useDefaultTableOptions,
+} from "../../lib/table";
 
 
 const _columns: MRT_ColumnDef<Run>[] = [
@@ -218,27 +217,10 @@ export default function RunList(props: RunListProps) {
   const [openFilterMenu, setOpenFilterMenu] = useState<boolean>(false);
   const [dropMenuAnchorEl, setDropMenuAnchor] = useState<null | HTMLElement>(null);
 
-  const { params, setter, tableOptions } = props;
+  const { params, tableOptions } = props;
   const context = usePageContext();
   const options = useDefaultTableOptions<Run>();
-  const [debouncedParams, _] = useDebounceValue(params, 500);
-  const columnFilters: MRT_ColumnFiltersState = [];
-  Object.entries(debouncedParams).forEach(param => {
-    const [id, value] = param;
-    if ( ["page", "pageSize"].includes(id) ) return;
-    if ( id === "date" && !!value ) {
-      columnFilters.push({
-        id: "scheduled",
-        value: parse(value, "yyyy-MM-dd", new Date())
-      })
-    } else {
-      columnFilters.push({id, value})
-    }
-  });
-  let pagination = {
-    pageIndex: Number(params.page || 0),
-    pageSize: Number(params.pageSize || DEFAULT_PAGE_SIZE),
-  };
+  const debouncedParams = useDebounceValue(params, 500)[0];
   const toggleFilterMenu = (event: { currentTarget: SetStateAction<HTMLElement | null>; }) => {
     if (dropMenuAnchorEl) {
       setDropMenuAnchor(null);
@@ -248,16 +230,13 @@ export default function RunList(props: RunListProps) {
       setOpenFilterMenu(true);
     }
   }
-  const onColumnFiltersChange = (updater: MRT_Updater<MRT_ColumnFiltersState>) => {
-    if ( ! ( updater instanceof Function ) ) return;
-    const newUrl = getUrl(context.urlPathname, updater(columnFilters), pagination);
-    navigate(newUrl.pathname + newUrl.search);
-  };
-  const onPaginationChange = (updater: MRT_Updater<MRT_PaginationState>) => {
-    if ( ! ( updater instanceof Function ) ) return;
-    const newUrl = getUrl(context.urlPathname, columnFilters, updater(pagination));
-    navigate(newUrl.pathname + newUrl.search);
-  };
+  const { columnFilters, pagination } = parseParams(debouncedParams);
+  const onColumnFiltersChange = getColumnFiltersCallback({
+    path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
+  });
+  const onPaginationChange = getPaginationCallback({
+    path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
+  });
   const data: Run[] = useData();
   const jobTotals = useMemo(() => {
     const result: Partial<RunResults> = {};
@@ -335,7 +314,6 @@ export default function RunList(props: RunListProps) {
     ...tableOptions,
   });
   
-  if (query.isError) return null;
   return (
   <div>
     <div>

@@ -1,5 +1,6 @@
 import { ReactNode, useMemo } from "react";
 import { useData } from 'vike-react/useData'
+import { usePageContext } from 'vike-react/usePageContext'
 import DescriptionIcon from "@mui/icons-material/Description";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -9,7 +10,6 @@ import {
   type MRT_ColumnDef,
   type MRT_Row,
 } from 'material-react-table';
-import type { UseQueryResult } from "@tanstack/react-query";
 import { type Theme } from "@mui/material/styles";
 
 import { formatDate, formatDuration } from "../../lib/utils";
@@ -17,7 +17,11 @@ import IconLink from "../../components/IconLink";
 import Link from "../../components/Link";
 import type { Job, JobList as JobListType, Run } from "../../lib/paddles.d";
 import { dirName } from "../../lib/utils";
-import useDefaultTableOptions from "../../lib/table";
+import {
+  getPaginationCallback,
+  parseParams,
+  useDefaultTableOptions,
+} from "../../lib/table";
 
 import sentryIcon from "./assets/sentry.svg";
 
@@ -226,6 +230,8 @@ type JobListProps = {
 }
 
 export default function JobList({ sortMode }: JobListProps) {
+  const context = usePageContext();
+  const params = context?.urlParsed.search || {};
   const data_: Run = useData();
   const options = useDefaultTableOptions<Job>();
   const data = useMemo(() => {
@@ -233,16 +239,26 @@ export default function JobList({ sortMode }: JobListProps) {
       item.id = String(item.job_id);
       return !! item.id;
     });
-  }, [data_, sortMode]);
+  }, [data_]);
+  const { pagination } = parseParams(params);
+  const onPaginationChange = getPaginationCallback({
+    path: context.urlPathname, columnFiltersState: [], paginationState: pagination
+  });
   const table = useMaterialReactTable({
     ...options,
     columns,
-    data: data,
+    data: data || [],
     enableFacetedValues: true,
     enableGlobalFilter: true,
     enableGlobalFilterRankedResults: false,
     positionGlobalFilter: "left",
     globalFilterFn: 'contains',
+    manualPagination: true,
+    onPaginationChange,
+    muiPaginationProps: {
+      showLastButton: false,
+    },
+    rowCount: Infinity,
     muiSearchTextFieldProps: {
       placeholder: 'Search across all fields',
       sx: { minWidth: '200px' },
@@ -257,10 +273,6 @@ export default function JobList({ sortMode }: JobListProps) {
         tasks: false,
         description: false,
       },
-      pagination: {
-        pageIndex: 0,
-        pageSize: 25,
-      },
       sorting: [
         {
           id: sortMode === "time"? "started" : "job_id",
@@ -269,6 +281,7 @@ export default function JobList({ sortMode }: JobListProps) {
       ],
       showGlobalFilter: true,
     },
+    state: {pagination},
     renderDetailPanel: JobDetailPanel,
     muiTableBodyRowProps: ({row, isDetailPanel}) => {
       if ( isDetailPanel ) {
