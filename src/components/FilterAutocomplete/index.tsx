@@ -4,14 +4,14 @@ import Autocomplete from '@mui/material/Autocomplete';
 import type { FilterOptionsState } from "@mui/material/useAutocomplete";
 
 
-interface FilterMenuProps {
+interface FilterAutocompleteProps {
   type: string;
   value: string;
   baseUrl: string;
   options: string[];
 }
 
-export default function FilterMenu({type, value, baseUrl, options}: FilterMenuProps) {
+export default function FilterAutocomplete({type, value, baseUrl, options}: FilterAutocompleteProps) {
   const label = type.replaceAll("_", " ");
   const onChange = (_: any, newValue: string | null) => {
     const newUrl = new URL(baseUrl, window.location.origin);

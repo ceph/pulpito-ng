@@ -3,7 +3,7 @@ import { Config } from 'vike-react/Config'
 import { usePageContext } from 'vike-react/usePageContext'
 import Typography from "@mui/material/Typography";
 
-import FilterMenu from "#src/components/FilterMenu";
+import FilterAutocomplete from "#src/components/FilterAutocomplete";
 import NodeList from "../../components/NodeList";
 import { MACHINE_TYPES } from '#src/lib/paddles';
 import type { NodesResponse } from "./+data"
@@ -22,7 +22,7 @@ export default function Nodes() {
       </Typography>
       <div style={{ height: "auto", display: "flex" }}>
         <div style={{ display: "flex", flexWrap: "wrap", marginLeft: "auto" }}>
-          <FilterMenu
+          <FilterAutocomplete
             type="machine_type"
             value={machine_type}
             baseUrl="/nodes/"

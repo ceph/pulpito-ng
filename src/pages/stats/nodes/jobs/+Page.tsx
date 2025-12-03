@@ -8,14 +8,14 @@ import {
   type MRT_ColumnDef,
 } from 'material-react-table';
 
-import FilterMenu from "#src/components/FilterMenu";
+import FilterAutocomplete from "#src/components/FilterAutocomplete";
 import { MACHINE_TYPES } from '#src/lib/paddles';
 import { type StatsJobsResponse } from "#src/lib/paddles.d";
 import {
   useDefaultTableOptions,
 } from "#src/lib/table";
 
-export const columns: MRT_ColumnDef<StatsJobsResponse>[] = [
+const columns: MRT_ColumnDef<StatsJobsResponse>[] = [
   {
     header: "name",
     accessorKey: "name",
@@ -104,7 +104,7 @@ export default function Page() {
               Filter&nbsp;by:
             </Typography>
           </div>
-          <FilterMenu
+          <FilterAutocomplete
             type="machine_type"
             value={machine_type}
             baseUrl="/stats/nodes/jobs/"
