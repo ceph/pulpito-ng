@@ -15,7 +15,7 @@ export default function Page() {
       <Typography variant="h5" style={{ margin: "20px" }}>
         Queue
       </Typography>
-      <RunList params={params}/>
+      <RunList params={params} pagination={false}/>
     </div>
   );
 }

@@ -2,14 +2,21 @@ body {
   font-size: 12px;
   background-color: var(--mui-palette-background-default);
   color: var(--mui-palette-text-primary);
+  --app-inset: 10px;
+  margin: var(--app-inset);
+}
+
+header {
+  padding: var(--app-inset);
 }
 
 a {
   color: inherit;
 }
 
-.App-body {
-  margin: 20px 20px 0px 20px;
+.tableContainer {
+  border: 1px solid var(--app-shell-border-color);
+  padding: 5px;
 }
 
 .App-body,
@@ -30,11 +37,18 @@ a {
   color: var(--mui-palette-text-primary);
 }
 
-.MuiSvgIcon-root {
+/* .MuiSvgIcon-root { */
+/* color: var(--mui-palette-text-primary); */
+/* } */
+
+label.MuiInputLabel-root {
   color: var(--mui-palette-text-primary);
 }
 
-label.MuiInputLabel-root {
+.MuiInputBase-root,
+.MuiInputBase-input,
+.MuiSelect-icon,
+.MuiSvgIcon-root {
   color: var(--mui-palette-text-primary);
 }
 
@@ -49,6 +63,11 @@ label.MuiInputLabel-root {
 div.MuiPaper-root {
   border: 1px solid;
   border-color: var(--mui-palette-TableCell-border);
+}
+
+.tableControls {
+  display: flex;
+  direction: row;
 }
 
 

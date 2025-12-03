@@ -13,7 +13,7 @@ export default function Page() {
       <Typography variant="h5" style={{ margin: "20px" }}>
         Runs
       </Typography>
-      <RunList params={params}/>
+      <RunList params={params} pagination={true} />
     </div>
   );
 }

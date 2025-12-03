@@ -4,12 +4,17 @@ table.pulpito {
 
   th {
     text-align: left;
+
+    button {
+      color: var(--palette-text-primary);
+    }
   }
 
   tr,
   td {
     background-color: var(--palette-background-default);
     color: var(--palette-text-primary);
+    height: 2rem;
   }
 
   td {
@@ -69,12 +74,15 @@ table.pulpito {
         color: var(--palette-warning-contrast-text);
       }
     }
+
+    button {
+      color: var(--palette-primary-contrast-text);
+    }
   }
 
   button.expandButton {
     width: 1.5rem;
     background: transparent;
-    color: var(--mantine-color-body);
     border: 1px solid var(--mantine-color-default-border);
     border-radius: var(--mantine-radius-sm);
   }

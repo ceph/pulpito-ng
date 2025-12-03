@@ -1,13 +1,14 @@
 import { navigate } from 'vike/client/router'
 import {
-  type MRT_PaginationState,
-  type MRT_ColumnFiltersState,
-} from 'material-react-table';
+  type PaginationState,
+  type ColumnFiltersState,
+} from '@tanstack/react-table';
 import { format, type Duration } from "date-fns";
 
 import { DEFAULT_PAGE_SIZE } from './paddles';
 
-function getUrl(path: string, filters: MRT_ColumnFiltersState, pagination: MRT_PaginationState) {
+
+export function getUrl(path: string, filters: ColumnFiltersState, pagination: PaginationState) {
   const newUrl = new URL(path, window.location.origin);
   filters.forEach(item => {
     if ( ! item.id ) return;

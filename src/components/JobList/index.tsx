@@ -1,43 +1,57 @@
-import { ReactNode, useMemo } from "react";
+import { useMemo } from "react";
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
 import DescriptionIcon from "@mui/icons-material/Description";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
 import {
-  useMaterialReactTable,
-  MaterialReactTable,
-  type MRT_ColumnDef,
-  type MRT_Row,
-} from 'material-react-table';
+  getCoreRowModel,
+  getExpandedRowModel,
+  useReactTable,
+  type ColumnDef,
+  type Row,
+} from '@tanstack/react-table';
 import { type Theme } from "@mui/material/styles";
 
 import { formatDate, formatDuration } from "../../lib/utils";
 import IconLink from "../../components/IconLink";
 import Link from "../../components/Link";
-import type { Job, JobList as JobListType, Run } from "../../lib/paddles.d";
+import type { Job, Run } from "../../lib/paddles.d";
 import { dirName } from "../../lib/utils";
 import {
   getPaginationCallback,
   parseParams,
   useDefaultTableOptions,
 } from "../../lib/table";
+import Table from '../Table';
+import Paginator from '../Paginator';
+import JobDetailPanel from "../JobDetailPanel";
 
 import sentryIcon from "./assets/sentry.svg";
 
 
-const columns: MRT_ColumnDef<Job>[] = [
+const columns: ColumnDef<Job>[] = [
+  {
+    id: 'expander',
+    header: () => null,
+    cell: ({ row }) => (
+      row.getCanExpand() &&
+      <button className='expandButton' onClick={row.getToggleExpandedHandler()} >
+        {row.getIsExpanded() ? '-' : '+'}
+      </button>
+    ),
+  },
   {
     header: "status",
     accessorKey: "status",
     size: 120,
-    filterVariant: "select",
+    meta: {
+      filterVariant: "select",
+    },
   },
   {
     header: "links",
     id: "links",
     size: 75,
-    Cell: ({ row }) => {
+    cell: ({ row }) => {
       const log_url = row.original.log_href;
       const sentry_url = row.original.sentry_event;
       return (
@@ -64,7 +78,7 @@ const columns: MRT_ColumnDef<Job>[] = [
     header: "job ID",
     accessorKey: "job_id",
     size: 110,
-    Cell: ({ row }) => {
+    cell: ({ row }) => {
       return (
         <Link
           to={`/runs/${row.original.name}/jobs/${row.original.job_id}`}
@@ -81,7 +95,7 @@ const columns: MRT_ColumnDef<Job>[] = [
     accessorFn: (row: Job) => {
       const tasks = Object.values(row.tasks || {});
       const task_list = tasks.map(task => {
-          if (Object.keys(tasks).length > 0) 
+          if (Object.keys(tasks).length > 0)
             return Object.keys(task)[0];
           return [];
         });
@@ -89,39 +103,49 @@ const columns: MRT_ColumnDef<Job>[] = [
       return result;
     },
     size: 200,
-    filterFn: 'contains',
     enableColumnFilter: true,
+    meta: {
+      filterFn: 'contains',
+    },
   },
   {
     header: "description",
     size: 200,
     accessorFn: (row: Job) => row.description + "",
-    filterFn: 'contains',
     enableColumnFilter: true,
+    meta: {
+      filterFn: 'contains',
+    },
   },
   {
     header: "posted",
     id: "posted",
     accessorFn: (row: Job) => formatDate(row.posted),
-    filterVariant: 'date',
     sortingFn: "datetime",
     size: 150,
+    meta: {
+      filterVariant: 'date',
+    },
   },
   {
     header: "updated",
     id: "updated",
     accessorFn: (row: Job) => formatDate(row.updated),
-    filterVariant: 'date',
     sortingFn: "datetime",
     size: 150,
+    meta: {
+      filterVariant: 'date',
+    },
   },
   {
     header: "started",
     id: "started",
     accessorFn: (row: Job) => formatDate(row.started),
-    filterVariant: 'date',
     sortingFn: "datetime",
     size: 150,
+    meta: {
+      filterVariant: 'date',
+    },
   },
   {
     header: "runtime",
@@ -158,19 +182,25 @@ const columns: MRT_ColumnDef<Job>[] = [
   {
     header: "machine type",
     accessorKey: "machine_type",
-    filterVariant: "select",
+    meta: {
+      filterVariant: "select",
+    },
   },
   {
     header: "OS type",
     size: 85,
     accessorFn: (row: Job) => row.os_type + "",
-    filterVariant: "select",
+    meta: {
+      filterVariant: "select",
+    },
   },
   {
     header: "OS version",
     accessorFn: (row: Job) => row.os_version + "",
     size: 85,
-    filterVariant: "select",
+    meta: {
+      filterVariant: "select",
+    },
   },
   {
     header: "nodes",
@@ -194,42 +224,12 @@ function jobStatusToThemeCategory(status: string): keyof Theme["palette"] {
   }
 };
 
-type JobDetailPanelProps = {
-  row: MRT_Row<Job>;
-}
-
-function JobDetailPanel(props: JobDetailPanelProps): ReactNode {
-  const failure_reason = props.row.original.failure_reason;
-  if ( ! failure_reason ) return null;
-  return (
-    <Box
-      sx={{
-        borderLeft: 1,
-        borderColor: (theme) => theme.palette.grey[800],
-        padding: 1,
-        color: (theme) => theme.palette.text.primary,
-      }}
-    >
-      <Typography
-        variant="subtitle2"
-      >
-        Failure Reason:
-      </Typography>
-      <Typography
-        variant="caption"
-      >
-        <code>{failure_reason}</code>
-      </Typography>
-    </Box>
-  )
-};
-
 type JobListProps = {
-  query: Run | JobListType;
   sortMode?: "time" | "id";
+  pagination?: boolean;
 }
 
-export default function JobList({ sortMode }: JobListProps) {
+export default function JobList(props: JobListProps) {
   const context = usePageContext();
   const params = context?.urlParsed.search || {};
   const data_: Run = useData();
@@ -244,25 +244,25 @@ export default function JobList({ sortMode }: JobListProps) {
   const onPaginationChange = getPaginationCallback({
     path: context.urlPathname, columnFiltersState: [], paginationState: pagination
   });
-  const table = useMaterialReactTable({
+  const table = useReactTable({
     ...options,
     columns,
     data: data || [],
-    enableFacetedValues: true,
+    getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getRowCanExpand: (row) => !! row.original.failure_reason,
+    // enableFacetedValues: true,
     enableGlobalFilter: true,
-    enableGlobalFilterRankedResults: false,
-    positionGlobalFilter: "left",
-    globalFilterFn: 'contains',
+    // enableGlobalFilterRankedResults: false,
+    // positionGlobalFilter: "left",
+    // globalFilterFn: 'contains',
     manualPagination: true,
     onPaginationChange,
-    muiPaginationProps: {
-      showLastButton: false,
-    },
     rowCount: Infinity,
-    muiSearchTextFieldProps: {
-      placeholder: 'Search across all fields',
-      sx: { minWidth: '200px' },
-    },
+    // muiSearchTextFieldProps: {
+    //   placeholder: 'Search across all fields',
+    //   sx: { minWidth: '200px' },
+    // },
     initialState: {
       ...options.initialState,
       columnVisibility: {
@@ -275,22 +275,28 @@ export default function JobList({ sortMode }: JobListProps) {
       },
       sorting: [
         {
-          id: sortMode === "time"? "started" : "job_id",
+          id: props.sortMode === "time"? "started" : "job_id",
           desc: true,
         },
       ],
-      showGlobalFilter: true,
+      // showGlobalFilter: true,
     },
     state: {pagination},
-    renderDetailPanel: JobDetailPanel,
-    muiTableBodyRowProps: ({row, isDetailPanel}) => {
-      if ( isDetailPanel ) {
-        return row.original.failure_reason? {} : {className: "empty"};
-      }
-      const category = jobStatusToThemeCategory(row.original.status);
-      if ( category ) return { className: category };
-      return {};
-    },
   });
-  return <MaterialReactTable table={table} />
+  const rowClass = (row: Row<Job>) => {
+    const category = jobStatusToThemeCategory(row.getValue('status'));
+    return category || '';
+  }
+  return (
+    <div className='tableContainer'>
+      <div className='tableControls'>
+        { props.pagination? <Paginator table={table} /> : null }
+      </div>
+      <Table table={table} rowClass={rowClass} detailPanel={JobDetailPanel} />
+      { table.getState().pagination.pageSize >= 10? (
+      <div className='tableControls'>
+        { props.pagination? <Paginator table={table} /> : null }
+      </div> ) : null }
+    </div>
+  )
 }

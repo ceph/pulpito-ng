@@ -11,13 +11,6 @@ export default function Paginator<TData> ({table}: {table: TanstackTable<TData>}
         <div className="paginator">
           <span>
             Page&nbsp;
-            <strong>
-              {table.getState().pagination.pageIndex + 1} of{' '}
-              {table.getPageCount().toLocaleString()}
-            </strong>
-          </span>
-          <span>
-            &nbsp;| Go to page:
             <input
               className="pageInput"
               type="number"
@@ -29,6 +22,12 @@ export default function Paginator<TData> ({table}: {table: TanstackTable<TData>}
                 table.setPageIndex(page)
               }}
             />
+            <strong>
+              of{' '}{table.getPageCount().toLocaleString()}
+            </strong>
+          </span>
+          <span>
+            &nbsp;|&nbsp;
           </span>
           <select
             value={table.getState().pagination.pageSize}
@@ -66,12 +65,6 @@ export default function Paginator<TData> ({table}: {table: TanstackTable<TData>}
           >
             {'>|'}
           </button>
-        </div>
-      </div>
-      <div className="paginatorContainer">
-        <div className="paginator">
-          Showing {table.getRowModel().rows.length.toLocaleString()} of{' '}
-          {table.getRowCount().toLocaleString()} Rows
         </div>
       </div>
     </>

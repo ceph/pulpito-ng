@@ -3,10 +3,11 @@ import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
 import Typography from "@mui/material/Typography";
 import {
-  useMaterialReactTable,
-  MaterialReactTable,
-  type MRT_ColumnDef,
-} from 'material-react-table';
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+  type Row,
+} from '@tanstack/react-table';
 
 import FilterAutocomplete from "#src/components/FilterAutocomplete";
 import { MACHINE_TYPES } from '#src/lib/paddles';
@@ -14,13 +15,14 @@ import { type StatsJobsResponse } from "#src/lib/paddles.d";
 import {
   useDefaultTableOptions,
 } from "#src/lib/table";
+import Table from '#src/components/Table';
 
-const columns: MRT_ColumnDef<StatsJobsResponse>[] = [
+const columns: ColumnDef<StatsJobsResponse>[] = [
   {
     header: "name",
     accessorKey: "name",
     size: 200,
-    Cell: ({ row }) => {
+    cell: ({ row }) => {
       const name = row.original.name;
       return <a href={`/nodes/${name}/`} color="inherit">{name.split(".")[0]}</a>;
     },
@@ -65,10 +67,11 @@ export default function Page() {
   const since_days = params.since_days || "";
   const options = useDefaultTableOptions<StatsJobsResponse>();
   const data: StatsJobsResponse[] = useData();
-  const table = useMaterialReactTable({
+  const table = useReactTable({
     ...options,
     columns,
     data: data,
+    getCoreRowModel: getCoreRowModel(),
     rowCount: data.length,
     initialState: {
       ...options.initialState,
@@ -92,7 +95,7 @@ export default function Page() {
   });
   return (
     <div>
-      <Config title="Stats Nodes Jobs - Pulpito" />
+      <Config title="Node job stats - Pulpito" />
       <Typography variant="h6" style={{ marginBottom: "20px" }}>
         {since_days || 14}-day stats for {machine_type || "all"} nodes
       </Typography>
@@ -112,7 +115,7 @@ export default function Page() {
           />
         </div>
       </div>
-      <MaterialReactTable table={table} />
+      <Table table={table} />
     </div>
   );
 

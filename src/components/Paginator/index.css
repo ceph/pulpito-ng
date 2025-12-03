@@ -1,19 +1,18 @@
-div.paginatorContainer {
+.paginatorContainer {
   display: flex;
+  margin-left: auto;
 }
 
 div.paginator {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  margin-left: auto;
 
   button,
   input,
   select {
     border-width: 1px;
     border-radius: 0.25rem;
-    /* border-color: var(--mantine-color-bright); */
     border-color: var(--mantine-color-dark-outline);
     margin: 3px;
     height: 1.75rem;
@@ -25,6 +24,6 @@ div.paginator {
   }
 
   .pageInput {
-    width: 3rem;
+    width: 2.75rem;
   }
 }

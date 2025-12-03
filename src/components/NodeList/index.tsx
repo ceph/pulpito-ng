@@ -1,20 +1,22 @@
 import {
-  useMaterialReactTable,
-  MaterialReactTable,
-  type MRT_ColumnDef,
-} from 'material-react-table';
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+  type Row,
+} from '@tanstack/react-table';
 
 import type { Node } from "#src/lib/paddles.d";
 import { formatDate } from "#src/lib/utils";
 import { useDefaultTableOptions } from "../../lib/table";
+import Table from '../Table';
 
 
-export const columns: MRT_ColumnDef<Node>[] = [
+export const columns: ColumnDef<Node>[] = [
   {
     header: "name",
     accessorKey: "name",
     size: 40,
-    Cell: ( { row } ) => {
+    cell: ( { row } ) => {
       const name = row.original.name;
       return <a
         href={`/nodes/${name}/`}
@@ -36,17 +38,23 @@ export const columns: MRT_ColumnDef<Node>[] = [
     header: "🔌",
     accessorFn: (row: Node) => row.up?.toLocaleString(),
     size: 30,
-    filterVariant: "select",
+    meta: {
+      filterVariant: "select",
+    },
   },
   {
     header: "🔒",
     accessorFn: (row: Node) => row.locked?.toLocaleString(),
     size: 30,
-    filterVariant: "select",
+    meta: {
+      filterVariant: "select",
+    },
   },
   {
     header: "locked since",
-    filterVariant: 'date',
+    meta: {
+      filterVariant: 'date',
+    },
     sortingFn: "datetime",
     accessorFn: (row: Node) => row.locked_since? formatDate(row.locked_since): "",
     size: 55,
@@ -56,25 +64,33 @@ export const columns: MRT_ColumnDef<Node>[] = [
     header: "locked by",
     accessorKey: "locked_by",
     size: 60,
-    filterVariant: "select",
+    meta: {
+      filterVariant: "select",
+    },
   },
   {
     header: "OS type",
     accessorFn: (row) => row.os_type || "none",
     size: 40,
-    filterVariant: "select",
+    meta: {
+      filterVariant: "select",
+    },
   },
   {
     header: "OS ver.",
     accessorFn: (row) => row.os_version || "none",
     size: 40,
-    filterVariant: "select",
+    meta: {
+      filterVariant: "select",
+    },
   },
   {
     header: "arch",
     accessorKey: "arch",
     size: 50,
-    filterVariant: "select",
+    meta: {
+      filterVariant: "select",
+    },
   },
   {
     header: "description",
@@ -89,10 +105,6 @@ export default function NodeList({nodes}: {nodes: Node[]}) {
   options.state.columnVisibility = {};
   if ( nodes.length <= 1 ) {
     options.enableFilters = false;
-    options.enablePagination = false;
-    options.enableTableFooter = false;
-    options.enableTopToolbar = false;
-    options.enableBottomToolbar = false;
     options.state.columnVisibility = {
       name: false,
     };
@@ -103,17 +115,18 @@ export default function NodeList({nodes}: {nodes: Node[]}) {
   if ( new Set(nodes.map(node => node.arch)).size === 1 ) {
     options.state.columnVisibility.arch = false;
   }
-  const table = useMaterialReactTable({
+  const table = useReactTable({
     ...options,
     columns,
     data: nodes,
+    getCoreRowModel: getCoreRowModel(),
     rowCount: nodes.length,
-    enableFacetedValues: true,
+    // enableFacetedValues: true,
     initialState: {
       ...options.initialState,
       pagination: {
         pageIndex: 0,
-        pageSize: 25,
+        pageSize: 500,
       },
       sorting: [
         {
@@ -129,13 +142,12 @@ export default function NodeList({nodes}: {nodes: Node[]}) {
     state: {
       ...options.state,
     },
-    muiTableBodyRowProps: ({row}) => {
-      let className = "info";
-      if ( row.original.up === false ) className = "error";
-      else if ( row.original.locked === true ) className = "warning";
-      else if ( row.original.locked === false ) className = "success";
-      return {className};
-    },
   });
-  return <MaterialReactTable table={table} />
+  const rowClass = (row: Row<Node>) => {
+    return row.original.up === false? 'error' :
+      row.original.locked === true? 'warning' :
+      row.original.locked === false? 'success' :
+      'info'
+  }
+  return <Table table={table} rowClass={rowClass} />
 }

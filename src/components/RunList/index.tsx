@@ -1,18 +1,15 @@
-import { useMemo, useState, SetStateAction } from 'react';
+import { useState } from 'react';
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
 import { useDebounceValue } from "usehooks-ts";
 import {
-  useMaterialReactTable,
-  MaterialReactTable,
-  MRT_TableHeadCellFilterContainer as TableHeadCellFilterContainer,
-  type MRT_ColumnDef,
-  type MRT_TableOptions,
-  type MRT_TableInstance,
-} from 'material-react-table';
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+  type Row,
+  type TableOptions,
+} from '@tanstack/react-table';
 import { type Theme } from "@mui/material/styles";
 
 import {
@@ -20,20 +17,12 @@ import {
   formatDuration,
 } from "../../lib/utils";
 import IconLink from "../../components/IconLink";
-import type {
-  Run,
-  RunResult,
-  RunResults,
-} from "../../lib/paddles.d";
 import {
-  RunResultKeys,
+  type Run,
   RunStatuses,
+  Flavors,
 } from "../../lib/paddles.d";
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Badge from '@mui/material/Badge';
-import Menu from '@mui/material/Menu';
-// import useDefaultTableOptions, {getColumnFiltersCallback, getPaginationCallback} from "../../lib/table";
+import { MACHINE_TYPES } from '#src/lib/paddles';
 import {
   getColumnFiltersCallback,
   getPaginationCallback,
@@ -41,14 +30,19 @@ import {
   useDefaultTableOptions,
 } from "../../lib/table";
 
+import FilterMenu from '../FilterMenu';
+import { type FilterMenuSections } from '#src/lib/types.d';
+import Table from '../Table';
+import Paginator from '../Paginator';
 
-const _columns: MRT_ColumnDef<Run>[] = [
+
+const _columns: ColumnDef<Run>[] = [
   {
     accessorKey: "name",
     header: "link",
     maxSize: 12,
     enableColumnFilter: false,
-    Cell: ({ row }) => {
+    cell: ({ row }) => {
       return (
         <IconLink to={`/runs/${row.original.name}`}>
           <OpenInNewIcon fontSize="small" style={{marginLeft: "5px"}} />
@@ -59,36 +53,37 @@ const _columns: MRT_ColumnDef<Run>[] = [
   {
     header: "status",
     accessorKey: "status",
-    filterVariant: "select",
-    Cell: ({ row }) => {
+    meta: {
+      filterVariant: "select",
+    },
+    cell: ({ row }) => {
       return row.original.status.replace("finished ", "");
     },
-    filterSelectOptions: Object.values(RunStatuses),
     maxSize: 25,
   },
   {
     accessorKey: "user",
     header: "user",
     maxSize: 30,
-    enableColumnActions: false,
     enableColumnFilter: false,
   },
   {
     accessorKey: "priority",
     header: "priority",
     maxSize: 20,
-    enableColumnActions: false,
     enableColumnFilter: false,
   },
   {
     id: "scheduled",
     header: "scheduled",
     accessorFn: (row: Run) => formatDate(row.scheduled),
-    filterVariant: 'date',
+    meta: {
+      filterVariant: 'date',
+    },
     sortingFn: "datetime",
-    Cell: ({ row }) => {
+    cell: ({ row }) => {
       const date_: string[] = row.original.scheduled.split(" ");
-      return <div> {date_[0]} <br /> {date_[1]} </div>
+      return <> {date_[0]} <br /> {date_[1]} </>
     },
     size: 35,
   },
@@ -130,13 +125,16 @@ const _columns: MRT_ColumnDef<Run>[] = [
     accessorKey: "branch",
     header: "branch",
     maxSize: 70,
+    cell: ({ row }) => {
+        return <span className="hardWrap">{row.original.branch}</span>
+    },
   },
   {
     id: "flavors",
     accessorKey: "flavor",
     header: "flavor",
     maxSize: 25,
-    Cell: ({ row }) => {
+    cell: ({ row }) => {
       if (!row.original.flavor) return "-";
       return row.original.flavor;
     },
@@ -150,7 +148,7 @@ const _columns: MRT_ColumnDef<Run>[] = [
     accessorKey: "sha1",
     header: "hash",
     maxSize: 30,
-    Cell: ({ row }) => {
+    cell: ({ row }) => {
       return row.original.sha1?.slice(0, 8);
     },
   },
@@ -198,6 +196,39 @@ const _columns: MRT_ColumnDef<Run>[] = [
   },
 ];
 
+const FILTER_SECTIONS: FilterMenuSections = {
+  run: {
+    label: 'Filter by run details',
+    filters: {
+      scheduled: {label: 'date', component: 'mantine-date'},
+      suite: {label: 'suite'},
+      machine_type: {
+        label: 'machine type',
+        options: MACHINE_TYPES,
+      },
+      user: {label: 'user'},
+      status: {
+        label: 'status',
+        options: RunStatuses,
+      },
+    },
+  },
+  build: {
+    label: 'Filter by build details',
+    filters: {
+      branch: {
+        label: 'branch',
+        options: ['main', 'umbrella', 'tentacle', 'squid', 'reef', 'reef-release'],
+      },
+      sha1: {label: 'SHA1'},
+      flavors: {
+        label: 'flavor',
+        options: Flavors,
+      },
+    },
+  },
+}
+
 function runStatusToThemeCategory(status: string): keyof Theme["palette"] {
   switch (status) {
     case "finished dead": return "error";
@@ -210,26 +241,17 @@ function runStatusToThemeCategory(status: string): keyof Theme["palette"] {
 
 type RunListProps = {
   params: Record<string,string>;
-  tableOptions?: Partial<MRT_TableOptions<Run>>;
+  pagination?: boolean;
+  tableOptions?: Partial<TableOptions<Run>>;
 }
 
 export default function RunList(props: RunListProps) {
   const [openFilterMenu, setOpenFilterMenu] = useState<boolean>(false);
-  const [dropMenuAnchorEl, setDropMenuAnchor] = useState<null | HTMLElement>(null);
 
   const { params, tableOptions } = props;
   const context = usePageContext();
   const options = useDefaultTableOptions<Run>();
   const debouncedParams = useDebounceValue(params, 500)[0];
-  const toggleFilterMenu = (event: { currentTarget: SetStateAction<HTMLElement | null>; }) => {
-    if (dropMenuAnchorEl) {
-      setDropMenuAnchor(null);
-      setOpenFilterMenu(false);
-    } else {
-      setDropMenuAnchor(event.currentTarget);
-      setOpenFilterMenu(true);
-    }
-  }
   const { columnFilters, pagination } = parseParams(debouncedParams);
   const onColumnFiltersChange = getColumnFiltersCallback({
     path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
@@ -237,41 +259,19 @@ export default function RunList(props: RunListProps) {
   const onPaginationChange = getPaginationCallback({
     path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
   });
-  const data: Run[] = useData();
-  const jobTotals = useMemo(() => {
-    const result: Partial<RunResults> = {};
-    RunResultKeys.forEach(
-      status => {
-        let sub = result[status] || 0;
-        data.forEach(run => {
-          sub += run.results[status]
-        });
-        result[status] = sub;
-    });
-    return result;
-  }, [data])
-  const columns = useMemo(() => _columns.map(col =>
-    col.header in jobTotals? {...col, Footer: jobTotals[col.header as RunResult]} : col
-  ), [jobTotals]);
-  const table = useMaterialReactTable({
+  const data: Run[] = useData() || [];
+  const columns = _columns;
+  const table = useReactTable({
     ...options,
     columns,
     data: data || [],
+    getCoreRowModel: getCoreRowModel(),
     manualFiltering: true,
-    enableColumnActions: false,
     manualPagination: true,
     onPaginationChange,
-    muiPaginationProps: {
-      showLastButton: false,
-    },
-    rowCount: Infinity,
+    rowCount: props.pagination === false? data.length : Infinity,
     onColumnFiltersChange,
-    columnFilterDisplayMode: 'custom',
     enableColumnFilters: false,
-    muiFilterTextFieldProps: ({ column }) => ({
-      label: column.columnDef.header,
-      placeholder: '',
-    }),
     initialState: {
       ...options.initialState,
       columnVisibility: {
@@ -290,121 +290,40 @@ export default function RunList(props: RunListProps) {
       columnFilters,
       pagination,
     },
-    muiTableBodyRowProps: ({row}) => {
-      const category = runStatusToThemeCategory(row.original.status);
-      if ( category ) return { className: category };
-      return {};
-    },
-    renderTopToolbarCustomActions: ({ table }) => (
-      <Box sx={{ padding: '4px' }}>
-        <Badge
-          color="primary" 
-          overlap="circular"
-          badgeContent={table.getState().columnFilters.reduce((count, filter) => (filter.value ? count + 1 : count), 0)}
-        >
-          <Button 
-            id="filter-button"
-            onClick={toggleFilterMenu}
-          >
-              Filters
-          </Button>
-        </Badge>
-      </Box>
-    ),
     ...tableOptions,
   });
-  
+  function rowClass (row: Row<Run>) {
+    return runStatusToThemeCategory(row.getValue('status'))
+  }
   return (
-  <div>
-    <div>
-      <Typography variant="body2" gutterBottom color="gray" textAlign={"right"}>
+    <div className='tableContainer'>
+      <div style={{textAlign: 'right'}}>
         { table.getState().columnFilters.map((column) => {
-            let filterValue = column.value; 
+            let filterValue = column.value;
             if (column.id === "scheduled") {
               const parsedDate = new Date(column.value as string);
               filterValue = (parsedDate.toISOString().split('T')[0])
             }
             return (column.value ? `${column.id}: '${filterValue}' ` : "")
-          } )} 
-      </Typography>
-      <Menu
-        id="filter-menu"
-        anchorEl={dropMenuAnchorEl}
-        open={openFilterMenu}
-        onClose={toggleFilterMenu}
-        MenuListProps={{
-          'aria-labelledby': 'filter-button',
-        }}
-      >
-        <FilterMenu isOpen={openFilterMenu} table={table} />
-      </Menu>
+          } )}
+      </div>
+      <div className='tableControls'>
+        <FilterMenu
+          isOpen={openFilterMenu}
+          onChange={setOpenFilterMenu}
+          table={table}
+          sections={FILTER_SECTIONS}
+        />
+        { props.pagination? <Paginator table={table} /> : null }
+      </div>
+      <Table
+        table={table}
+        rowClass={rowClass}
+      />
+      { table.getState().pagination.pageSize >= 10? (
+      <div className='tableControls'>
+        { props.pagination? <Paginator table={table} /> : null }
+      </div> ) : null }
     </div>
-    <MaterialReactTable table={table} />
-  </div>
-    )
-}
-
-
-// FilterMenu
-
-type FilterMenuProps = {
-  isOpen: boolean; 
-  table: MRT_TableInstance<Run>;
-};
-
-
-const FILTER_SECTIONS = ["run", "build", "result"]
-const FILTER_SECTIONS_COLUMNS = [
-  ["scheduled", "suite", "machine_type", "user"],
-  ["branch", "sha1", "flavors"],
-  ["status"],
-]
-
-function FilterMenu({ isOpen, table}: FilterMenuProps) {
-  if (!isOpen) {
-    return null;
-  }
-
-  return (
-    <Box
-      sx={{
-        padding: '1em',
-        margin: '0px 0.5em',
-        border: '2px dashed grey',
-        borderRadius: '8px',
-      }}
-    >
-      {FILTER_SECTIONS_COLUMNS.map((_, sectionIndex) => (
-        <Box
-          key={`section-${sectionIndex}`}
-          sx={{
-            marginBottom: '1em',
-            marginLeft: '0.5em',
-          }} 
-          >
-       
-          <Typography variant="body2" gutterBottom color="gray">
-            Filter by {FILTER_SECTIONS[sectionIndex]} details...
-          </Typography>
-          <Grid container spacing={1} alignItems={"center"} >
-      
-            {table.getLeafHeaders().map((header) => {
-              if (FILTER_SECTIONS_COLUMNS[sectionIndex].includes(header.id)) {
-                return (
-                  <Grid item sx={{maxWidth: 160}} key={header.id}  margin={".5em"}>        
-                    <TableHeadCellFilterContainer
-                      header={header}
-                      table={table}
-                      style={{ backgroundColor: 'transparent', width: '100%' }}
-                    />
-                  </Grid>
-                );
-              }
-              return null;
-            })}
-          </Grid>
-        </Box>
-      ))}
-    </Box>
-  ) 
+  )
 }

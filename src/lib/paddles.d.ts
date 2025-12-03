@@ -87,6 +87,14 @@ export type Run = {
   flavor: string;
 };
 
+export const Flavors = [
+  'default',
+  'crimson',
+  'crimson-debug',
+  'crimson-release',
+] as const;
+export type Flavor = (typeof Flavors)[number];
+
 export type Node = {
   name: string;
   description: string | null;

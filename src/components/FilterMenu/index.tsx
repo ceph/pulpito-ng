@@ -25,7 +25,11 @@ export default function FilterMenu<TData>({ isOpen, onChange, table, sections }:
       onChange={onChange}
     >
       <Popover.Target>
-        <Button onClick={() => onChange(!isOpen)}>
+        <Button
+          onClick={() => onChange(!isOpen)}
+          className='filterbutton'
+          style={{display: 'flex'}}
+        >
           Filter
         </Button>
       </Popover.Target>
