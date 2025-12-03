@@ -1,0 +1,11 @@
+div.filtermenu {
+  padding: 1em;
+  margin: 0px 0.5em;
+  border: 2px dashed grey;
+  border-radius: 8px;
+}
+
+div.filtermenu-section {
+  margin-bottom: 1em;
+  margin-left: 0.5em;
+}
