@@ -1,0 +1,97 @@
+table.pulpito {
+  width: 100%;
+  border-spacing: 0;
+
+  th {
+    text-align: left;
+  }
+
+  tr,
+  td {
+    background-color: var(--palette-background-default);
+    color: var(--palette-text-primary);
+  }
+
+  td {
+    border-bottom: 1px solid var(--palette-table-cell-border);
+    padding: 1px;
+    padding-right: 5px;
+
+    .hardWrap {
+      overflow-wrap: anywhere;
+    }
+  }
+
+  th {
+
+    td {
+      font-size: 0.7rem;
+    }
+
+    .MuiTableSortLabel-icon {
+      color: var(--palette-text-primary);
+    }
+  }
+
+  tbody {
+    tr.info {
+
+      td,
+      svg {
+        background-color: var(--palette-info-main);
+        color: var(--palette-info-contrast-text);
+      }
+    }
+
+    tr.success {
+
+      td,
+      svg {
+        background-color: var(--palette-success-main);
+        color: var(--palette-success-contrast-text);
+      }
+    }
+
+    tr.error {
+
+      td,
+      svg {
+        background-color: var(--palette-error-main);
+        color: var(--palette-error-contrast-text);
+      }
+    }
+
+    tr.warning {
+
+      td,
+      svg {
+        background-color: var(--palette-warning-main);
+        color: var(--palette-warning-contrast-text);
+      }
+    }
+  }
+
+  button.expandButton {
+    width: 1.5rem;
+    background: transparent;
+    color: var(--mantine-color-body);
+    border: 1px solid var(--mantine-color-default-border);
+    border-radius: var(--mantine-radius-sm);
+  }
+
+  tr td .MuiButtonBase-root {
+    color: inherit;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    tr:hover td {
+      filter: brightness(85%);
+    }
+  }
+
+  @media (prefers-color-scheme: light) {
+    tr:hover td {
+      filter: brightness(115%);
+    }
+  }
+}
