@@ -1,3 +1,4 @@
+import { navigate } from 'vike/client/router'
 import {
   type MRT_PaginationState,
   type MRT_ColumnFiltersState,
@@ -22,6 +23,21 @@ function getUrl(path: string, filters: MRT_ColumnFiltersState, pagination: MRT_P
     newUrl.searchParams.set("pageSize", String(pagination.pageSize));
   }
   return newUrl;
+}
+
+export function getFilterChangeHandler(paramName: string) {
+  return (value: string | null) => {
+    console.log('changeHandler', paramName, value)
+    const url = new URL(window.location.href)
+    if ( value ) {
+      url.searchParams.set(paramName, value.toString());
+    } else {
+      url.searchParams.delete(paramName);
+    }
+    if ( url.toString() != window.location.href) {
+      navigate(url.toString().replace(url.origin, ''));
+    }
+  }
 }
 
 export function formatDate(orig: string | number | Date) {
