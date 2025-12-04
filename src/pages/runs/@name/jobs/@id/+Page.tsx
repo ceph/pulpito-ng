@@ -33,10 +33,10 @@ type StatusIconsInfo = {
 
 function StatusIcon({ status }: {status: JobStatus}) {
   const statuses: StatusIconsInfo = {
-    pass: { icon: CheckCircleOutlineIcon, color: "var(--mui-palette-success-light)" },
-    fail: { icon: HighlightOffIcon, color: "var(--mui-palette-error-light)" },
-    dead: { icon: HighlightOffIcon, color: "var(--mui-palette-error-light)" },
-    running: { icon: PlayCircleOutlineIcon, color: "var(--mui-palette-warning-light)" },
+    pass: { icon: CheckCircleOutlineIcon, color: "var(--palette-success-light)" },
+    fail: { icon: HighlightOffIcon, color: "var(--palette-error-light)" },
+    dead: { icon: HighlightOffIcon, color: "var(--palette-error-light)" },
+    running: { icon: PlayCircleOutlineIcon, color: "var(--palette-warning-light)" },
     queued: { icon: CalendarMonthIcon },
     waiting: { icon: ScheduleIcon },
     unknown: { icon: QuestionMarkIcon },

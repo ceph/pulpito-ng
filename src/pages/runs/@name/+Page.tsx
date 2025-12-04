@@ -2,7 +2,7 @@ import { PropsWithChildren } from 'react'
 import { Config } from 'vike-react/Config'
 import { usePageContext } from 'vike-react/usePageContext'
 import { useData } from 'vike-react/useData'
-import Typography from "@mui/material/Typography";
+import { Text } from '@mantine/core';
 import { format } from "date-fns";
 
 import type { Run } from "#src/lib/paddles.d";
@@ -39,9 +39,9 @@ export default function Page() {
   return (
     <div className={classes.root}>
       <Config title={`${name} - Pulpito`} />
-      <Typography variant="h5" style={{ margin: "20px 0px" }}>
+      <Text size="xl" style={{ margin: "20px 0px" }}>
         {name}
-      </Typography>
+      </Text>
       <div style={{ margin: "20px 0px" }}>
         See runs with the same:
         <FilterLink to={`/runs/?branch=${branch}`}>
