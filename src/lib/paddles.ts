@@ -1,6 +1,5 @@
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
-import type { QueryOptions, UseQueryResult } from "@tanstack/react-query";
+import { render } from 'vike/abort'
 
 import type { 
   GetURLParams,
@@ -16,12 +15,7 @@ const MACHINE_TYPES = _machine_types_str.split(',')
 // for queries which mention 'page', use this default page size if another is not specified.
 const DEFAULT_PAGE_SIZE = 25;
 
-async function queryFn (params: QueryOptions) {
-  const queryKey = params.queryKey as [string, { url: string}];
-  return axios.get(queryKey[1].url).then((resp) => resp.data);
-}
-
-function getURL(endpoint: string, params?: Record<string, string>) {
+function getURL({endpoint, params} : GetURLParams) {
   const url = new URL(endpoint, PADDLES_SERVER);
   Object.entries(params || {}).forEach((entry) => {
     const [key, value] = entry;
@@ -65,6 +59,23 @@ function getURL(endpoint: string, params?: Record<string, string>) {
   };
   url.pathname = url.pathname.replace('//', '/');
   return url;
+}
+
+async function fetchPaddlesMultiple(requests: GetURLParams[]) {
+  return Promise.all(requests.map((request) => axios.get(getURL(request).toString())))
+    .catch((err) => {
+      if ( err.response ) {
+        throw render(err.response.status, err.response.statusText)
+      } else {
+        throw render(503, "Could not reach the paddles backend!")
+      }
+    })
+    .then((responses) => responses.map((response) => response.data))
+}
+
+async function fetchPaddles<TData>({endpoint, params}: GetURLParams): Promise<TData> {
+  return fetchPaddlesMultiple([{endpoint, params}])
+    .then(data => data[0])
 }
 
 function useJobHistory(description: string, pageSize: number): UseQueryResult<JobList> {
@@ -121,7 +132,8 @@ export {
   DEFAULT_PAGE_SIZE,
   MACHINE_TYPES,
   getURL,
-  queryFn,
   useStatsNodeLocks,
   useJobHistory,
+  fetchPaddles,
+  fetchPaddlesMultiple,
 };

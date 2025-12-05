@@ -1,7 +1,6 @@
 import type { PageContext } from 'vike/types'
-import { render } from 'vike/abort'
 
-import { getURL } from "#src/lib/paddles";
+import { fetchPaddlesMultiple } from "#src/lib/paddles";
 import type { Job, Node } from "#src/lib/paddles.d";
 
 export type NodeResponse = {
@@ -10,16 +9,10 @@ export type NodeResponse = {
 }
 
 export default async function data(pageContext: PageContext): Promise<NodeResponse> {
-  const nodeUrl = getURL(`/nodes/${pageContext.routeParams.name}`, pageContext.urlParsed.search);
-  const jobsUrl = getURL(`/nodes/${pageContext.routeParams.name}/jobs`, pageContext.urlParsed.search);
-  const [nodeResponse, jobsResponse] = await Promise.all([fetch(nodeUrl), fetch(jobsUrl)]);
-  const result: NodeResponse = {jobs: [], nodes: []};
-  if ( nodeResponse.status === 404 ) throw render(
-    nodeResponse.status,
-    `Node "${pageContext.routeParams.name}" does not exist`
-  );
-  else if ( nodeResponse.ok ) result.nodes = [await nodeResponse.json()];
-  if ( jobsResponse.ok ) result.jobs = await jobsResponse.json();
-  return result;
+  const data = await fetchPaddlesMultiple([
+    {endpoint: `/nodes/${pageContext.routeParams.name}`, params: pageContext.urlParsed.search},
+    {endpoint: `/nodes/${pageContext.routeParams.name}/jobs`, params: pageContext.urlParsed.search},
+  ])
+  return {nodes: [data[0]], jobs: data[1]}
 }
 

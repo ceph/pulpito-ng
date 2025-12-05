@@ -6,6 +6,10 @@ const messagesByCode = {
   401: "You cannot access this page because you aren't logged in. Please log in.",
   403: "You cannot access this page because you don't have enough privileges.",
   404: "This page doesn't exist.",
+  410: "This page doesn't exist.",
+  429: "Too many requests; please try again later",
+  500: "Internal server error",
+  503: "Cannot reach backend.",
 }
 
 export function Page() {

@@ -6,7 +6,8 @@ export type QueryKey = [
 ];
 
 export interface GetURLParams {
-  [key: string]: string | number | null | undefined;
+  endpoint: string,
+  params?: Record<string, string>,
 }
 
 type RunParams = {
