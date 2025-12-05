@@ -1,4 +1,11 @@
 
+export interface NodeLockStats {
+  name: string;
+  owner: string;
+  machine_type: string;
+  count: number;
+}
+
 export type FilterMenuSections = {
   [key: string]: FilterMenuSection;
 };

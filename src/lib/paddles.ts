@@ -84,44 +84,10 @@ async function fetchPaddles<TData>({endpoint, params}: GetURLParams): Promise<TD
     .then(data => data[0])
 }
 
-function useStatsNodeLocks(params: URLSearchParams): UseQueryResult<StatsLocksResponse[]> {
-  const params_ = JSON.parse(JSON.stringify(params || {}));
-  params_["up"] = "True"
-
-  const queryString = new URLSearchParams(params_).toString();
-  let uri = `nodes/?${queryString}`;
-  const url = new URL(uri, PADDLES_SERVER).href
-
-  const query = useQuery({
-    queryKey: ["statsLocks", { url }],
-
-    select: (data: Node[]) => {
-      let users = new Map();
-      data.forEach((node) => {
-        let owner: string = node["locked"] ? (node["locked_by"] || "-") : "(free)";
-        let mtype: string = node["machine_type"] || "None";
-        let mtype_dict = users.get(owner) || new Map();
-        let mcount = mtype_dict.get(mtype) + 1 || 0 + 1;
-        mtype_dict.set(mtype, mcount);
-        users.set(owner, mtype_dict);
-      });
-      let resp: StatsLocksResponse[] = [];
-      users.forEach(((mtype_dict: Map<string, number>, owner: string) => {
-        mtype_dict.forEach((mcount: number, mtype: string) => {
-          resp.push({ id: owner + mtype, owner, machine_type: mtype, count: mcount })
-        })
-      }));
-      return resp;
-    }
-  });
-  return query;
-}
-
 export {
   DEFAULT_PAGE_SIZE,
   MACHINE_TYPES,
   getURL,
-  useStatsNodeLocks,
   fetchPaddles,
   fetchPaddlesMultiple,
 };
