@@ -44,6 +44,12 @@ function getURL({endpoint, params} : GetURLParams) {
       case 'locked':
         url.searchParams.set(key, value);
         break
+      case 'os_type':
+        url.searchParams.set(key, value);
+        break
+      case 'os_version':
+        url.searchParams.set(key, value);
+        break
       case 'up':
         url.searchParams.set(key, value);
         break

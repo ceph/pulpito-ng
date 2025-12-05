@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { usePageContext } from 'vike-react/usePageContext'
 import {
   getCoreRowModel,
   useReactTable,
@@ -5,10 +7,16 @@ import {
   type Row,
 } from '@tanstack/react-table';
 
+
 import type { Node } from "#src/lib/paddles.d";
 import { formatDate } from "#src/lib/utils";
-import { useDefaultTableOptions } from "../../lib/table";
+import { useDefaultTableOptions, parseParams } from "../../lib/table";
 import Table from '../Table';
+import FilterMenu from '../FilterMenu';
+import { MACHINE_TYPES } from '#src/lib/paddles';
+import { type FilterMenuSections } from '#src/lib/types.d';
+
+import './index.css';
 
 
 export const columns: ColumnDef<Node>[] = [
@@ -29,13 +37,11 @@ export const columns: ColumnDef<Node>[] = [
     },
   },
   {
-    header: "machine_type",
+    header: "machine type",
     accessorKey: "machine_type",
-    size: 90,
-    maxSize: 90,
   },
   {
-    header: "🔌",
+    header: "up",
     accessorFn: (row: Node) => row.up?.toLocaleString(),
     size: 30,
     meta: {
@@ -43,8 +49,7 @@ export const columns: ColumnDef<Node>[] = [
     },
   },
   {
-    header: "🔒",
-    accessorFn: (row: Node) => row.locked?.toLocaleString(),
+    header: "locked",
     size: 30,
     meta: {
       filterVariant: "select",
@@ -70,6 +75,7 @@ export const columns: ColumnDef<Node>[] = [
   },
   {
     header: "OS type",
+    id: 'os_type',
     accessorFn: (row) => row.os_type || "none",
     size: 40,
     meta: {
@@ -78,6 +84,7 @@ export const columns: ColumnDef<Node>[] = [
   },
   {
     header: "OS ver.",
+    id: 'os_version',
     accessorFn: (row) => row.os_version || "none",
     size: 40,
     meta: {
@@ -99,7 +106,45 @@ export const columns: ColumnDef<Node>[] = [
   },
 ];
 
-export default function NodeList({nodes}: {nodes: Node[]}) {
+const FILTER_SECTIONS: FilterMenuSections = {
+  node: {
+    filters: {
+      machine_type: {
+        label: 'machine type',
+        options: MACHINE_TYPES,
+      },
+      os_type: {
+        label: 'OS',
+        options: ['ubuntu', 'centos', 'rocky'],
+      },
+      os_version: {
+        label: 'OS ver.',
+      },
+    },
+  },
+  status: {
+    filters: {
+      up: {
+        label: 'up',
+        options: ['true', 'false'],
+      },
+      locked: {
+        label: 'locked',
+        options: ['true', 'false'],
+      },
+    },
+  },
+}
+
+type NodeListProps = {
+  nodes: Node[],
+}
+
+export default function NodeList({nodes}: NodeListProps) {
+  const [openFilterMenu, setOpenFilterMenu] = useState<boolean>(false);
+  const context = usePageContext();
+  const params = context?.urlParsed.search || {};
+  const { columnFilters, pagination } = parseParams(params);
   const options = useDefaultTableOptions<Node>();
   options.state = {};
   options.state.columnVisibility = {};
@@ -120,6 +165,8 @@ export default function NodeList({nodes}: {nodes: Node[]}) {
     columns,
     data: nodes,
     getCoreRowModel: getCoreRowModel(),
+    manualFiltering: true,
+    enableColumnFilters: false,
     rowCount: nodes.length,
     // enableFacetedValues: true,
     initialState: {
@@ -140,7 +187,8 @@ export default function NodeList({nodes}: {nodes: Node[]}) {
       ],
     },
     state: {
-      ...options.state,
+      columnFilters,
+      pagination,
     },
   });
   const rowClass = (row: Row<Node>) => {
@@ -149,5 +197,21 @@ export default function NodeList({nodes}: {nodes: Node[]}) {
       row.original.locked === false? 'success' :
       'info'
   }
-  return <Table table={table} rowClass={rowClass} />
+  return (
+    <div className='tableContainer'>
+      <div className='tableControls'>
+        <FilterMenu
+          isOpen={openFilterMenu}
+          onChange={setOpenFilterMenu}
+          table={table}
+          sections={FILTER_SECTIONS}
+        />
+        { props.pagination? <Paginator table={table} /> : null }
+      </div>
+      <Table
+        table={table}
+        rowClass={rowClass}
+      />
+    </div>
+  )
 }
