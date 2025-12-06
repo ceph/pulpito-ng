@@ -1,3 +1,9 @@
+import { NodeJobStats as PaddlesNodeJobStats } from './paddles.d';
+
+export interface NodeJobStats extends PaddlesNodeJobStats {
+  name: string;
+  total: number;
+}
 
 export interface NodeLockStats {
   name: string;

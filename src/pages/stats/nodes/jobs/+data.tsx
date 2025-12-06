@@ -14,11 +14,11 @@ export default async function data(pageContext: PageContext) {
   for (let node in data) {
     let nodeResult = {
       name: node,
-      pass: data[node]['pass'],
-      dead: data[node]['dead'],
-      fail: data[node]['fail'],
-      running: data[node]['running'],
-      unknown: data[node]['unknown'],
+      pass: data[node]['pass'] || 0,
+      dead: data[node]['dead'] || 0,
+      fail: data[node]['fail'] || 0,
+      running: data[node]['running'] || 0,
+      unknown: data[node]['unknown'] || 0,
       total: Object.values(data[node]).reduce(
         (accumulator, currentValue) => accumulator + currentValue, 0),
     }

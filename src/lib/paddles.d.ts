@@ -113,20 +113,14 @@ export type JobList = {
   jobs?: Job[];
 }
 
-export type StatsLocksResponse = {
-  id: string;
-  owner: string;
-  machine_type: string;
-  count: number;
-}
-
-export interface StatsJobsResponse {
-  id: string;
-  name: string;
+export interface NodeJobStats {
   pass?: number;
   fail?: number;
   dead?: number;
-  unknown?: number;
   running?: number;
-  total: number;
+  unknown?: number;
+}
+
+export interface NodeJobStatsResponse {
+  [key: string]: NodeJobStats
 }
