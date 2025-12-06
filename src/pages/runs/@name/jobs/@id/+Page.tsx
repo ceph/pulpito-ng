@@ -1,7 +1,6 @@
 import { Config } from 'vike-react/Config'
 import { useData } from 'vike-react/useData'
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid2';
+import { Grid } from '@mantine/core';
 import Typography from "@mui/material/Typography";
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -13,11 +12,9 @@ import ScheduleIcon from '@mui/icons-material/Schedule';
 import formatDuration from "date-fns/formatDuration";
 import YAML from "json-to-pretty-yaml";
 
-import JobHistory from "#src/components/JobHistory";
-import { useState } from "react";
 import Link from "#src/components/Link";
 import CodeBlock from "#src/components/CodeBlock";
-import type { JobType, JobStatus } from "#src/lib/paddles.d";
+import type { Job, JobStatus } from "#src/lib/paddles.d";
 import { getDuration, dirName } from "#src/lib/utils";
 
 
@@ -81,30 +78,35 @@ function timeSince(date: Date) {
 function JobHeader({ data }: { data: Job }) {
   return (
     <>
-      <Grid size={12} style={{ display: "flex" }}>
+      <Grid.Col span={12} style={{ display: "flex" }}>
         <StatusIcon status={data.status} />
         <Typography variant="h5">
           <Link to={`/runs/${data.name}`}>{data.name}</Link>/{data.job_id}
         </Typography>
-      </Grid>
-      <Grid size={12} style={{ display: "flex" }}>
+      </Grid.Col>
+      <Grid.Col span={12} style={{ display: "flex" }}>
         <FolderIcon sx={{ alignSelf: "center", margin: "5px" }} />
-        <Typography variant="h5">
+        <Typography variant="h6">
           <Link to={dirName(data.log_href)}>Log Archive</Link>
         </Typography>
-      </Grid>
-      <Grid size={4}>
+      </Grid.Col>
+      <Grid.Col span={12}>
+          <Link to={`/runs/${data.name}/jobs/${data.job_id}/history`}>Job History</Link>
+      </Grid.Col>
+      <Grid.Col span={4}>
         <Typography>Status: {data.status}</Typography>
-        <Typography>
-          {timeSince(new Date(data.started))}
-        </Typography>
+        {data.started? (
+          <Typography>
+            {timeSince(new Date(data.started))}
+          </Typography>
+        ): null}
         {data.duration ? (
           <Typography>
             Took {formatDuration(getDuration(data.duration))}
           </Typography>
         ) : null}
-      </Grid>
-      <Grid size={4}>
+      </Grid.Col>
+      <Grid.Col span={4}>
         <Typography>Ceph Branch: {data.branch}</Typography>
         <Typography>
           SHA1: <code>{data.sha1.slice(0, 7)}</code>
@@ -112,8 +114,8 @@ function JobHeader({ data }: { data: Job }) {
         <Typography>
           Teuthology Branch: {data.teuthology_branch}
         </Typography>
-      </Grid>
-      <Grid size={4}>
+      </Grid.Col>
+      <Grid.Col span={4}>
         <Typography>
           Nodes:&nbsp;
           {Object.keys(data.targets || []).map((item) => (
@@ -130,24 +132,24 @@ function JobHeader({ data }: { data: Job }) {
         <Typography>
           OS: {data.os_type} {data.os_version}
         </Typography>
-      </Grid>
-      <Grid size={12}>
+      </Grid.Col>
+      <Grid.Col span={12}>
         <Typography component="span">Description:&nbsp;</Typography>
         <Typography variant="body2" component="span">
           <code>{data.description}</code>
         </Typography>
-      </Grid>
+      </Grid.Col>
       {data.failure_reason ? (
-        <Grid size={12}>
+        <Grid.Col span={12}>
           <Typography component="span">Failure reason:&nbsp;</Typography>
             <code>{data.failure_reason}</code>
-        </Grid>
+        </Grid.Col>
       ) : null}
     </>
   );
 }
 
-function JobDetails({ data }: {data: JobType}) {
+function JobDetails({ data }: {data: Job}) {
   const code = YAML.stringify(data);
   return (
     <CodeBlock value={code} language="yaml" />
@@ -155,30 +157,23 @@ function JobDetails({ data }: {data: JobType}) {
 }
 
 export default function Job() {
-  const [showJobHistory, toggleShowJobHistory] = useState(false);
   const data: Job = useData();
   return (
-    <Grid container spacing={2}>
+    <>
       <Config title={`Job ${data.job_id} - Pulpito`} />
-      <JobHeader data={data} />
-      <Grid size={12}>
-        <details
-          style={{ marginTop: "20px" }}
-        >
-          <summary>
-            <Typography>Full job details</Typography>
-          </summary>
+      <Grid>
+        <JobHeader data={data} />
+        <Grid.Col span={12}>
+          <details
+            style={{ marginTop: "20px" }}
+          >
+            <summary>
+              <Typography>Full job details</Typography>
+            </summary>
             <JobDetails data={data} />
-        </details>
-        <Button variant={"text"} sx={{"marginTop": "10px"}}
-                onClick={() => toggleShowJobHistory(!showJobHistory)}>
-          {showJobHistory ? "Hide": "Show"} history
-        </Button>
-        { showJobHistory ?
-            (data?.description ? <JobHistory description={data.description} /> : null)
-            :null
-        }
+          </details>
+        </Grid.Col>
       </Grid>
-    </Grid>
+    </>
   );
 }

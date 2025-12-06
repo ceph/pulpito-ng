@@ -60,7 +60,7 @@ function getURL({endpoint, params} : GetURLParams) {
         url.pathname += `/${key}/${value}`;
     }
   });
-  if ( ! url.searchParams.get("count") ) {
+  if ( endpoint && endpoint.match(/nodes\/.*\/jobs/) && ! url.searchParams.get("count") ) {
     url.searchParams.set("count", String(DEFAULT_PAGE_SIZE));
   };
   url.pathname = url.pathname.replace('//', '/');
@@ -82,23 +82,6 @@ async function fetchPaddlesMultiple(requests: GetURLParams[]) {
 async function fetchPaddles<TData>({endpoint, params}: GetURLParams): Promise<TData> {
   return fetchPaddlesMultiple([{endpoint, params}])
     .then(data => data[0])
-}
-
-function useJobHistory(description: string, pageSize: number): UseQueryResult<JobList> {
-  const url = getURL(`/jobs/`, { 'description': description, "pageSize": pageSize });
-  const query = useQuery(["job-history", { url }], {
-    select: (data: Job[]) => {
-      data.forEach((item) => {
-        item.id = item.job_id + "";
-      });
-      const resp: JobList = { 'jobs': data }
-      return resp;
-    },
-    cacheTime: 60 * 60,
-    staleTime: 60 * 60,
-    retry: 1,
-  });
-  return query;
 }
 
 function useStatsNodeLocks(params: URLSearchParams): UseQueryResult<StatsLocksResponse[]> {
@@ -139,7 +122,6 @@ export {
   MACHINE_TYPES,
   getURL,
   useStatsNodeLocks,
-  useJobHistory,
   fetchPaddles,
   fetchPaddlesMultiple,
 };
