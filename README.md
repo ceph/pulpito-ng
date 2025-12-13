@@ -41,7 +41,7 @@ In [teuthology's docker-compose](https://github.com/ceph/teuthology/blob/main/do
     ports:
       - 8081:8081
 ```
-[recommended] For developement purposes:
+[recommended] For development purposes:
 Add the following to `pulpito-ng` container:
 
 ```
@@ -51,4 +51,68 @@ pulpito-ng:
     volumes:
       - ../../../pulpito-ng:/app/:rw
       - /app/node_modules
+```
+
+## Deploying in OpenShift
+
+``Dockerfile.ocp`` and the files under ``openshift/`` are files used to deploy pulpito-ng in OpenShift.
+
+You may wish to change the number of replicas in ``openshift/pulpito-ng-deploy.yaml`` depending on how many worker nodes you have.
+
+To deploy:
+
+Create a new project (if necessary)
+```
+oc new-project pulpito
+```
+
+Create the Image Stream
+```
+oc -n pulpito apply -f openshift/pulpito-ng-imagestream.yaml
+```
+
+Modify the Build Config if necessary and start the build
+```
+oc -n pulpito apply -f openshift/pulpito-ng-build.yaml
+```
+
+Define the paddles URL
+```
+oc -n pulpito set env bc/pulpito-ng \
+  REACT_APP_PADDLES_SERVER=http://paddles.example.com
+```
+
+Start the build
+```
+oc -n pulpito start-build pulpito-ng --follow
+```
+
+Deploy!
+```
+oc -n pulpito apply -f openshift/pulpito-ng-deploy.yaml
+
+oc -n pulpito get route pulpito-ng
+```
+
+### Deploying code changes in OpenShift
+
+If you just want to deploy the latest code in ``main`` (and your Build Config in ``openshift/pulpito-ng-build.yaml`` doesn't have a different branch defined),
+
+(Note, the ``--follow`` will likely timout if you do not wait for the first build from above to finish)
+```
+oc -n pulpito start-build pulpito-ng --follow
+```
+
+If you wish to deploy code from a different pulpito-ng.git branch,
+
+Start a one-off build of the branch.  The deployment will automatically roll this out.
+```
+oc -n pulpito start-build pulpito-ng --follow --commit=<branch-name>
+```
+
+To make the deployment use this branch permanently, modify ``spec.source.git.ref:`` in ``openshift/pulpito-ng-build.yaml``, and build it:
+```
+oc -n pulpito apply -f openshift/pulpito-ng-build.yaml
+
+oc -n pulpito start-build pulpito-ng --follow
 ```

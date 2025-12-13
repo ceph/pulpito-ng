@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pulpito-ng
+  labels:
+    app: pulpito-ng
+  annotations:
+    # When the BuildConfig updates the ImageStreamTag pulpito-ng:latest,
+    # automatically roll out the Deployment to the new image.
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"pulpito-ng:latest"},
+        "fieldPath":"spec.template.spec.containers[?(@.name==\"pulpito-ng\")].image"}]
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 300
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: pulpito-ng
+  template:
+    metadata:
+      labels:
+        app: pulpito-ng
+    spec:
+      containers:
+      - name: pulpito-ng
+        # This gets rewritten by the ImageStream trigger above.
+        image: pulpito-ng:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 3
+          timeoutSeconds: 2
+          periodSeconds: 5
+          failureThreshold: 6
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 10
+          timeoutSeconds: 2
+          periodSeconds: 10
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pulpito-ng
+  labels:
+    app: pulpito-ng
+spec:
+  selector:
+    app: pulpito-ng
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: pulpito-ng
+spec:
+  to:
+    kind: Service
+    name: pulpito-ng
+  port:
+    targetPort: http

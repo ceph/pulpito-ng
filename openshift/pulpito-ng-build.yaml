@@ -1,0 +1,21 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: pulpito-ng
+spec:
+  runPolicy: Serial
+  source:
+    type: Git
+    git:
+      uri: https://github.com/ceph/pulpito-ng
+      ref: main
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile.ocp
+  output:
+    to:
+      kind: ImageStreamTag
+      name: pulpito-ng:latest
+  triggers:
+  - type: ConfigChange
