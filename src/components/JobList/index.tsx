@@ -31,7 +31,16 @@ import sentryIcon from "./assets/sentry.svg";
 const columns: ColumnDef<Job>[] = [
   {
     id: 'expander',
-    header: () => null,
+    header: ({ table }) => (
+      <div>
+        <button
+          className='expandButton'
+          onClick={table.getToggleAllRowsExpandedHandler()}
+        >
+          {table.getIsAllRowsExpanded() ? '-' : '+'}
+        </button>
+      </div>
+    ),
     cell: ({ row }) => (
       row.getCanExpand() &&
       <button className='expandButton' onClick={row.getToggleExpandedHandler()} >

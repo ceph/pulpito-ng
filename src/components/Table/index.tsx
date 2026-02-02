@@ -45,7 +45,7 @@ export default function Table<TData> ({table, rowClass, detailPanel}: TableProps
                   </td>
                 ))}
               </tr>
-              { row.getIsExpanded() && detailPanel !== undefined && (
+              { row.getCanExpand() && row.getIsExpanded() && detailPanel !== undefined && (
                 <tr>
                   <td colSpan={row.getVisibleCells().length}>
                     {detailPanel({row})}
