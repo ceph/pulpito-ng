@@ -7,6 +7,7 @@ import { useDisclosure } from '@mantine/hooks';
 import Login from "../components/Login";
 
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 import "./+Layout.css";
 import { MACHINE_TYPES } from "#src/lib/paddles";
 
