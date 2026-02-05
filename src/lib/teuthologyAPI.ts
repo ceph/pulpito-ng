@@ -16,6 +16,12 @@ function getURL(relativeURL: URL|string): URL {
     return new URL(relativeURL, TEUTHOLOGY_API_SERVER);
 }
 
+function getLoginURL() {
+    const url = getURL('login');
+    url.searchParams.set("dest", window.location.href);
+    return url
+}
+
 function doLogin(destinationUrl: string) {
     const url = getURL("/login/");
     url.searchParams.set("dest", destinationUrl);
@@ -80,6 +86,8 @@ function useRunKill() {
 }
 
 export {
+    getURL,
+    getLoginURL,
     doLogin,
     doLogout,
     useSession,
