@@ -7,6 +7,9 @@ import { format, type Duration } from "date-fns";
 
 import { DEFAULT_PAGE_SIZE } from './paddles';
 
+export function isServer() {
+  return ! (typeof window !== 'undefined' && window.document)
+}
 
 export function getUrl(path: string, filters: ColumnFiltersState, pagination: PaginationState) {
   const newUrl = new URL(path, window.location.origin);

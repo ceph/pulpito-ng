@@ -5,11 +5,19 @@ import type {
   GetURLParams,
 } from "./paddles.d";
 
+import { isServer } from "./utils";
 
-const PADDLES_SERVER =
-  import.meta.env.VITE_PADDLES_SERVER || "https://paddles.front.sepia.ceph.com";
+const PADDLES_SERVER = (
+  isServer()?
+    process.env.VITE_PADDLES_SERVER || import.meta.env.VITE_PADDLES_SERVER :
+    import.meta.env.VITE_PADDLES_SERVER
+) || "https://paddles.front.sepia.ceph.com";
 
-const _machine_types_str: string = import.meta.env.VITE_MACHINE_TYPE || 'smithi,mira';
+const _machine_types_str = (
+  isServer()?
+    process.env.VITE_MACHINE_TYPE || import.meta.env.VITE_MACHINE_TYPE :
+    import.meta.env.VITE_MACHINE_TYPE
+) || 'smithi,mira';
 const MACHINE_TYPES = _machine_types_str.split(',')
 
 // for queries which mention 'page', use this default page size if another is not specified.

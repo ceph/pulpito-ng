@@ -2,10 +2,16 @@ import axios from "axios";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import { Cookies } from "react-cookie";
+
 import { Session, KillRunResult } from "./teuthologyAPI.d"
 
-const TEUTHOLOGY_API_SERVER = 
-    import.meta.env.VITE_TEUTHOLOGY_API || "";
+import { isServer } from "./utils";
+
+const TEUTHOLOGY_API_SERVER = (
+  isServer()?
+    process.env.VITE_TEUTHOLOGY_API || import.meta.env.VITE_TEUTHOLOGY_API :
+    import.meta.env.VITE_TEUTHOLOGY_API
+) || "";
 const GH_USER_COOKIE = "GH_USER";
 
 function getURL(relativeURL: URL|string): URL {
