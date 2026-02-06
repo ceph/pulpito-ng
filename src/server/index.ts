@@ -60,7 +60,7 @@ async function startServer() {
       // Install error tracking here, see https://vike.dev/errors
     }
     const { httpResponse } = pageContext
-    if (res.writeEarlyHints) res.writeEarlyHints({ link: httpResponse.earlyHints.map((e) => e.earlyHintLink) })
+    // if (res.writeEarlyHints) res.writeEarlyHints({ link: httpResponse.earlyHints.map((e) => e.earlyHintLink) })
     httpResponse.headers.forEach(([name, value]) => res.setHeader(name, value))
     res.status(httpResponse.statusCode)
     // For HTTP streams use pageContext.httpResponse.pipe() instead, see https://vike.dev/streaming
