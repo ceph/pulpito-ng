@@ -1,8 +1,4 @@
-import { useState } from "react";
-import Button from "@mui/material/Button";
-import Avatar from '@mui/material/Avatar';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+import { Avatar, Button, Menu } from "@mantine/core";
 import GitHubIcon from '@mui/icons-material/GitHub';
 
 import { doLogin, doLogout, useSession } from "../../lib/teuthologyAPI";
@@ -10,14 +6,6 @@ import { doLogin, doLogout, useSession } from "../../lib/teuthologyAPI";
 
 export default function Login() {
   const sessionQuery = useSession();
-  const [dropMenuAnchor, setDropMenuAnchor] = useState(null);
-  const open = Boolean(dropMenuAnchor);
-  const handleClick = (event) => {
-    setDropMenuAnchor(event.currentTarget);
-  };
-  const handleClose = () => {
-    setDropMenuAnchor(null);
-  };
 
   if ( ! sessionQuery.isSuccess ) return null;
 
@@ -28,21 +16,16 @@ export default function Login() {
             <Avatar
               alt={sessionQuery.data?.session?.username || ""} 
               src={sessionQuery.data?.session?.avatar_url || ""}
-              onClick={handleClick} 
             />
             <Menu
-              anchorEl={dropMenuAnchor}
-              open={open}
-              onClose={handleClose}
             >
-              <MenuItem onClick={doLogout}>Logout</MenuItem>
+              <Menu.Item onClick={doLogout}>Logout</Menu.Item>
             </Menu>
         </div>
         : <Button 
             variant="contained" 
             color="success"
-            onClick={doLogin}
-            startIcon={<GitHubIcon fontSize="small" /> }
+            onClick={() => doLogin(window.location.pathname)}
             disabled={sessionQuery.isError}
           >
             Login 
@@ -51,3 +34,5 @@ export default function Login() {
     </div>
   );
 }
+              // onClick={handleClick} 
+            // startIcon={<GitHubIcon fontSize="small" /> }
