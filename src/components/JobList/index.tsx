@@ -1,13 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useData } from 'vike-react/useData'
 import { usePageContext } from 'vike-react/usePageContext'
 import DescriptionIcon from "@mui/icons-material/Description";
 import {
   getCoreRowModel,
+  getSortedRowModel,
   getExpandedRowModel,
   useReactTable,
   type ColumnDef,
   type Row,
+  type SortingState,
 } from '@tanstack/react-table';
 import { type Theme } from "@mui/material/styles";
 
@@ -253,6 +255,10 @@ export default function JobList(props: JobListProps) {
   const onPaginationChange = getPaginationCallback({
     path: context.urlPathname, columnFiltersState: [], paginationState: pagination
   });
+  const [sorting, setSorting] = useState<SortingState>([{
+      id: props.sortMode === "time"? "started" : "job_id",
+      desc: true,
+  }]);
   const table = useReactTable({
     ...options,
     columns,
@@ -260,6 +266,8 @@ export default function JobList(props: JobListProps) {
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getRowCanExpand: (row) => !! row.original.failure_reason,
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
     // enableFacetedValues: true,
     enableGlobalFilter: true,
     // enableGlobalFilterRankedResults: false,
@@ -282,15 +290,11 @@ export default function JobList(props: JobListProps) {
         tasks: false,
         description: false,
       },
-      sorting: [
-        {
-          id: props.sortMode === "time"? "started" : "job_id",
-          desc: true,
-        },
-      ],
-      // showGlobalFilter: true,
     },
-    state: {pagination},
+    state: {
+      pagination,
+      sorting,
+    },
   });
   const rowClass = (row: Row<Job>) => {
     const category = jobStatusToThemeCategory(row.getValue('status'));

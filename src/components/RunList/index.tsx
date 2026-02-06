@@ -5,9 +5,11 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useDebounceValue } from "usehooks-ts";
 import {
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
   type ColumnDef,
   type Row,
+  type SortingState,
   type TableOptions,
 } from '@tanstack/react-table';
 import { type Theme } from "@mui/material/styles";
@@ -259,6 +261,10 @@ export default function RunList(props: RunListProps) {
   const onPaginationChange = getPaginationCallback({
     path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
   });
+  const [sorting, setSorting] = useState<SortingState>([{
+      id: "scheduled",
+      desc: true,
+  }]);
   const data: Run[] = useData() || [];
   const columns = _columns;
   const table = useReactTable({
@@ -266,6 +272,8 @@ export default function RunList(props: RunListProps) {
     columns,
     data: data || [],
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
     manualFiltering: true,
     manualPagination: true,
     onPaginationChange,
@@ -279,16 +287,11 @@ export default function RunList(props: RunListProps) {
         posted: false,
         'results.total': false,
       },
-      sorting: [
-        {
-          id: "scheduled",
-          desc: true,
-        },
-      ],
     },
     state: {
       columnFilters,
       pagination,
+      sorting,
     },
     ...tableOptions,
   });

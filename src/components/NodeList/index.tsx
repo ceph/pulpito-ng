@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { usePageContext } from 'vike-react/usePageContext'
 import {
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
   type ColumnDef,
   type Row,
+  type SortingState,
 } from '@tanstack/react-table';
 
 
@@ -56,6 +58,7 @@ export const columns: ColumnDef<Node>[] = [
   },
   {
     header: "locked",
+    accessorFn: (row: Node) => row.locked?.toLocaleString(),
     size: 30,
     meta: {
       filterVariant: "select",
@@ -158,6 +161,16 @@ export default function NodeList(props: NodeListProps) {
   const onPaginationChange = getPaginationCallback({
     path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
   });
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "machine_type",
+      desc: false,
+    },
+    {
+      id: "name",
+      desc: false,
+    },
+  ]);
   const options = useDefaultTableOptions<Node>();
   options.state = {};
   options.state.columnVisibility = {};
@@ -178,6 +191,8 @@ export default function NodeList(props: NodeListProps) {
     columns,
     data: props.nodes,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
     manualFiltering: true,
     manualPagination: true,
     onPaginationChange,
@@ -191,20 +206,11 @@ export default function NodeList(props: NodeListProps) {
         pageIndex: 0,
         pageSize: 25,
       },
-      sorting: [
-        {
-          id: "machine_type",
-          desc: false,
-        },
-        {
-          id: "name",
-          desc: false,
-        },
-      ],
     },
     state: {
       columnFilters,
       pagination,
+      sorting,
     },
   });
   const rowClass = (row: Row<Node>) => {

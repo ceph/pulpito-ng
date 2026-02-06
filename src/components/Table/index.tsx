@@ -14,7 +14,14 @@ type TableProps<TData> = {
   detailPanel?: (props: {row: Row<TData>}) => React.ReactElement | null,
 }
 
+const sortIndicators = {
+  'asc': ' ▲',
+  'desc': ' ▼',
+  'false': null,
+};
+
 export default function Table<TData> ({table, rowClass, detailPanel}: TableProps<TData>) {
+  console.log('sorting', table.getState().sorting)
   return (
     <table className='pulpito'>
       <thead>
@@ -22,12 +29,19 @@ export default function Table<TData> ({table, rowClass, detailPanel}: TableProps
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => (
                 <th key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                  <div onClick={header.column.getToggleSortingHandler()}>
+                    {
+                      header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                        )
+                    }
+                    {
+                      sortIndicators[header.column.getIsSorted() || 'false']
+                    }
+                  </div>
                 </th>
               ))}
             </tr>
