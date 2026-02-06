@@ -10,9 +10,15 @@ import {
 
 import type { Node } from "#src/lib/paddles.d";
 import { formatDate } from "#src/lib/utils";
-import { useDefaultTableOptions, parseParams } from "../../lib/table";
+import {
+  getColumnFiltersCallback,
+  getPaginationCallback,
+  useDefaultTableOptions,
+  parseParams,
+} from "../../lib/table";
 import Table from '../Table';
 import FilterMenu from '../FilterMenu';
+import Paginator from '../Paginator';
 import { MACHINE_TYPES } from '#src/lib/paddles';
 import { type FilterMenuSections } from '#src/lib/types.d';
 
@@ -138,42 +144,52 @@ const FILTER_SECTIONS: FilterMenuSections = {
 
 type NodeListProps = {
   nodes: Node[],
+  pagination?: boolean;
 }
 
-export default function NodeList({nodes}: NodeListProps) {
+export default function NodeList(props: NodeListProps) {
   const [openFilterMenu, setOpenFilterMenu] = useState<boolean>(false);
   const context = usePageContext();
   const params = context?.urlParsed.search || {};
   const { columnFilters, pagination } = parseParams(params);
+  const onColumnFiltersChange = getColumnFiltersCallback({
+    path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
+  });
+  const onPaginationChange = getPaginationCallback({
+    path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
+  });
   const options = useDefaultTableOptions<Node>();
   options.state = {};
   options.state.columnVisibility = {};
-  if ( nodes.length <= 1 ) {
+  if ( props.nodes.length <= 1 ) {
     options.enableFilters = false;
     options.state.columnVisibility = {
       name: false,
     };
   }
-  if ( new Set(nodes.map(node => node.machine_type)).size === 1 ) {
+  if ( new Set(props.nodes.map(node => node.machine_type)).size === 1 ) {
     options.state.columnVisibility.machine_type = false;
   }
-  if ( new Set(nodes.map(node => node.arch)).size === 1 ) {
+  if ( new Set(props.nodes.map(node => node.arch)).size === 1 ) {
     options.state.columnVisibility.arch = false;
   }
   const table = useReactTable({
     ...options,
     columns,
-    data: nodes,
+    data: props.nodes,
     getCoreRowModel: getCoreRowModel(),
     manualFiltering: true,
+    manualPagination: true,
+    onPaginationChange,
+    onColumnFiltersChange,
     enableColumnFilters: false,
-    rowCount: nodes.length,
+    rowCount: props.nodes.length,
     // enableFacetedValues: true,
     initialState: {
       ...options.initialState,
       pagination: {
         pageIndex: 0,
-        pageSize: 500,
+        pageSize: 25,
       },
       sorting: [
         {
@@ -212,6 +228,7 @@ export default function NodeList({nodes}: NodeListProps) {
         table={table}
         rowClass={rowClass}
       />
+      { props.pagination? <Paginator table={table} /> : null }
     </div>
   )
 }
