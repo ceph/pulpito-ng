@@ -28,7 +28,7 @@ export default function Table<TData> ({table, rowClass, detailPanel}: TableProps
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => (
-                <th key={header.id}>
+                <th key={header.id} style={{ width: `${header.getSize()}px` }}>
                   <div onClick={header.column.getToggleSortingHandler()}>
                     {
                       header.isPlaceholder

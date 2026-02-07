@@ -42,7 +42,7 @@ const _columns: ColumnDef<Run>[] = [
   {
     accessorKey: "name",
     header: "link",
-    maxSize: 12,
+    maxSize: 40,
     enableColumnFilter: false,
     cell: ({ row }) => {
       return (
@@ -61,18 +61,15 @@ const _columns: ColumnDef<Run>[] = [
     cell: ({ row }) => {
       return row.original.status.replace("finished ", "");
     },
-    maxSize: 25,
   },
   {
     accessorKey: "user",
     header: "user",
-    maxSize: 30,
     enableColumnFilter: false,
   },
   {
     accessorKey: "priority",
     header: "priority",
-    maxSize: 20,
     enableColumnFilter: false,
   },
   {
@@ -87,7 +84,6 @@ const _columns: ColumnDef<Run>[] = [
       const date_: string[] = row.original.scheduled.split(" ");
       return <> {date_[0]} <br /> {date_[1]} </>
     },
-    size: 35,
   },
   {
     id: "started",
@@ -95,7 +91,6 @@ const _columns: ColumnDef<Run>[] = [
     accessorFn: (row: Run) => formatDate(row.started),
     enableColumnFilter: false,
     sortingFn: "datetime",
-    size: 35,
   },
   {
     id: "posted",
@@ -103,7 +98,6 @@ const _columns: ColumnDef<Run>[] = [
     accessorFn: (row: Run) => formatDate(row.posted),
     enableColumnFilter: false,
     sortingFn: "datetime",
-    maxSize: 35,
   },
   {
     id: "runtime",
@@ -116,17 +110,16 @@ const _columns: ColumnDef<Run>[] = [
     },
     enableColumnFilter: false,
     sortingFn: "datetime",
-    size: 30,
   },
   {
     accessorKey: "suite",
     header: "suite",
-    size: 50,
+    size: 150,
   },
   {
     accessorKey: "branch",
     header: "branch",
-    maxSize: 70,
+    size: 300,
     cell: ({ row }) => {
         return <span className="hardWrap">{row.original.branch}</span>
     },
@@ -135,7 +128,6 @@ const _columns: ColumnDef<Run>[] = [
     id: "flavors",
     accessorKey: "flavor",
     header: "flavor",
-    maxSize: 25,
     cell: ({ row }) => {
       if (!row.original.flavor) return "-";
       return row.original.flavor;
@@ -144,12 +136,10 @@ const _columns: ColumnDef<Run>[] = [
   {
     accessorKey: "machine_type",
     header: "machine type",
-    size: 30,
   },
   {
     accessorKey: "sha1",
     header: "hash",
-    maxSize: 30,
     cell: ({ row }) => {
       return row.original.sha1?.slice(0, 8);
     },
@@ -157,44 +147,37 @@ const _columns: ColumnDef<Run>[] = [
   {
     accessorKey: "results.queued",
     header: "queued",
-    size: 30,
-    enableColumnFilter: false,
+    size: 20,
   },
   {
     accessorKey: "results.pass",
     header: "pass",
-    size: 30,
-    enableColumnFilter: false,
+    size: 20,
   },
   {
     accessorKey: "results.fail",
     header: "fail",
-    size: 30,
-    enableColumnFilter: false,
+    size: 20,
   },
   {
     accessorKey: "results.dead",
     header: "dead",
-    size: 30,
-    enableColumnFilter: false,
+    size: 20,
   },
   {
     accessorKey: "results.running",
     header: "running",
-    size: 30,
-    enableColumnFilter: false,
+    size: 20,
   },
   {
     accessorKey: "results.waiting",
     header: "waiting",
-    size: 30,
-    enableColumnFilter: false,
-  },
+    size: 20,
+ },
   {
     accessorKey: "results.total",
     header: "total",
-    size: 30,
-    enableColumnFilter: false,
+    size: 20,
   },
 ];
 

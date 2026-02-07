@@ -49,11 +49,12 @@ const columns: ColumnDef<Job>[] = [
         {row.getIsExpanded() ? '-' : '+'}
       </button>
     ),
+    size: 20,
   },
   {
     header: "status",
     accessorKey: "status",
-    size: 120,
+    size: 20,
     meta: {
       filterVariant: "select",
     },
@@ -61,7 +62,6 @@ const columns: ColumnDef<Job>[] = [
   {
     header: "links",
     id: "links",
-    size: 75,
     cell: ({ row }) => {
       const log_url = row.original.log_href;
       const sentry_url = row.original.sentry_event;
@@ -84,11 +84,11 @@ const columns: ColumnDef<Job>[] = [
         </div>
       );
     },
+    size: 20,
   },
   {
     header: "job ID",
     accessorKey: "job_id",
-    size: 110,
     cell: ({ row }) => {
       return (
         <Link
@@ -99,6 +99,7 @@ const columns: ColumnDef<Job>[] = [
         </Link>
       );
     },
+    size: 20,
   },
   {
     header: "tasks",
@@ -133,7 +134,6 @@ const columns: ColumnDef<Job>[] = [
     id: "posted",
     accessorFn: (row: Job) => formatDate(row.posted),
     sortingFn: "datetime",
-    size: 150,
     meta: {
       filterVariant: 'date',
     },
@@ -143,7 +143,6 @@ const columns: ColumnDef<Job>[] = [
     id: "updated",
     accessorFn: (row: Job) => formatDate(row.updated),
     sortingFn: "datetime",
-    size: 150,
     meta: {
       filterVariant: 'date',
     },
@@ -153,7 +152,6 @@ const columns: ColumnDef<Job>[] = [
     id: "started",
     accessorFn: (row: Job) => formatDate(row.started),
     sortingFn: "datetime",
-    size: 150,
     meta: {
       filterVariant: 'date',
     },
@@ -161,7 +159,6 @@ const columns: ColumnDef<Job>[] = [
   {
     header: "runtime",
     id: "runtime",
-    size: 110,
     accessorFn: (row: Job) => {
       const start = Date.parse(row.started);
       const end = Date.parse(row.updated);
@@ -173,7 +170,6 @@ const columns: ColumnDef<Job>[] = [
   {
     header: "duration",
     id: "duration",
-    size: 120,
     accessorFn: (row: Job) =>
       formatDuration(row.duration),
     enableColumnFilter: false,
@@ -181,7 +177,6 @@ const columns: ColumnDef<Job>[] = [
   {
     header: "in waiting",
     id: "waiting",
-    size: 100,
     accessorFn: (row: Job) => {
       const start = Date.parse(row.started);
       const end = Date.parse(row.updated);
@@ -199,8 +194,8 @@ const columns: ColumnDef<Job>[] = [
   },
   {
     header: "OS type",
-    size: 85,
     accessorFn: (row: Job) => row.os_type + "",
+    size: 20,
     meta: {
       filterVariant: "select",
     },
@@ -208,7 +203,7 @@ const columns: ColumnDef<Job>[] = [
   {
     header: "OS version",
     accessorFn: (row: Job) => row.os_version + "",
-    size: 85,
+    size: 20,
     meta: {
       filterVariant: "select",
     },
@@ -219,7 +214,7 @@ const columns: ColumnDef<Job>[] = [
     accessorFn: (row: Job) => {
       return Object.keys(row.targets || row.roles || {}).length || 0;
     },
-    size: 85,
+    size: 20,
   },
 ];
 

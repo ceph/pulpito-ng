@@ -31,7 +31,7 @@ export const columns: ColumnDef<Node>[] = [
   {
     header: "name",
     accessorKey: "name",
-    size: 40,
+    size: 20,
     cell: ( { row } ) => {
       const name = row.original.name;
       return <a
@@ -51,7 +51,7 @@ export const columns: ColumnDef<Node>[] = [
   {
     header: "up",
     accessorFn: (row: Node) => row.up?.toLocaleString(),
-    size: 30,
+    size: 20,
     meta: {
       filterVariant: "select",
     },
@@ -59,7 +59,7 @@ export const columns: ColumnDef<Node>[] = [
   {
     header: "locked",
     accessorFn: (row: Node) => row.locked?.toLocaleString(),
-    size: 30,
+    size: 60,
     meta: {
       filterVariant: "select",
     },
@@ -71,13 +71,13 @@ export const columns: ColumnDef<Node>[] = [
     },
     sortingFn: "datetime",
     accessorFn: (row: Node) => row.locked_since? formatDate(row.locked_since): "",
-    size: 55,
+    size: 100,
     enableColumnFilter: false,
   },
   {
     header: "locked by",
     accessorKey: "locked_by",
-    size: 60,
+    size: 20,
     meta: {
       filterVariant: "select",
     },
@@ -86,7 +86,7 @@ export const columns: ColumnDef<Node>[] = [
     header: "OS type",
     id: 'os_type',
     accessorFn: (row) => row.os_type || "none",
-    size: 40,
+    size: 60,
     meta: {
       filterVariant: "select",
     },
@@ -95,7 +95,7 @@ export const columns: ColumnDef<Node>[] = [
     header: "OS ver.",
     id: 'os_version',
     accessorFn: (row) => row.os_version || "none",
-    size: 40,
+    size: 60,
     meta: {
       filterVariant: "select",
     },
@@ -103,7 +103,6 @@ export const columns: ColumnDef<Node>[] = [
   {
     header: "arch",
     accessorKey: "arch",
-    size: 50,
     meta: {
       filterVariant: "select",
     },
@@ -111,7 +110,7 @@ export const columns: ColumnDef<Node>[] = [
   {
     header: "description",
     accessorKey: "description",
-    size: 200,
+    size: 500,
   },
 ];
 

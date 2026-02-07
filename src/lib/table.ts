@@ -66,8 +66,8 @@ export function useDefaultTableOptions<TData extends RowData>(): Partial<TableOp
   return {
     defaultColumn: {
       minSize: 20,
-      maxSize: 200,
-      size: 75,
+      maxSize: Number.MAX_SAFE_INTEGER,
+      size: 50,
     },
     enableGlobalFilter: false,
   }
