@@ -16,7 +16,6 @@ export default function Nodes() {
       </Typography>
       <NodeList
         nodes={data.nodes}
-        pagination={true}
       />
     </div>
   );
