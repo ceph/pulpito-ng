@@ -134,10 +134,12 @@ const FILTER_SECTIONS: FilterMenuSections = {
     filters: {
       up: {
         label: 'up',
+        component: 'mantine-checkbox',
         options: ['true', 'false'],
       },
       locked: {
         label: 'locked',
+        component: 'mantine-checkbox',
         options: ['true', 'false'],
       },
     },

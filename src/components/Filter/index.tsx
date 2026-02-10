@@ -2,6 +2,7 @@ import React from 'react';
 
 import DebouncedInput from '../DebouncedInput';
 import FilterAutocomplete from '../FilterAutocomplete';
+import FilterCheckbox from '../FilterCheckbox';
 import FilterDate from '../FilterDate';
 import FilterSelect from '../FilterSelect';
 import { type FilterProps } from '#src/lib/types.d';
@@ -14,6 +15,7 @@ const DEFAULT_SIZE='8';
 const components = new Map([
   ['native', DebouncedInput],
   ['mantine-select', FilterSelect],
+  ['mantine-checkbox', FilterCheckbox],
   ['mantine-date', FilterDate],
   ['mantine-autocomplete', FilterAutocomplete],
 ])
