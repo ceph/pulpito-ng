@@ -23,6 +23,17 @@ const MACHINE_TYPES = _machine_types_str.split(',')
 // for queries which mention 'page', use this default page size if another is not specified.
 const DEFAULT_PAGE_SIZE = 25;
 
+const _searchParams = [
+  'description',
+  'fields',
+  'locked',
+  'machine_type',
+  'os_type',
+  'os_version',
+  'owner',
+  'up',
+]
+
 function getURL({endpoint, params} : GetURLParams) {
   const url = new URL(endpoint, PADDLES_SERVER);
   Object.entries(params || {}).forEach((entry) => {
@@ -40,37 +51,24 @@ function getURL({endpoint, params} : GetURLParams) {
       case "queued":
         url.pathname += "/queued/";
         break;
-      case "description":
-        url.searchParams.set("description", value)
-        break;
-      case "fields":
-        url.searchParams.set("fields", value)
-        break
-      case "machine_type":
-        url.searchParams.set("machine_type", value);
-        break;
-      case 'locked':
-        url.searchParams.set(key, value);
-        break
-      case 'os_type':
-        url.searchParams.set(key, value);
-        break
-      case 'os_version':
-        url.searchParams.set(key, value);
-        break
-      case 'up':
-        url.searchParams.set(key, value);
-        break
       case "scheduled":
         url.pathname += `/date/${value}`;
         break;
+      case "owner":
+        url.searchParams.set('locked_by', value);
+        break;
       default:
-        url.pathname += `/${key}/${value}`;
+        if ( _searchParams.includes(key) ) {
+          url.searchParams.set(key, value);
+        } else {
+          url.pathname += `/${key}/${value}`;
+        }
     }
   });
   if ( endpoint && endpoint.match(/nodes\/.*\/jobs/) && ! url.searchParams.get("count") ) {
     url.searchParams.set("count", String(DEFAULT_PAGE_SIZE));
   };
+  console.log('paddles', url.href)
   url.pathname = url.pathname.replace('//', '/');
   return url;
 }
