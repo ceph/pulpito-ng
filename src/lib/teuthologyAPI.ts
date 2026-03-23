@@ -1,6 +1,4 @@
 import axios from "axios";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import { Cookies } from "react-cookie";
 
 import { Session, KillRunResult } from "./teuthologyAPI.d"
@@ -32,19 +30,21 @@ function doLogout() {
     window.location.href = url.toString();
 }
 
-function useSession(): UseQueryResult<Session> {
+function useSession() {
     const url = getURL("/");
-    const query = useQuery<Session, Error>({
-        queryKey: ['ping-api', { url }],
-        queryFn: () => (
-            axios.get(url.toString(), {
-                withCredentials: true
-            }).then((resp) => resp.data)
-        ),
-        retry: 1,
-        enabled: url.toString() !== "",
-    });
-    return query;
+    // FIXME
+    return false;
+    // const query = useQuery<Session, Error>({
+    //     queryKey: ['ping-api', { url }],
+    //     queryFn: () => (
+    //         axios.get(url.toString(), {
+    //             withCredentials: true
+    //         }).then((resp) => resp.data)
+    //     ),
+    //     retry: 1,
+    //     enabled: url.toString() !== "",
+    // });
+    // return query;
 }
 
 function useUserData(): Map<string, string> {
@@ -63,18 +63,20 @@ function useUserData(): Map<string, string> {
     return new Map();
 }
 
-function useRunKill(): UseMutationResult<KillRunResult> {
+function useRunKill() {
     const url = getURL("/kill/?logs=true");
-    const mutation: UseMutationResult<KillRunResult> = useMutation({
-        mutationKey: ['run-kill', { url }],
-        mutationFn: (payload) => (
-            axios.post(url.toString(), payload, {
-                withCredentials: true
-            })
-        ),
-        retry: 0,
-    });
-    return mutation;
+    // FIXME
+    return false;
+    // const mutation: UseMutationResult<KillRunResult> = useMutation({
+    //     mutationKey: ['run-kill', { url }],
+    //     mutationFn: (payload) => (
+    //         axios.post(url.toString(), payload, {
+    //             withCredentials: true
+    //         })
+    //     ),
+    //     retry: 0,
+    // });
+    // return mutation;
 }
 
 export {

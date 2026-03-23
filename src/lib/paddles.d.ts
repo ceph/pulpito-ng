@@ -1,10 +1,3 @@
-export type QueryKey = [
-  string,
-  {
-    url: string;
-  }
-];
-
 export interface GetURLParams {
   endpoint: string,
   params?: Record<string, string>,

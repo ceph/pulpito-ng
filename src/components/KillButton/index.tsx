@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { UseMutationResult } from "@tanstack/react-query";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import DialogTitle from '@mui/material/DialogTitle';
@@ -21,7 +20,7 @@ type KillButtonProps = {
 };
 
 type KillButtonDialogProps = {
-  mutation: UseMutationResult<KillRunResult>;
+  // mutation: UseMutationResult<KillRunResult>;
   payload: KillRunPayload;
   open: boolean;
   handleClose: () => void;
