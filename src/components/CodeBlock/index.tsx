@@ -1,11 +1,10 @@
-import Editor from "react-simple-code-editor";
-import prism from "prismjs/components/prism-core";
-import 'prismjs/components/prism-clike';
-import "prismjs/components/prism-yaml";
-import 'prismjs/components/prism-javascript';
+import { RichTextarea } from "rich-textarea";
+import { Highlight } from "prism-react-renderer"
 import "prismjs/themes/prism-tomorrow.css";
 
-const { highlight, languages } = prism;
+import "./index.css";
+
+const emptyTheme = { plain: {}, styles: [] };
 
 
 type CodeBlockProps = {
@@ -13,34 +12,46 @@ type CodeBlockProps = {
   language: string,
 }
 
-
 export default function CodeBlock(props: CodeBlockProps) {
-  const language = languages[props.language] || "yaml";
-  if ( ! props.value ) return null;
-  const highlight_ = (code: string) => {
-    if ( language ) return highlight(code, language);
-    return code;
+  if (!props.value) return null;
+  function render(value: string) {
+    return (
+      <Highlight
+        code={value}
+        language={props.language}
+        theme={emptyTheme}
+      >
+        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+          <div className={className} style={style}>
+            {tokens.map((line, i) => {
+              const props = getLineProps({ line });
+              return (
+                <div key={i} {...props}>
+                  {line.map((token, key) => (
+                    <span key={key} {...getTokenProps({ token })} />
+                  ))}
+                </div>
+              )
+            }
+            )}
+          </div>
+        )}
+      </Highlight>
+    )
   }
   return (
-    <Editor
+    <RichTextarea
       value={props.value}
-      readOnly={true}
-      onValueChange={() => {}}
-      highlight={highlight_}
+      onChange={() => { }}
+      autoHeight
+      disabled={true}
       style={{
-        fontFamily: [
-          "ui-monospace",
-          "SFMono-Regular",
-          '"SF Mono"',
-          "Menlo",
-          "Consolas",
-          "Liberation Mono",
-          '"Lucida Console"',
-          "Courier",
-          "monospace",
-        ].join(","),
-        textAlign: "initial",
+        width: "100%",
+        fontFamily: "monospace",
+        cursor: "text",
       }}
-    />
+    >
+      {render}
+    </RichTextarea>
   )
 }

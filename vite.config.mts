@@ -13,7 +13,7 @@ if (process.env.NODE_ENV == "production") {
     "@mui/base",
     "@mui/styled-engine",
     "@mui/system",
-    "react-simple-code-editor",
+    "rich-textarea",
   );
 }
 
