@@ -1,5 +1,10 @@
 body {
+  --font-size-sm: 10px;
+  --font-size: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
   font-size: 12px;
+  font-size: var(--font-size);
   background-color: var(--palette-background-default);
   color: var(--palette-text-primary);
   --app-inset: 10px;
