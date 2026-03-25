@@ -3,6 +3,8 @@ body {
   --font-size: 12px;
   --font-size-md: 14px;
   --font-size-lg: 16px;
+  --color-whiteish: rgba(255, 255, 255, 0.9);
+  --color-blackish: rgba(0, 0, 0, 0.87);
   font-size: 12px;
   font-size: var(--font-size);
   background-color: var(--palette-background-default);
@@ -103,9 +105,10 @@ details {
   body {
     color-scheme: only dark;
     --palette-background-default: #181818;
-    --mantine-color-body: var(--palette-background-default);
     --palette-background-paper: #303030;
-    --palette-text-primary: #fff;
+    --palette-background-contrast: var(--color-whiteish);
+    --mantine-color-body: var(--palette-background-default);
+    --palette-text-primary: var(--color-whiteish);
     --palette-table-cell-border: rgba(81, 81, 81, 1);
 
     --palette-primary-main: #0288d1;
@@ -125,8 +128,9 @@ details {
   body {
     color-scheme: only light;
     --palette-background-default: #fff;
-    --mantine-color-body: var(--palette-background-default);
     --palette-background-paper: #fff;
+    --palette-background-contrast: var(--color-blackish);
+    --mantine-color-body: var(--palette-background-default);
     --palette-text-primary: rgba(0, 0, 0, 0.87);
     --palette-table-cell-border: rgba(224, 224, 224, 1);
 
