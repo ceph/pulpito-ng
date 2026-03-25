@@ -168,7 +168,7 @@ export default function Job() {
             style={{ marginTop: "20px" }}
           >
             <summary>
-              <Typography>Full job details</Typography>
+              <div>Full job details</div>
             </summary>
             <JobDetails data={data} />
           </details>
