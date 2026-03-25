@@ -86,6 +86,13 @@ details {
 
   summary * {
     display: inline-block;
+
+  }
+
+  summary {
+    div {
+      font-size: var(--font-size-md);
+    }
   }
 
   div {
