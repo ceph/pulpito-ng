@@ -6,6 +6,9 @@ const config = {
   ssr: true,
   extends: [vikeReact],
   passToClient: ['pageProps'],
+  redirects: {
+    "/": "/runs",
+  },
 } satisfies Config
 
 export default config
