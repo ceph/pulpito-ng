@@ -96,6 +96,10 @@ details {
   }
 
   div {
+    ::selection {
+      color: var(--palette-primary-contrast-text);
+      background-color: var(--palette-background-contrast);
+    }
   }
 }
 
