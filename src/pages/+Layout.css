@@ -5,6 +5,7 @@ body {
   --font-size-lg: 16px;
   --color-whiteish: rgba(255, 255, 255, 0.9);
   --color-blackish: rgba(0, 0, 0, 0.87);
+  --border-radius: 5px;
   font-size: 12px;
   font-size: var(--font-size);
   background-color: var(--palette-background-default);
@@ -22,6 +23,7 @@ a {
 }
 
 .tableContainer {
+  border-radius: var(--border-radius);
   border: 1px solid var(--app-shell-border-color);
   padding: 5px;
 }
