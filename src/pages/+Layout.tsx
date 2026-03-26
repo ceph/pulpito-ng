@@ -1,6 +1,6 @@
 import { CookiesProvider } from "react-cookie";
 import { createTheme, MantineProvider } from '@mantine/core';
-import { AppShell, Burger, Group, Button, NavLink, Title } from '@mantine/core';
+import { AppShell, Badge, Burger, Group, Button, NavLink, Title } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 
 import Login from "../components/Login";
@@ -58,6 +58,14 @@ function Layout(props: any) {
                 >
                   Pulpito
                 </a>
+                <Badge
+                  id="dev-badge"
+                  radius="sm"
+                  component="a"
+                  href="https://github.com/ceph/pulpito-ng"
+                >
+                  alpha
+                </Badge>
               </Title>
               <Group ml="xl" gap={0} visibleFrom="sm">
                 {

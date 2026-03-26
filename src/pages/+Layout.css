@@ -156,3 +156,15 @@ details {
     --palette-warning-contrast-text: rgba(0, 0, 0, 0.87);
   }
 }
+
+#dev-badge {
+  background-color: var(--palette-error-main);
+  color: var(--palette-error-contrast-text);
+  font-size: var(--font-size-sm);
+  padding: 0 0;
+  position: relative;
+  bottom: var(--mantine-spacing-md);
+  right: var(--mantine-spacing-lg);
+  cursor: pointer;
+  transform: rotate(0.06turn);
+}
