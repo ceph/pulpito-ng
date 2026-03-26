@@ -45,13 +45,7 @@
     "server": "tsx ./src/server/index.ts",
     "server:dev": "npm run server",
     "server:prod": "cross-env NODE_ENV=production npm run server",
-    "lint": "eslint ./src --max-warnings 0"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "lint": "biome lint ./src"
   },
   "browserslist": {
     "production": [
@@ -66,6 +60,7 @@
     ]
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.9",
     "@types/compression": "^1.7.5",
     "@types/express": "^5.0.0",
     "@types/json-to-pretty-yaml": "^1.2.1",
@@ -74,7 +69,8 @@
     "prism-react-renderer": "^2.4.1",
     "prismjs": "^1.30.0",
     "typescript": "^5.1.6",
-    "vite": "^8.0.2"
+    "vite": "^8.0.2",
+    "vite-plugin-biome": "^1.2.0"
   },
   "imports": {
     "#src/*": "./src/*"
