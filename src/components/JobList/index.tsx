@@ -55,9 +55,6 @@ const columns: ColumnDef<Job>[] = [
     header: "status",
     accessorKey: "status",
     size: 20,
-    meta: {
-      filterVariant: "select",
-    },
   },
   {
     header: "links",
@@ -134,27 +131,18 @@ const columns: ColumnDef<Job>[] = [
     id: "posted",
     accessorFn: (row: Job) => formatDate(row.posted),
     sortingFn: "datetime",
-    meta: {
-      filterVariant: 'date',
-    },
   },
   {
     header: "updated",
     id: "updated",
     accessorFn: (row: Job) => formatDate(row.updated),
     sortingFn: "datetime",
-    meta: {
-      filterVariant: 'date',
-    },
   },
   {
     header: "started",
     id: "started",
     accessorFn: (row: Job) => formatDate(row.started),
     sortingFn: "datetime",
-    meta: {
-      filterVariant: 'date',
-    },
   },
   {
     header: "runtime",
@@ -188,25 +176,16 @@ const columns: ColumnDef<Job>[] = [
   {
     header: "machine type",
     accessorKey: "machine_type",
-    meta: {
-      filterVariant: "select",
-    },
   },
   {
     header: "OS type",
     accessorFn: (row: Job) => row.os_type + "",
     size: 20,
-    meta: {
-      filterVariant: "select",
-    },
   },
   {
     header: "OS version",
     accessorFn: (row: Job) => row.os_version + "",
     size: 20,
-    meta: {
-      filterVariant: "select",
-    },
   },
   {
     header: "nodes",

@@ -52,23 +52,14 @@ export const columns: ColumnDef<Node>[] = [
     header: "up",
     accessorFn: (row: Node) => row.up?.toLocaleString(),
     size: 20,
-    meta: {
-      filterVariant: "select",
-    },
   },
   {
     header: "locked",
     accessorFn: (row: Node) => row.locked?.toLocaleString(),
     size: 60,
-    meta: {
-      filterVariant: "select",
-    },
   },
   {
     header: "locked since",
-    meta: {
-      filterVariant: 'date',
-    },
     sortingFn: "datetime",
     accessorFn: (row: Node) => row.locked_since? formatDate(row.locked_since): "",
     size: 100,
@@ -78,34 +69,22 @@ export const columns: ColumnDef<Node>[] = [
     header: "locked by",
     accessorKey: "locked_by",
     size: 20,
-    meta: {
-      filterVariant: "select",
-    },
   },
   {
     header: "OS type",
     id: 'os_type',
     accessorFn: (row) => row.os_type || "none",
     size: 60,
-    meta: {
-      filterVariant: "select",
-    },
   },
   {
     header: "OS ver.",
     id: 'os_version',
     accessorFn: (row) => row.os_version || "none",
     size: 60,
-    meta: {
-      filterVariant: "select",
-    },
   },
   {
     header: "arch",
     accessorKey: "arch",
-    meta: {
-      filterVariant: "select",
-    },
   },
   {
     header: "description",

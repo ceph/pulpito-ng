@@ -55,9 +55,6 @@ const _columns: ColumnDef<Run>[] = [
   {
     header: "status",
     accessorKey: "status",
-    meta: {
-      filterVariant: "select",
-    },
     cell: ({ row }) => {
       return row.original.status.replace("finished ", "");
     },
@@ -76,9 +73,6 @@ const _columns: ColumnDef<Run>[] = [
     id: "scheduled",
     header: "scheduled",
     accessorFn: (row: Run) => formatDate(row.scheduled),
-    meta: {
-      filterVariant: 'date',
-    },
     sortingFn: "datetime",
     cell: ({ row }) => {
       const date_: string[] = row.original.scheduled.split(" ");
