@@ -43,7 +43,6 @@ const _columns: ColumnDef<Run>[] = [
     accessorKey: "name",
     header: "link",
     maxSize: 40,
-    enableColumnFilter: false,
     cell: ({ row }) => {
       return (
         <IconLink to={`/runs/${row.original.name}`}>
@@ -62,12 +61,10 @@ const _columns: ColumnDef<Run>[] = [
   {
     accessorKey: "user",
     header: "user",
-    enableColumnFilter: false,
   },
   {
     accessorKey: "priority",
     header: "priority",
-    enableColumnFilter: false,
   },
   {
     id: "scheduled",
@@ -83,14 +80,12 @@ const _columns: ColumnDef<Run>[] = [
     id: "started",
     header: "started",
     accessorFn: (row: Run) => formatDate(row.started),
-    enableColumnFilter: false,
     sortingFn: "datetime",
   },
   {
     id: "posted",
     header: "updated",
     accessorFn: (row: Run) => formatDate(row.posted),
-    enableColumnFilter: false,
     sortingFn: "datetime",
   },
   {
@@ -102,7 +97,6 @@ const _columns: ColumnDef<Run>[] = [
       if (!end || !start) return null;
       return formatDuration(Math.round((end - start) / 1000));
     },
-    enableColumnFilter: false,
     sortingFn: "datetime",
   },
   {
@@ -232,6 +226,7 @@ export default function RunList(props: RunListProps) {
   const options = useDefaultTableOptions<Run>();
   const debouncedParams = useDebounceValue(params, 500)[0];
   const { columnFilters, pagination } = parseParams(debouncedParams);
+  // console.log(params, columnFilters)
   const onColumnFiltersChange = getColumnFiltersCallback({
     path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
   });
@@ -256,7 +251,6 @@ export default function RunList(props: RunListProps) {
     onPaginationChange,
     rowCount: props.pagination === false? data.length : Infinity,
     onColumnFiltersChange,
-    enableColumnFilters: false,
     initialState: {
       ...options.initialState,
       columnVisibility: {

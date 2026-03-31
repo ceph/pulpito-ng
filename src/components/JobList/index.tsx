@@ -116,7 +116,6 @@ const columns: ColumnDef<Job>[] = [
       return result;
     },
     size: 200,
-    enableColumnFilter: true,
     meta: {
       filterFn: 'contains',
     },
@@ -125,7 +124,6 @@ const columns: ColumnDef<Job>[] = [
     header: "description",
     size: 200,
     accessorFn: (row: Job) => row.description + "",
-    enableColumnFilter: true,
     meta: {
       filterFn: 'contains',
     },
@@ -157,14 +155,12 @@ const columns: ColumnDef<Job>[] = [
       if (!end || !start) return "";
       return formatDuration(Math.round((end - start) / 1000));
     },
-    enableColumnFilter: false,
   },
   {
     header: "duration",
     id: "duration",
     accessorFn: (row: Job) =>
       formatDuration(row.duration),
-    enableColumnFilter: false,
   },
   {
     header: "in waiting",
@@ -175,7 +171,6 @@ const columns: ColumnDef<Job>[] = [
       if (!end || !start || !row.duration) return "";
       return formatDuration(Math.round((end - start) / 1000 - row.duration));
     },
-    enableColumnFilter: false,
   },
   {
     header: "machine type",
@@ -273,7 +268,6 @@ export default function JobList(props: JobListProps) {
     // enableFacetedValues: true,
     // enableGlobalFilter: true,
     manualFiltering: true,
-    enableColumnFilters: false,
     // enableGlobalFilterRankedResults: false,
     // positionGlobalFilter: "left",
     // globalFilterFn: 'contains',
