@@ -41,28 +41,32 @@ function getURL({endpoint, params} : GetURLParams) {
     if ( [undefined, 'undefined', null, 'null', ''].includes(value) ) {
       return;
     }
-    switch (key) {
-      case "page":
-        url.searchParams.set(key, String(Number(value) + 1));
-        break;
-      case "pageSize":
-        url.searchParams.set("count", String(Number(value)));
-        break;
-      case "queued":
-        url.pathname += "/queued/";
-        break;
-      case "scheduled":
-        url.pathname += `/date/${value}`;
-        break;
-      case "owner":
-        url.searchParams.set('locked_by', value);
-        break;
-      default:
-        if ( _searchParams.includes(key) ) {
-          url.searchParams.set(key, value);
-        } else {
-          url.pathname += `/${key}/${value}`;
-        }
+    if ( endpoint === "/runs/") {
+      switch (key) {
+        case "page":
+          url.searchParams.set(key, String(Number(value) + 1));
+          break;
+        case "pageSize":
+          url.searchParams.set("count", String(Number(value)));
+          break;
+        case "queued":
+          url.pathname += "/queued/";
+          break;
+        case "scheduled":
+          url.pathname += `/date/${value}`;
+          break;
+        case "owner":
+          url.searchParams.set('locked_by', value);
+          break;
+        default:
+          if ( _searchParams.includes(key) ) {
+            url.searchParams.set(key, value);
+          } else {
+            url.pathname += `/${key}/${value}`;
+          }
+      }
+    } else {
+      url.searchParams.set(key, value);
     }
   });
   if ( endpoint && endpoint.match(/nodes\/.*\/jobs/) && ! url.searchParams.get("count") ) {

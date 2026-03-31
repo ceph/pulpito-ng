@@ -14,11 +14,15 @@ import {
 import { type Theme } from "@mui/material/styles";
 
 import { formatDate, formatDuration } from "../../lib/utils";
-import IconLink from "../../components/IconLink";
-import Link from "../../components/Link";
+import IconLink from "../IconLink";
+import FilterMenu from '../FilterMenu';
+import Link from "../Link";
 import type { Job, Run } from "../../lib/paddles.d";
+import { JobStatuses } from "../../lib/paddles.d";
+import { type FilterMenuSections } from '#src/lib/types.d';
 import { dirName } from "../../lib/utils";
 import {
+  getColumnFiltersCallback,
   getPaginationCallback,
   parseParams,
   useDefaultTableOptions,
@@ -197,6 +201,19 @@ const columns: ColumnDef<Job>[] = [
   },
 ];
 
+const FILTER_SECTIONS: FilterMenuSections = {
+  job: {
+    label: "Filter by job details",
+    filters: {
+      status: {
+        label: "status",
+        options: JobStatuses,
+        type: "mantine-select",
+      },
+    },
+  },
+}
+
 function jobStatusToThemeCategory(status: string): keyof Theme["palette"] {
   switch (status) {
     case "dead": return "error";
@@ -219,13 +236,23 @@ export default function JobList(props: JobListProps) {
   const params = context?.urlParsed.search || {};
   const data_: Run = useData();
   const options = useDefaultTableOptions<Job>();
+  const { columnFilters, pagination } = parseParams(params);
+  const onColumnFiltersChange = getColumnFiltersCallback({
+    path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
+  });
   const data = useMemo(() => {
     return (data_?.jobs || []).filter(item => {
       item.id = String(item.job_id);
       return !! item.id;
+    }).filter(item => {
+      for ( let i = 0; i < columnFilters.length; i++ ) {
+        const filter = columnFilters[i];
+        if ( item[filter.id as keyof Job] !== filter.value ) return false;
+      }
+      return true
     });
   }, [data_]);
-  const { pagination } = parseParams(params);
+  const [openFilterMenu, setOpenFilterMenu] = useState<boolean>(false);
   const onPaginationChange = getPaginationCallback({
     path: context.urlPathname, columnFiltersState: [], paginationState: pagination
   });
@@ -241,15 +268,18 @@ export default function JobList(props: JobListProps) {
     getExpandedRowModel: getExpandedRowModel(),
     getRowCanExpand: (row) => !! row.original.failure_reason,
     getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange,
     onSortingChange: setSorting,
     // enableFacetedValues: true,
-    enableGlobalFilter: true,
+    // enableGlobalFilter: true,
+    manualFiltering: true,
+    enableColumnFilters: false,
     // enableGlobalFilterRankedResults: false,
     // positionGlobalFilter: "left",
     // globalFilterFn: 'contains',
     manualPagination: true,
     onPaginationChange,
-    rowCount: Infinity,
+    rowCount: data.length,
     // muiSearchTextFieldProps: {
     //   placeholder: 'Search across all fields',
     //   sx: { minWidth: '200px' },
@@ -266,6 +296,7 @@ export default function JobList(props: JobListProps) {
       },
     },
     state: {
+      columnFilters,
       pagination,
       sorting,
     },
@@ -277,6 +308,12 @@ export default function JobList(props: JobListProps) {
   return (
     <div className='tableContainer'>
       <div className='tableControls'>
+        <FilterMenu
+          isOpen={openFilterMenu}
+          onChange={setOpenFilterMenu}
+          table={table}
+          sections={FILTER_SECTIONS}
+        />
         { props.pagination? <Paginator table={table} /> : null }
       </div>
       <Table table={table} rowClass={rowClass} detailPanel={JobDetailPanel} />
