@@ -37,7 +37,7 @@ function doLogout() {
 }
 
 function useSession() {
-    const url = getURL("/");
+    // const url = getURL("/");
     // FIXME
     return false;
     // const query = useQuery<Session, Error>({
