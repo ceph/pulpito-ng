@@ -1,5 +1,6 @@
 FROM node:25-alpine
 EXPOSE 8081
+ENV PORT 8081
 ENV npm_config_cache /home/node/.npm
 WORKDIR /app
 COPY [ \
