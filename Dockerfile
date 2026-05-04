@@ -4,7 +4,7 @@ ENV PORT 8081
 ENV npm_config_cache /home/node/.npm
 WORKDIR /app
 RUN apk add curl
-COPY [ \
+COPY --parents [ \
   "Dockerfile", \
   "index.html", \
   "package-lock.json", \
