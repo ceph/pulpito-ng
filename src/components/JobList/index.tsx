@@ -261,7 +261,7 @@ export default function JobList(props: JobListProps) {
     data: data || [],
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    getRowCanExpand: (row) => !! row.original.failure_reason,
+    getRowCanExpand: (row) => !! ( row.original.failure_reason || row.original.description),
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange,
     onSortingChange: setSorting,

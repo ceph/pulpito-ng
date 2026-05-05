@@ -79,6 +79,11 @@ div.MuiPaper-root {
   direction: row;
 }
 
+code {
+  background-color: var(--palette-background-code);
+  padding: 1px 5px 1px 5px;
+  border-radius: 4px;
+}
 
 /* Accordion */
 details {
@@ -118,6 +123,7 @@ details {
     color-scheme: only dark;
     --palette-background-default: #181818;
     --palette-background-paper: #303030;
+    --palette-background-code: #404040;
     --palette-background-contrast: var(--color-whiteish);
     --mantine-color-body: var(--palette-background-default);
     --palette-text-primary: var(--color-whiteish);
@@ -141,6 +147,7 @@ details {
     color-scheme: only light;
     --palette-background-default: #fff;
     --palette-background-paper: #fff;
+    --palette-background-code: #eee;
     --palette-background-contrast: var(--color-blackish);
     --mantine-color-body: var(--palette-background-default);
     --palette-text-primary: rgba(0, 0, 0, 0.87);
