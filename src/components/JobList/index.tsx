@@ -29,7 +29,9 @@ import {
 } from "../../lib/table";
 import Table from '../Table';
 import Paginator from '../Paginator';
-import JobDetailPanel from "../JobDetailPanel";
+import {
+  JobDetailPanel,
+} from "../JobDetailPanel";
 
 import sentryIcon from "./assets/sentry.svg";
 
@@ -255,6 +257,10 @@ export default function JobList(props: JobListProps) {
       id: props.sortMode === "time"? "started" : "job_id",
       desc: true,
   }]);
+  const detailConfig = [
+    {key: "description", display: true},
+    {key: "failure_reason", display: true},
+  ]
   const table = useReactTable({
     ...options,
     columns,
@@ -310,7 +316,7 @@ export default function JobList(props: JobListProps) {
         />
         { props.pagination? <Paginator table={table} /> : null }
       </div>
-      <Table table={table} rowClass={rowClass} detailPanel={JobDetailPanel} />
+      <Table table={table} rowClass={rowClass} detailPanel={JobDetailPanel} details={detailConfig} />
       { table.getState().pagination.pageSize >= 10? (
       <div className='tableControls'>
         { props.pagination? <Paginator table={table} /> : null }

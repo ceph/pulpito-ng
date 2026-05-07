@@ -2,29 +2,39 @@ import { ReactElement } from "react";
 import { type Row } from '@tanstack/react-table';
 
 import type { Job } from "../../lib/paddles.d";
+import type { RowDetail } from "../../lib/types.d";
 
 import "./index.css";
 
 type JobDetailPanelProps = {
   row: Row<Job>;
+  details: RowDetail<Job>[];
+  // labels: string[];
+  // values: (string | number)[];
+  // children: React.ReactElement[];
 }
 
-export default function JobDetailPanel(props: JobDetailPanelProps): ReactElement | null {
-  const failure_reason = props.row.original.failure_reason;
+// export type RowDetail<TData> = {
+//   // key: keyof TData;
+//   key: string;
+//   // value: (string | number);
+//   display: boolean;
+// }
+
+type NarrowJob = Omit<Job, "tasks" | "targets">
+
+export function JobDetailPanel(props: JobDetailPanelProps): ReactElement | null {
+  // const failure_reason = props.row.original.failure_reason;
   // if ( ! failure_reason ) return null;
   return (
     <div
     >
-      <p>
-        Description:&nbsp;
-        <code>{props.row.original.description}</code>
-      </p>
-      { failure_reason?
-        <p className="fr">
-          Failure Reason:&nbsp;
-          <code>{failure_reason}</code>
-        </p>
-      : null}
+      { props.details.map(({key, display}) => (
+        display?
+          <p>{key}:&nbsp;{props.row.original[key as keyof NarrowJob]}</p>
+        : null
+        ))
+      }
     </div>
   )
 };

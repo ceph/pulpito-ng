@@ -6,13 +6,38 @@ import {
   type Table as TanstackTable,
 } from '@tanstack/react-table';
 
+import {
+  type RowDetail
+} from "#src/lib/types.d";
+
 import './index.css';
 
 type TableProps<TData> = {
   table: TanstackTable<TData>,
   rowClass?: Function,
-  detailPanel?: (props: {row: Row<TData>}) => React.ReactElement | null,
+  // detailPanel?: (props: {row: Row<TData>}) => React.ReactElement | null,
+  detailPanel?: (props: DetailPanelProps<TData>) => React.ReactElement | null,
+  // details: DetailPanelConfig<TData>[],
+  details: RowDetail<TData>[],
 }
+
+type DetailPanelProps<TData> = {
+  row: Row<TData>;
+  details: RowDetail<TData>[];
+}
+
+// type DetailPanelConfig<TData> = {
+//   // rowKey: keyof TData;
+//   rowKey: string;
+//   detailPanel?: (props: {row: Row<TData>}) => React.ReactElement | null;
+// }
+
+// export type RowDetail<TData> = {
+//   // key: keyof TData;
+//   key: string;
+//   // value: (string | number);
+//   display?: boolean;
+// }
 
 const sortIndicators = {
   'asc': ' ▲',
@@ -20,7 +45,7 @@ const sortIndicators = {
   'false': null,
 };
 
-export default function Table<TData> ({table, rowClass, detailPanel}: TableProps<TData>) {
+export default function Table<TData> ({table, rowClass, detailPanel, details}: TableProps<TData>) {
   console.log('sorting', table.getState().sorting)
   return (
     <table className='pulpito'>
@@ -62,7 +87,7 @@ export default function Table<TData> ({table, rowClass, detailPanel}: TableProps
               { row.getCanExpand() && row.getIsExpanded() && detailPanel !== undefined && (
                 <tr>
                   <td colSpan={row.getVisibleCells().length}>
-                    {detailPanel({row})}
+                    {detailPanel({row, details})}
                   </td>
                 </tr>
               ) }
