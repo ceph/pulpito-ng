@@ -19,7 +19,10 @@ import FilterMenu from '../FilterMenu';
 import Link from "../Link";
 import type { Job, Run } from "../../lib/paddles.d";
 import { JobStatuses } from "../../lib/paddles.d";
-import { type FilterMenuSections } from '#src/lib/types.d';
+import {
+  type FilterMenuSections,
+  type RowDetail,
+} from '#src/lib/types.d';
 import { dirName } from "../../lib/utils";
 import {
   getColumnFiltersCallback,
@@ -32,23 +35,33 @@ import Paginator from '../Paginator';
 import {
   JobDetailPanel,
 } from "../JobDetailPanel";
+import DetailMenu from '../DetailMenu'; 
 
 import sentryIcon from "./assets/sentry.svg";
 
 
-const columns: ColumnDef<Job>[] = [
+// const columns: ColumnDef<Job>[] = [
+const getColumns = (setDetails: React.Dispatch<React.SetStateAction<RowDetail[]>>): ColumnDef<Job>[] => {
+  return [
   {
     id: 'expander',
-    header: ({ table }) => (
-      <div>
-        <button
-          className='expandButton'
-          onClick={table.getToggleAllRowsExpandedHandler()}
-        >
-          {table.getIsAllRowsExpanded() ? '-' : '+'}
-        </button>
-      </div>
+    header: ({table}) => (
+      <DetailMenu
+        table={table}
+        details={table.getState().details}
+        setDetails={setDetails}
+      />
     ),
+    // header: ({ table }) => (
+    //   <div>
+    //     <button
+    //       className='expandButton'
+    //       onClick={table.getToggleAllRowsExpandedHandler()}
+    //     >
+    //       {table.getIsAllRowsExpanded() ? '-' : '+'}
+    //     </button>
+    //   </div>
+    // ),
     cell: ({ row }) => (
       row.getCanExpand() &&
       <button className='expandButton' onClick={row.getToggleExpandedHandler()} >
@@ -197,6 +210,7 @@ const columns: ColumnDef<Job>[] = [
     size: 20,
   },
 ];
+}
 
 const FILTER_SECTIONS: FilterMenuSections = {
   job: {
@@ -257,17 +271,21 @@ export default function JobList(props: JobListProps) {
       id: props.sortMode === "time"? "started" : "job_id",
       desc: true,
   }]);
-  const detailConfig = [
+  const [details, setDetails] = useState<RowDetail[]>([
     {key: "description", display: true},
     {key: "failure_reason", display: true},
-  ]
+  ]);
+  const columns = useMemo(() => getColumns(setDetails), [setDetails]);
+  const getRowCanExpand = (row: Row<Job>) => {
+    return details.filter(detail => detail.display && row.original[detail.key as keyof Job]).length >= 1;
+  }
   const table = useReactTable({
     ...options,
     columns,
     data: data || [],
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    getRowCanExpand: (row) => !! ( row.original.failure_reason || row.original.description),
+    getRowCanExpand,
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange,
     onSortingChange: setSorting,
@@ -299,6 +317,7 @@ export default function JobList(props: JobListProps) {
       columnFilters,
       pagination,
       sorting,
+      details,
     },
   });
   const rowClass = (row: Row<Job>) => {
@@ -316,7 +335,12 @@ export default function JobList(props: JobListProps) {
         />
         { props.pagination? <Paginator table={table} /> : null }
       </div>
-      <Table table={table} rowClass={rowClass} detailPanel={JobDetailPanel} details={detailConfig} />
+      <Table
+        table={table}
+        rowClass={rowClass}
+        detailPanel={JobDetailPanel}
+        details={details}
+      />
       { table.getState().pagination.pageSize >= 10? (
       <div className='tableControls'>
         { props.pagination? <Paginator table={table} /> : null }

@@ -57,7 +57,7 @@ export interface FilterComponentProps extends FilterProps {
   onChange: (value: string | null) => void;
 }
 
-export type RowDetail<TData> = {
+export type RowDetail = {
   key: string;
-  display?: boolean;
+  display: boolean;
 }

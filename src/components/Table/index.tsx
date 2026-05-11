@@ -4,6 +4,8 @@ import {
   flexRender,
   type Row,
   type Table as TanstackTable,
+  // type Updater,
+  // type TableFeature,
 } from '@tanstack/react-table';
 
 import {
@@ -18,13 +20,46 @@ type TableProps<TData> = {
   // detailPanel?: (props: {row: Row<TData>}) => React.ReactElement | null,
   detailPanel?: (props: DetailPanelProps<TData>) => React.ReactElement | null,
   // details: DetailPanelConfig<TData>[],
-  details: RowDetail<TData>[],
+  // details: string[],
+  details: RowDetail[];
+  // setDetails: React.Dispatch<React.SetStateAction<string[]>>,
+  // details: RowDetail<TData>[],
+  // setDetails: React.Dispatch<React.SetStateAction<RowDetail[]>>,
 }
+
+// type DetailsState = RowDetail[];
+
+// type DetailsTableState<TData> = {
+//   details: DetailsState<TData>;
+// }
+
+// export interface DetailsInstance<TData> {
+//   setDetails: (updater: Updater<DetailsState<TData>>) => void
+//   toggleDetails: (value?: DetailsState<TData>) => void
+// }
 
 type DetailPanelProps<TData> = {
   row: Row<TData>;
-  details: RowDetail<TData>[];
+  // details: DetailsState<TData>;
+  details: RowDetail[];
 }
+
+declare module '@tanstack/react-table' {
+  interface TableState {
+    showDetails: string[],
+    details: RowDetail[],
+  }
+  // interface TableState<TData> extends DetailsTableState<TData> {}
+  // interface Table<TData>
+}
+
+// type DetailOptions<TData> = {
+//   details: DetailsState;
+//   setDetailsState
+// }
+
+// const DetailFeature: TableFeature = {
+// }
 
 // type DetailPanelConfig<TData> = {
 //   // rowKey: keyof TData;
