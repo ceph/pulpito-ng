@@ -58,6 +58,5 @@ export interface FilterComponentProps extends FilterProps {
 }
 
 export type RowDetail = {
-  key: string;
-  display: boolean;
+  [key: string]: boolean;
 }

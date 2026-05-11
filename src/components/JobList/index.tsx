@@ -41,7 +41,7 @@ import sentryIcon from "./assets/sentry.svg";
 
 
 // const columns: ColumnDef<Job>[] = [
-const getColumns = (setDetails: React.Dispatch<React.SetStateAction<RowDetail[]>>): ColumnDef<Job>[] => {
+const getColumns = (setDetails: React.Dispatch<React.SetStateAction<RowDetail>>): ColumnDef<Job>[] => {
   return [
   {
     id: 'expander',
@@ -68,7 +68,7 @@ const getColumns = (setDetails: React.Dispatch<React.SetStateAction<RowDetail[]>
         {row.getIsExpanded() ? '-' : '+'}
       </button>
     ),
-    size: 20,
+    size: 40,
   },
   {
     header: "status",
@@ -271,13 +271,13 @@ export default function JobList(props: JobListProps) {
       id: props.sortMode === "time"? "started" : "job_id",
       desc: true,
   }]);
-  const [details, setDetails] = useState<RowDetail[]>([
-    {key: "description", display: true},
-    {key: "failure_reason", display: true},
-  ]);
-  const columns = useMemo(() => getColumns(setDetails), [setDetails]);
+  const [details, setDetails] = useState<RowDetail>({
+    description: false,
+    failure_reason: true,
+  });
+  const columns = useMemo(() => getColumns(setDetails), [details, setDetails]);
   const getRowCanExpand = (row: Row<Job>) => {
-    return details.filter(detail => detail.display && row.original[detail.key as keyof Job]).length >= 1;
+    return Object.entries(details).filter(([key, display]) => display && !!row.original[key as keyof Job]).length >= 1;
   }
   const table = useReactTable({
     ...options,
@@ -324,6 +324,7 @@ export default function JobList(props: JobListProps) {
     const category = jobStatusToThemeCategory(row.getValue('status'));
     return category || '';
   }
+  console.log('details', details)
   return (
     <div className='tableContainer'>
       <div className='tableControls'>

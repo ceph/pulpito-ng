@@ -48,6 +48,8 @@ export type Job = {
   description: string;
 };
 
+type NarrowJob = Omit<Job, "tasks" | "targets">
+
 export type NodeRoles = string[];
 
 export const RunResultKeys = JobStatuses.concat(["total"]);

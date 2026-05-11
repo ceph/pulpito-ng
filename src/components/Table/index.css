@@ -81,10 +81,11 @@ table.pulpito {
   }
 
   button.expandButton {
-    width: 1.5rem;
+    width: 2rem;
     background: transparent;
-    border: 1px solid var(--mantine-color-default-border);
-    border-radius: var(--mantine-radius-sm);
+    border: 0;
+    /* border: 1px solid var(--mantine-color-default-border); */
+    /* border-radius: var(--mantine-radius-sm); */
   }
 
   tr td .MuiButtonBase-root {

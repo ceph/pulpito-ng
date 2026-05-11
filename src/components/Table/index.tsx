@@ -21,7 +21,7 @@ type TableProps<TData> = {
   detailPanel?: (props: DetailPanelProps<TData>) => React.ReactElement | null,
   // details: DetailPanelConfig<TData>[],
   // details: string[],
-  details: RowDetail[];
+  details: RowDetail;
   // setDetails: React.Dispatch<React.SetStateAction<string[]>>,
   // details: RowDetail<TData>[],
   // setDetails: React.Dispatch<React.SetStateAction<RowDetail[]>>,
@@ -41,13 +41,13 @@ type TableProps<TData> = {
 type DetailPanelProps<TData> = {
   row: Row<TData>;
   // details: DetailsState<TData>;
-  details: RowDetail[];
+  details: RowDetail;
 }
 
 declare module '@tanstack/react-table' {
   interface TableState {
     showDetails: string[],
-    details: RowDetail[],
+    details: RowDetail,
   }
   // interface TableState<TData> extends DetailsTableState<TData> {}
   // interface Table<TData>
@@ -81,7 +81,8 @@ const sortIndicators = {
 };
 
 export default function Table<TData> ({table, rowClass, detailPanel, details}: TableProps<TData>) {
-  console.log('sorting', table.getState().sorting)
+  // console.log('sorting', table.getState().sorting)
+  // console.log('details', details)
   return (
     <table className='pulpito'>
       <thead>

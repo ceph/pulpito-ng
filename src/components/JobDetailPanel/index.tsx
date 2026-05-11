@@ -9,7 +9,7 @@ import "./index.css";
 type JobDetailPanelProps = {
   row: Row<Job>;
   // details: string[];
-  details: RowDetail[];
+  details: RowDetail;
   // labels: string[];
   // values: (string | number)[];
   // children: React.ReactElement[];
@@ -28,11 +28,11 @@ export function JobDetailPanel(props: JobDetailPanelProps): ReactElement | null 
   return (
     <div
     >
-      { props.details.map(({key, display}) => {
+      { Object.entries(props.details).map(([key, display]) => {
         let value = props.row.original[key as keyof NarrowJob];
         return (
         (display && !!value)?
-          <p>{key}:&nbsp;{value}</p>
+          <p key={key}>{key}:&nbsp;{value}</p>
         : null
       )})}
     </div>
