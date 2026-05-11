@@ -118,6 +118,10 @@ details {
   --button-padding-x: 5px;
 }
 
+.filterLink {
+  margin-left: 0.25rem;
+}
+
 @media (prefers-color-scheme: dark) {
   body {
     color-scheme: only dark;

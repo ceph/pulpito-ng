@@ -8,22 +8,15 @@ import { format } from "date-fns";
 import type { Run } from "#src/lib/paddles.d";
 
 import JobList from "#src/components/JobList";
-import Link from "#src/components/Link";
-
-const PREFIX = "index";
-
-const classes = {
-  root: `${PREFIX}-root`,
-};
 
 type FilterLinkProps = {
   to: string
 }
 
 const FilterLink = (props: PropsWithChildren<FilterLinkProps>) => (
-  <Link sx={{mx: 0.33}} to={props.to}>
+  <a className="filterLink" href={props.to}>
     {props.children}
-  </Link>
+  </a>
 );
 
 export default function Page() {
@@ -36,7 +29,7 @@ export default function Page() {
     ? format(new Date(data.scheduled), "yyyy-MM-dd")
     : null;
   return (
-    <div className={classes.root}>
+    <div>
       <Config title={`${name} - Pulpito`} />
       <Text size="xl" style={{ margin: "20px 0px" }}>
         {name}
