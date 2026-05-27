@@ -1,11 +1,16 @@
 import axios from "axios";
 import { render } from 'vike/abort'
 
-import type { 
+import type {
   GetURLParams,
 } from "./paddles.d";
 
 import { isServer } from "./utils";
+
+// Create axios instance with timeout configuration
+const axiosInstance = axios.create({
+  timeout: 30000, // 30 seconds
+});
 
 const PADDLES_SERVER = (
   isServer()?
@@ -72,18 +77,33 @@ function getURL({endpoint, params} : GetURLParams) {
   if ( endpoint && endpoint.match(/nodes\/.*\/jobs/) && ! url.searchParams.get("count") ) {
     url.searchParams.set("count", String(DEFAULT_PAGE_SIZE));
   };
-  console.log('paddles', url.href)
   url.pathname = url.pathname.replace('//', '/');
   return url;
 }
 
 async function fetchPaddlesMultiple(requests: GetURLParams[]) {
-  return Promise.all(requests.map((request) => axios.get(getURL(request).toString())))
+  return Promise.all(requests.map((request) => {
+    const url = getURL(request).toString();
+    return axiosInstance.get(url).catch((err) => {
+      // Log error with context for debugging
+      const errorContext = {
+        url,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        message: err.message,
+      };
+      console.error('Paddles API request failed:', errorContext);
+      throw err;
+    });
+  }))
     .catch((err) => {
       if ( err.response ) {
-        throw render(err.response.status, err.response.statusText)
+        const errorMsg = `Failed to fetch from ${err.config?.url || 'paddles'}: ${err.response.statusText}`;
+        throw render(err.response.status, errorMsg)
+      } else if ( err.code === 'ECONNABORTED' ) {
+        throw render(503, `Request timeout: Could not reach the paddles backend at ${err.config?.url || 'paddles'}`)
       } else {
-        throw render(503, "Could not reach the paddles backend!")
+        throw render(503, `Could not reach the paddles backend: ${err.message}`)
       }
     })
     .then((responses) => responses.map((response) => response.data))

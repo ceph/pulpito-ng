@@ -21,7 +21,7 @@ const components = new Map([
 ])
 
 export default function Filter (props: FilterProps) {
-  const changeHandler = React.useMemo(() => getFilterChangeHandler(props.id), [])
+  const changeHandler = React.useMemo(() => getFilterChangeHandler(props.id), [props.id])
   const Component = components.get(props.component || '' ) || FilterAutocomplete;
   return (
     <Component

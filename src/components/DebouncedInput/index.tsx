@@ -10,7 +10,7 @@ export default function DebouncedInput (props: FilterComponentProps) {
   React.useEffect(() => {
     const timeout = setTimeout(() => { props.onChange(value) }, 500)
     return () => clearTimeout(timeout)
-  }, [value]);
+  }, [value, props.onChange]);
   return (
     <div className="debounced-input">
       { props.label? <label htmlFor={props.id}>{props.label}:</label> : null }

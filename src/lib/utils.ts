@@ -31,7 +31,6 @@ export function getUrl(path: string, filters: ColumnFiltersState, pagination: Pa
 
 export function getFilterChangeHandler(paramName: string) {
   return (value: string | null) => {
-    console.log('changeHandler', paramName, value)
     const url = new URL(window.location.href)
     if ( value ) {
       url.searchParams.set(paramName, value.toString());

@@ -252,16 +252,10 @@ export default function JobList(props: JobListProps) {
     path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
   });
   const data = useMemo(() => {
-    return (data_?.jobs || []).filter(item => {
-      item.id = String(item.job_id);
-      return !! item.id;
-    }).filter(item => {
-      for ( let i = 0; i < columnFilters.length; i++ ) {
-        const filter = columnFilters[i];
-        if ( item[filter.id as keyof Job] !== filter.value ) return false;
-      }
-      return true
-    });
+    return (data_?.jobs || []).map(item => ({
+      ...item,
+      id: String(item.job_id)
+    }));
   }, [data_]);
   const [openFilterMenu, setOpenFilterMenu] = useState<boolean>(false);
   const onPaginationChange = getPaginationCallback({
@@ -324,7 +318,6 @@ export default function JobList(props: JobListProps) {
     const category = jobStatusToThemeCategory(row.getValue('status'));
     return category || '';
   }
-  console.log('details', details)
   return (
     <div className='tableContainer'>
       <div className='tableControls'>
