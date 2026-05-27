@@ -27,7 +27,9 @@ export function getColumnFiltersCallback({path, paginationState, columnFiltersSt
   const onColumnFiltersChange = (updater: Updater<ColumnFiltersState>) => {
     if ( ! ( updater instanceof Function ) ) return;
     const newUrl = getUrl(path, updater(columnFiltersState), paginationState);
-    navigate(newUrl.pathname + newUrl.search);
+    navigate(newUrl.pathname + newUrl.search).catch((err) => {
+      console.error('Navigation failed in column filters callback:', err);
+    });
   };
   return onColumnFiltersChange;
 }
@@ -36,7 +38,9 @@ export function getPaginationCallback({path, paginationState, columnFiltersState
   const onPaginationChange = (updater: Updater<PaginationState>) => {
     if ( ! ( updater instanceof Function ) ) return;
     const newUrl = getUrl(path, columnFiltersState, updater(paginationState));
-    navigate(newUrl.pathname + newUrl.search);
+    navigate(newUrl.pathname + newUrl.search).catch((err) => {
+      console.error('Navigation failed in pagination callback:', err);
+    });
   };
   return onPaginationChange;
 }
