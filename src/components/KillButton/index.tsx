@@ -20,7 +20,7 @@ type KillButtonProps = {
 };
 
 type KillButtonDialogProps = {
-  // mutation: UseMutationResult<KillRunResult>;
+  mutation: ReturnType<typeof useRunKill>;
   payload: KillRunPayload;
   open: boolean;
   handleClose: () => void;

@@ -18,8 +18,8 @@ export const JobStatuses = [
 export type JobStatus = (typeof JobStatuses)[number];
 
 export type Task = {
-  [key: string]: any;
-}
+  [key: string]: { [key: string]: unknown };
+};
 
 export type Job = {
   id?: string;
@@ -45,7 +45,6 @@ export type Job = {
   owner: string;
   sha1: string;
   teuthology_branch: string;
-  description: string;
 };
 
 type NarrowJob = Omit<Job, "tasks" | "targets">

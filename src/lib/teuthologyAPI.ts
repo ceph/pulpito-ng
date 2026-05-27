@@ -36,10 +36,16 @@ function doLogout() {
     window.location.href = url.toString();
 }
 
-function useSession() {
+function useSession(): { data?: Session; isLoading: boolean; isError: boolean; isSuccess: boolean; error: Error | null } {
     // const url = getURL("/");
-    // FIXME
-    return false;
+    // FIXME: Returning mock query object to prevent TypeErrors
+    return {
+        data: undefined,
+        isLoading: false,
+        isError: false,
+        isSuccess: false,
+        error: null,
+    };
     // const query = useQuery<Session, Error>({
     //     queryKey: ['ping-api', { url }],
     //     queryFn: () => (
@@ -69,10 +75,19 @@ function useUserData(): Map<string, string> {
     return new Map();
 }
 
-function useRunKill() {
+function useRunKill(): { data?: KillRunResult; isLoading: boolean; isPending: boolean; isError: boolean; isSuccess: boolean; error: Error | null; mutate: (payload: any) => void; reset: () => void } {
     const url = getURL("/kill/?logs=true");
-    // FIXME
-    return false;
+    // FIXME: Returning mock mutation object to prevent TypeErrors
+    return {
+        data: undefined,
+        isLoading: false,
+        isPending: false,
+        isError: false,
+        isSuccess: false,
+        error: null,
+        mutate: () => {},
+        reset: () => {},
+    };
     // const mutation: UseMutationResult<KillRunResult> = useMutation({
     //     mutationKey: ['run-kill', { url }],
     //     mutationFn: (payload) => (

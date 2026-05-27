@@ -1,7 +1,7 @@
 
 export type Session = {
     session: {
-        id: int,
+        id: number,
         username: string,
         avatar_url: string,
         isUserAdmin?: boolean,
