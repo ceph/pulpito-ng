@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Cookies } from "react-cookie";
+import { usePageContext } from "vike-react/usePageContext";
 
 import { Session, KillRunResult } from "./teuthologyAPI.d"
 
@@ -36,27 +37,22 @@ function doLogout() {
     window.location.href = url.toString();
 }
 
+/**
+ * Hook to access user session data from page context
+ * Session is validated server-side and passed to client via SSR
+ */
 function useSession(): { data?: Session; isLoading: boolean; isError: boolean; isSuccess: boolean; error: Error | null } {
-    // const url = getURL("/");
-    // FIXME: Returning mock query object to prevent TypeErrors
+    const pageContext = usePageContext();
+    const user = pageContext.user;
+    
+    // Return compatible object structure matching the previous React Query API
     return {
-        data: undefined,
+        data: user ? { session: user } : undefined,
         isLoading: false,
         isError: false,
-        isSuccess: false,
+        isSuccess: true, // Always true since session is loaded during SSR
         error: null,
     };
-    // const query = useQuery<Session, Error>({
-    //     queryKey: ['ping-api', { url }],
-    //     queryFn: () => (
-    //         axios.get(url.toString(), {
-    //             withCredentials: true
-    //         }).then((resp) => resp.data)
-    //     ),
-    //     retry: 1,
-    //     enabled: url.toString() !== "",
-    // });
-    // return query;
 }
 
 function useUserData(): Map<string, string> {

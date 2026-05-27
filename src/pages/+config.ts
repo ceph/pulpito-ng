@@ -5,7 +5,7 @@ const config = {
   title: 'pulpito-ng',
   ssr: true,
   extends: [vikeReact],
-  passToClient: ['pageProps'],
+  passToClient: ['pageProps', 'user'],
   redirects: {
     "/": "/runs",
   },

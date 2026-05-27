@@ -13,8 +13,10 @@
 
 import express from 'express'
 import compression from 'compression'
+import cookieParser from 'cookie-parser'
 import { renderPage } from 'vike/server'
 import { root } from './root.js'
+import { sessionMiddleware } from './middleware/session.js'
 const isProduction = process.env.NODE_ENV === 'production'
 
 startServer()
@@ -23,6 +25,8 @@ async function startServer() {
   const app = express()
 
   app.use(compression())
+  app.use(cookieParser())
+  app.use(sessionMiddleware)
 
   // Vite integration
   if (isProduction) {
@@ -53,7 +57,8 @@ async function startServer() {
   app.get('*', async (req, res) => {
     const pageContextInit = {
       urlOriginal: req.originalUrl,
-      headersOriginal: req.headers
+      headersOriginal: req.headers,
+      user: req.session
     }
     const pageContext = await renderPage(pageContextInit)
     if (pageContext.errorWhileRendering) {

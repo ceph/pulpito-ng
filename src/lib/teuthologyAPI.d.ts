@@ -13,11 +13,20 @@ export type Session = {
 export type KillRunPayload = {
     "--run": string,
     "--owner": string,
-    "--machine-type": string, 
+    "--machine-type": string,
     "--preserve-queue": boolean,
 }
 
 export type KillRunResult = {
     kill: string;
     logs?: string;
+}
+
+// Extend Vike's PageContext to include user session
+declare global {
+    namespace Vike {
+        interface PageContext {
+            user?: Session['session'];
+        }
+    }
 }
