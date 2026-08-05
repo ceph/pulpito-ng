@@ -90,9 +90,6 @@ function JobHeader({ data }: { data: Job }) {
           <Link to={dirName(data.log_href)}>Log Archive</Link>
         </Typography>
       </Grid.Col>
-      <Grid.Col span={12}>
-          <Link to={`/runs/${data.name}/jobs/${data.job_id}/history`}>Job History</Link>
-      </Grid.Col>
       <Grid.Col span={4}>
         <Typography>Status: {data.status}</Typography>
         {data.started? (
