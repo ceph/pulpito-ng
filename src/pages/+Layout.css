@@ -1,0 +1,150 @@
+body {
+  --font-size-sm: 10px;
+  --font-size: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --color-whiteish: rgba(255, 255, 255, 0.9);
+  --color-blackish: rgba(0, 0, 0, 0.87);
+  --border-radius: 5px;
+  font-size: var(--font-size);
+  background-color: var(--palette-background-default);
+  color: var(--palette-text-primary);
+  --app-inset: 10px;
+  margin: var(--app-inset);
+}
+
+header {
+  padding: var(--app-inset);
+}
+
+a {
+  color: inherit;
+}
+
+.tableContainer {
+  border-radius: var(--border-radius);
+  border: 1px solid var(--app-shell-border-color);
+  padding: 5px;
+}
+
+.App-body {
+  background-color: var(--palette-background-default);
+  color: var(--palette-text-primary);
+  box-shadow: none;
+}
+
+.tableControls {
+  display: flex;
+  direction: row;
+}
+
+code {
+  background-color: var(--palette-background-code);
+  padding: 1px 5px 1px 5px;
+  border-radius: 4px;
+}
+
+/* Accordion */
+details {
+  background-color: var(--palette-background-paper);
+  border-radius: var(--mantine-radius-default);
+  padding: var(--mantine-spacing-xs);
+
+  summary * {
+    display: inline-block;
+
+  }
+
+  summary {
+    div {
+      font-size: var(--font-size-md);
+    }
+  }
+
+  div {
+    ::selection {
+      color: var(--palette-primary-contrast-text);
+      background-color: var(--palette-background-contrast);
+    }
+  }
+}
+
+/* Button */
+.mantine-Button-root {
+  margin: 2px;
+  color: var(--palette-text-primary);
+  background-color: transparent;
+  --button-padding-x: 5px;
+}
+
+/* Buttons for destructive actions keep Mantine's filled red look */
+.mantine-Button-root.dangerButton {
+  color: var(--mantine-color-white);
+  background-color: var(--mantine-color-red-filled);
+  --button-padding-x: var(--mantine-spacing-md);
+}
+
+.mantine-Button-root.dangerButton:disabled {
+  color: var(--mantine-color-disabled-color);
+  background-color: var(--mantine-color-disabled);
+}
+
+.filterLink {
+  margin-left: 0.25rem;
+}
+
+[data-mantine-color-scheme="dark"] body {
+  color-scheme: only dark;
+  --palette-background-default: #181818;
+  --palette-background-paper: #303030;
+  --palette-background-code: #404040;
+  --palette-background-contrast: var(--color-whiteish);
+  --mantine-color-body: var(--palette-background-default);
+  --palette-text-primary: var(--color-whiteish);
+  --palette-table-cell-border: rgba(81, 81, 81, 1);
+
+  --palette-primary-main: #0288d1;
+  --palette-primary-contrast-text: rgba(0, 0, 0, 0.87);
+  --palette-info-main: #81d4fa;
+  --palette-info-contrast-text: rgba(0, 0, 0, 0.87);
+  --palette-success-main: #a5d6a7;
+  --palette-success-contrast-text: rgba(0, 0, 0, 0.87);
+  --palette-error-main: #ef9a9a;
+  --palette-error-contrast-text: rgba(0, 0, 0, 0.87);
+  --palette-warning-main: #ffcc80;
+  --palette-warning-contrast-text: rgba(0, 0, 0, 0.87);
+}
+
+[data-mantine-color-scheme="light"] body {
+  color-scheme: only light;
+  --palette-background-default: #fff;
+  --palette-background-paper: #fff;
+  --palette-background-code: #eee;
+  --palette-background-contrast: var(--color-blackish);
+  --mantine-color-body: var(--palette-background-default);
+  --palette-text-primary: rgba(0, 0, 0, 0.87);
+  --palette-table-cell-border: rgba(224, 224, 224, 1);
+
+  --palette-primary-main: #039be5;
+  --palette-primary-contrast-text: #fff;
+  --palette-info-main: #b3e5fc;
+  --palette-info-contrast-text: rgba(0, 0, 0, 0.87);
+  --palette-success-main: #c8e6c9;
+  --palette-success-contrast-text: rgba(0, 0, 0, 0.87);
+  --palette-error-main: #ffcdd2;
+  --palette-error-contrast-text: rgba(0, 0, 0, 0.87);
+  --palette-warning-main: #ffe0b2;
+  --palette-warning-contrast-text: rgba(0, 0, 0, 0.87);
+}
+
+#dev-badge {
+  background-color: var(--palette-error-main);
+  color: var(--palette-error-contrast-text);
+  font-size: var(--font-size-sm);
+  padding: 0 0;
+  position: relative;
+  bottom: var(--mantine-spacing-md);
+  right: var(--mantine-spacing-lg);
+  cursor: pointer;
+  transform: rotate(0.06turn);
+}
