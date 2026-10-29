@@ -1,0 +1,18 @@
+.nodeFilterContainer {
+  height: auto;
+  display: flex;
+
+  .nodeFilter {
+    display: flex;
+    flex: flex-wrap;
+    margin-left: auto;
+
+    input {
+      background: transparent;
+    }
+
+    button {
+      --input-bg: transparent;
+    }
+  }
+}
