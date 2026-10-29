@@ -1,6 +1,5 @@
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
-import { useState } from "react";
+import { Notification } from "@mantine/core";
+import { useEffect, useState } from "react";
 
 type AlertProps = {
     severity: "success" | "error",
@@ -9,21 +8,23 @@ type AlertProps = {
 
 export default function AlertComponent(props: AlertProps) {
     const [isOpen, setIsOpen] = useState(true);
-    const handleClose = (
-        event?: React.SyntheticEvent | Event,
-        reason?: string
-    ) => {
-        if (reason === "clickaway") {
-          return;
-        }
-        setIsOpen(false);
-    };
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const timer = setTimeout(() => setIsOpen(false), 3000);
+        return () => clearTimeout(timer);
+    }, [isOpen]);
+
+    if (!isOpen) return null;
 
     return (
-        <Snackbar autoHideDuration={3000} open={isOpen} onClose={handleClose}>
-            <Alert onClose={handleClose} severity={props.severity} sx={{ width: "100%" }}>
-              {props.message}
-            </Alert>
-        </Snackbar>
+        <Notification
+            color={props.severity === "error" ? "red" : "green"}
+            onClose={() => setIsOpen(false)}
+            withBorder
+            style={{ position: "fixed", bottom: 24, left: 24, zIndex: 1400, minWidth: 288 }}
+        >
+            {props.message}
+        </Notification>
     );
 }
