@@ -1,0 +1,7 @@
+p {
+  margin: 0;
+}
+
+p.fr {
+  margin-top: var(--mantine-spacing-sm);
+}

@@ -1,14 +1,13 @@
-import MuiLink from "@mui/material/Link";
 
 export default function Link(props) {
   return (
-    <MuiLink
+    <a
       href={props.to}
       target="_blank"
+      rel="noopener noreferrer"
       color={props.color}
-      sx={props.sx}
     >
       {props.children}
-    </MuiLink>
+    </a>
   );
 }
