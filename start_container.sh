@@ -1,14 +1,17 @@
 #!/usr/bin/env sh
 set -ex
-trap exit TERM
+export VITE_PADDLES_SERVER
+export VITE_MACHINE_TYPE
+export VITE_TEUTHOLOGY_API
+if [ -n "${PULPITO_PADDLES_ADDRESS}" ]; then
+    VITE_PADDLES_SERVER=${PULPITO_PADDLES_ADDRESS}
+fi
 
 cd /app/
 
 if [ "$DEPLOYMENT" = "development" ]; then
     echo "DEVELOPMENT MODE"
-    npm run start
+    exec npm run dev
 else
-    chown -R node:node /app
-    npm run build
-    npm run serve -- --host
+    exec npm run server:prod
 fi

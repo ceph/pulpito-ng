@@ -1,26 +1,28 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "paths": {
+      "#src/*": [
+        "./src/*"
+      ]
+    },
+    "target": "esnext",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "preserve",
-    "jsxImportSource": "@emotion/react",
-    "downlevelIteration": true,
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
     "types": [
       "./src/vite-env-override.d.ts",
       "vite/client"

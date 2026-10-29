@@ -4,11 +4,13 @@
 /node_modules
 /.pnp
 .pnp.js
+.vite
 
 # testing
 /coverage
 
 # production
+/dist
 /build
 
 # misc
@@ -24,3 +26,6 @@ yarn-error.log*
 
 # Sentry Auth Token
 .env.sentry-build-plugin
+
+.env
+.scratch/
