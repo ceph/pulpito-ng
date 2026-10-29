@@ -1,97 +1,78 @@
-import { MRT_RowData, type MRT_TableOptions } from 'material-react-table';
-import { useTheme } from "@mui/material/styles";
+import { navigate } from 'vike/client/router'
+
+import {
+  RowData,
+  type ColumnFiltersState,
+  type PaginationState,
+  type TableOptions,
+  type Updater,
+} from '@tanstack/react-table';
+
+import {
+  getUrl,
+} from "./utils";
 
 
-export default function useDefaultTableOptions<TData extends MRT_RowData>(): Partial<MRT_TableOptions<TData>> {
-  const theme = useTheme();
-  const palette = theme.palette;
+const DEFAULT_PAGE_SIZE = 25;
+
+interface CallbackFactoryArgs {
+  path: string;
+  paginationState: PaginationState;
+  columnFiltersState: ColumnFiltersState;
+}
+
+export function getColumnFiltersCallback({path, paginationState, columnFiltersState} : CallbackFactoryArgs) {
+  const onColumnFiltersChange = (updater: Updater<ColumnFiltersState>) => {
+    if ( ! ( updater instanceof Function ) ) return;
+    // a different filter means a different result set; start from the top
+    const newUrl = getUrl(path, updater(columnFiltersState), {...paginationState, pageIndex: 0});
+    navigate(newUrl.pathname + newUrl.search).catch((err) => {
+      console.error('Navigation failed in column filters callback:', err);
+    });
+  };
+  return onColumnFiltersChange;
+}
+
+export function getPaginationCallback({path, paginationState, columnFiltersState} : CallbackFactoryArgs) {
+  const onPaginationChange = (updater: Updater<PaginationState>) => {
+    if ( ! ( updater instanceof Function ) ) return;
+    const newUrl = getUrl(path, columnFiltersState, updater(paginationState));
+    navigate(newUrl.pathname + newUrl.search).catch((err) => {
+      console.error('Navigation failed in pagination callback:', err);
+    });
+  };
+  return onPaginationChange;
+}
+
+export function parseParams(params: Record<string, string>) {
+  const columnFilters: ColumnFiltersState = [];
+  const pagination: PaginationState = {
+    pageIndex: Number(params.page) || 0,
+    pageSize: Number(params.pageSize) || DEFAULT_PAGE_SIZE,
+  };
+  Object.entries(params).forEach(param => {
+    const [id, value] = param;
+    if ( ["page", "pageSize"].includes(id) ) return;
+    else if ( id === "date" || id === "scheduled" ) {
+      // Keep dates as 'yyyy-MM-dd' strings so they render identically on the
+      // server and in the browser, regardless of timezone.
+      if ( value && ! columnFilters.some(f => f.id === "scheduled") ) {
+        columnFilters.push({id: "scheduled", value});
+      }
+    } else {
+      columnFilters.push({id, value})
+    }
+  });
+  return {columnFilters, pagination}
+}
+
+export function useDefaultTableOptions<TData extends RowData>(): Partial<TableOptions<TData>> {
   return {
-    layoutMode: "grid",
     defaultColumn: {
       minSize: 20,
-      maxSize: 200,
-      size: 75,
+      maxSize: Number.MAX_SAFE_INTEGER,
+      size: 50,
     },
-    // enableColumnResizing: true,
-    enableDensityToggle: false,
-    enableFullScreenToggle: false,
     enableGlobalFilter: false,
-    // enableRowSelection: true,
-    initialState: {
-        density: "compact",
-        showColumnFilters: true,
-    },
-    mrtTheme: {
-      baseBackgroundColor: theme.palette.background.default,
-    },
-    muiTableHeadCellProps: {
-      sx: {
-        '& .Mui-TableHeadCell-Content': { 
-          fontSize: "0.8em",
-        }, 
-        '& .MuiTableSortLabel-root': {
-          display: "none",
-        },
-        '&:hover .MuiTableSortLabel-root': {
-          display: "block",
-        },
-      },
-    },
-    muiTableBodyCellProps: {
-      sx: {
-        color: "black",
-        fontSize: "0.75rem",
-        whiteSpace: "normal",
-      }
-    },
-    muiTableBodyProps: {
-      sx: {
-        'tr td': {
-          paddingBottom: '5px',
-          paddingRight: 0,
-          paddingTop: '5px',
-          color: "black",
-          borderLeft: "0.3px solid " + theme.palette.background.default,
-        },
-        'tr td:has(svg)': {
-          padding: 0,
-        },
-        'tr td .MuiButtonBase-root': {color: "inherit"},
-        'tr.error td': {
-          backgroundColor: palette.error.main,
-          color: palette.error.contrastText,
-        },
-        'tr.warning td': {
-          backgroundColor: palette.warning.main,
-          color: palette.error.contrastText,
-        },
-        'tr.info td': {backgroundColor: palette.info.main},
-        'tr.success td': {backgroundColor: palette.success.main},
-        'tr.empty': {display: 'none'},
-        'td.Mui-TableBodyCell-DetailPanel': {width: "100%", paddingLeft: 5},
-        // The following two items hide button and corresponding empty "row"
-        // for items whose detail panel is empty. If the library adds a way to
-        // avoid populating detail panels on a per-row basis.
-        // :has is *almost* supported everywhere: https://caniuse.com/css-has
-        'tr:has(td):has(.Mui-TableBodyCell-DetailPanel:empty)': {height: "0px"},
-        'tr:has(+ tr.empty) button': {display: "none"},
-        '@media (prefers-color-scheme: dark)': {
-          'tr:hover td': {filter: "brightness(85%)"},
-        },
-        '@media (prefers-color-scheme: light)': {
-          'tr:hover td': {filter: "brightness(115%)"},
-        },
-      },
-    },
-    muiTableBodyRowProps: {
-      sx: {
-        td: {color: theme.palette.primary.contrastText},
-      },
-    },
-    muiTablePaperProps: {
-      sx: {
-        border: "1px solid " + theme.palette.grey[800],
-      },
-    },
   }
 }
