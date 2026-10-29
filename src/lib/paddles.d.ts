@@ -1,12 +1,6 @@
-export type QueryKey = [
-  string,
-  {
-    url: string;
-  }
-];
-
 export interface GetURLParams {
-  [key: string]: string | number | null | undefined;
+  endpoint: string,
+  params?: Record<string, string>,
 }
 
 type RunParams = {
@@ -24,8 +18,8 @@ export const JobStatuses = [
 export type JobStatus = (typeof JobStatuses)[number];
 
 export type Task = {
-  [key: string]: any;
-}
+  [key: string]: { [key: string]: unknown };
+};
 
 export type Job = {
   id?: string;
@@ -44,12 +38,17 @@ export type Job = {
   duration: number;
   status: JobStatus;
   failure_reason: string;
+  machine_type: string;
   targets: Node[];
   roles: NodeRoles[];
   os_type: string;
   os_version: string;
   owner: string;
+  sha1: string;
+  teuthology_branch: string;
 };
+
+type NarrowJob = Omit<Job, "tasks" | "targets">
 
 export type NodeRoles = string[];
 
@@ -84,6 +83,14 @@ export type Run = {
   flavor: string;
 };
 
+export const Flavors = [
+  'default',
+  'crimson',
+  'crimson-debug',
+  'crimson-release',
+] as const;
+export type Flavor = (typeof Flavors)[number];
+
 export type Node = {
   name: string;
   description: string | null;
@@ -101,20 +108,14 @@ export type JobList = {
   jobs?: Job[];
 }
 
-export type StatsLocksResponse = {
-  id: string;
-  owner: string;
-  machine_type: string;
-  count: number;
-}
-
-export interface StatsJobsResponse {
-  id: string;
-  name: string;
+export interface NodeJobStats {
   pass?: number;
   fail?: number;
   dead?: number;
-  unknown?: number;
   running?: number;
-  total: number;
+  unknown?: number;
+}
+
+export interface NodeJobStatsResponse {
+  [key: string]: NodeJobStats
 }
