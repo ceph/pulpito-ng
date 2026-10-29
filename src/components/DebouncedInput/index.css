@@ -1,0 +1,25 @@
+.debounced-input {
+  padding-right: 5px;
+
+  input,
+  select,
+  button {
+    font-size: var(--mantine-font-size-sm);
+    border-top: 0px;
+    border-bottom: 1px solid var(--mantine-color-default-border);
+    border-left: 0px;
+    border-right: 0px;
+  }
+
+  button {
+    font-weight: bold;
+  }
+
+  input:focus {
+    outline: none
+  }
+
+  select {
+    appearance: textfield;
+  }
+}
