@@ -1,0 +1,8 @@
+.prism-code {
+  margin: 0;
+}
+
+textarea {
+  border: 1px solid;
+  overflow: hidden;
+}

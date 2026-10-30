@@ -1,0 +1,29 @@
+.paginatorContainer {
+  display: flex;
+  margin-left: auto;
+}
+
+div.paginator {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  button,
+  input,
+  select {
+    border-width: 1px;
+    border-radius: 0.25rem;
+    border-color: var(--mantine-color-dark-outline);
+    margin: 3px;
+    height: 1.75rem;
+  }
+
+  button {
+    background-color: transparent;
+    width: 1.75rem;
+  }
+
+  .pageInput {
+    width: 2.75rem;
+  }
+}

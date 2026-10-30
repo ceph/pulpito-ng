@@ -1,142 +1,217 @@
-import type { UseQueryResult } from "@tanstack/react-query";
+import { useState } from 'react';
+import { usePageContext } from 'vike-react/usePageContext'
 import {
-  useMaterialReactTable,
-  MaterialReactTable,
-  type MRT_ColumnDef,
-} from 'material-react-table';
-import Link from '@mui/material/Link';
-
-import type { Node } from "../../lib/paddles.d";
-import { formatDate } from "../../lib/utils";
-import useDefaultTableOptions from "../../lib/table";
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type ColumnDef,
+  type Row,
+  type SortingState,
+} from '@tanstack/react-table';
 
 
-export const columns: MRT_ColumnDef<Node>[] = [
+import type { Node } from "#src/lib/paddles.d";
+import { formatDate } from "#src/lib/utils";
+import {
+  getColumnFiltersCallback,
+  getPaginationCallback,
+  useDefaultTableOptions,
+  parseParams,
+} from "../../lib/table";
+import Table from '../Table';
+import FilterMenu from '../FilterMenu';
+import Paginator from '../Paginator';
+import { MACHINE_TYPES } from '#src/lib/paddles';
+import { type FilterMenuSections } from '#src/lib/types.d';
+
+import './index.css';
+
+
+export const columns: ColumnDef<Node>[] = [
   {
     header: "name",
     accessorKey: "name",
-    size: 40,
-    Cell: ( { row } ) => {
+    size: 20,
+    cell: ( { row } ) => {
       const name = row.original.name;
-      return <Link href={`/nodes/${name}/`} color="inherit">{name?.split(".")[0]}</Link>;
+      return <a
+        href={`/nodes/${name}/`}
+        style={{color: "inherit"}}
+        target="_blank"
+        rel="noreferrer"
+      >
+        {name?.split(".")[0]}
+      </a>;
     },
   },
   {
-    header: "machine_type",
+    header: "machine type",
     accessorKey: "machine_type",
-    size: 90,
-    maxSize: 90,
   },
   {
-    header: "🔌",
+    header: "up",
     accessorFn: (row: Node) => row.up?.toLocaleString(),
-    size: 30,
-    filterVariant: "select",
+    size: 20,
   },
   {
-    header: "🔒",
+    header: "locked",
     accessorFn: (row: Node) => row.locked?.toLocaleString(),
-    size: 30,
-    filterVariant: "select",
+    size: 60,
   },
   {
     header: "locked since",
-    filterVariant: 'date',
     sortingFn: "datetime",
-    accessorFn: (row: Node) => formatDate(row.locked_since),
-    size: 55,
+    accessorFn: (row: Node) => row.locked_since? formatDate(row.locked_since): "",
+    size: 100,
     enableColumnFilter: false,
   },
   {
     header: "locked by",
     accessorKey: "locked_by",
-    size: 60,
-    filterVariant: "select",
+    size: 20,
   },
   {
     header: "OS type",
+    id: 'os_type',
     accessorFn: (row) => row.os_type || "none",
-    size: 40,
-    filterVariant: "select",
+    size: 60,
   },
   {
     header: "OS ver.",
+    id: 'os_version',
     accessorFn: (row) => row.os_version || "none",
-    size: 40,
-    filterVariant: "select",
+    size: 60,
   },
   {
     header: "arch",
     accessorKey: "arch",
-    size: 50,
-    filterVariant: "select",
   },
   {
     header: "description",
     accessorKey: "description",
-    size: 200,
+    size: 500,
   },
 ];
 
-interface NodeListProps {
-  query: UseQueryResult<Node[]>;
+const FILTER_SECTIONS: FilterMenuSections = {
+  node: {
+    filters: {
+      machine_type: {
+        label: 'machine type',
+        options: MACHINE_TYPES,
+      },
+      os_type: {
+        label: 'OS',
+        options: ['ubuntu', 'centos', 'rocky'],
+      },
+      os_version: {
+        label: 'OS ver.',
+      },
+    },
+  },
+  status: {
+    filters: {
+      up: {
+        label: 'up',
+        component: 'mantine-checkbox',
+      },
+      locked: {
+        label: 'locked',
+        component: 'mantine-checkbox',
+      },
+    },
+  },
 }
 
-export default function NodeList({ query }: NodeListProps) {
+type NodeListProps = {
+  nodes: Node[],
+  pagination?: boolean;
+}
+
+export default function NodeList(props: NodeListProps) {
+  const [openFilterMenu, setOpenFilterMenu] = useState<boolean>(false);
+  const context = usePageContext();
+  const params = context?.urlParsed.search || {};
+  const { columnFilters, pagination } = parseParams(params);
+  const onColumnFiltersChange = getColumnFiltersCallback({
+    path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
+  });
+  const onPaginationChange = getPaginationCallback({
+    path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
+  });
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "machine_type",
+      desc: false,
+    },
+    {
+      id: "name",
+      desc: false,
+    },
+  ]);
   const options = useDefaultTableOptions<Node>();
   options.state = {};
   options.state.columnVisibility = {};
-  const data = query.data || [];
-  if ( data.length <= 1 ) {
+  if ( props.nodes.length <= 1 ) {
     options.enableFilters = false;
-    options.enablePagination = false;
-    options.enableTableFooter = false;
-    options.enableTopToolbar = false;
-    options.enableBottomToolbar = false;
     options.state.columnVisibility = {
       name: false,
     };
   }
-  if ( new Set(data.map(node => node.machine_type)).size === 1 ) {
+  if ( new Set(props.nodes.map(node => node.machine_type)).size === 1 ) {
     options.state.columnVisibility.machine_type = false;
   }
-  if ( new Set(data.map(node => node.arch)).size === 1 ) {
+  if ( new Set(props.nodes.map(node => node.arch)).size === 1 ) {
     options.state.columnVisibility.arch = false;
   }
-  const table = useMaterialReactTable({
+  const table = useReactTable({
     ...options,
     columns,
-    data: data,
-    rowCount: data.length,
-    enableFacetedValues: true,
+    data: props.nodes,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
+    manualFiltering: true,
+    manualPagination: true,
+    onPaginationChange,
+    onColumnFiltersChange,
+    enableColumnFilters: false,
+    rowCount: props.nodes.length,
     initialState: {
       ...options.initialState,
       pagination: {
         pageIndex: 0,
         pageSize: 25,
       },
-      sorting: [
-        {
-          id: "machine_type",
-          desc: false,
-        },
-        {
-          id: "name",
-          desc: false,
-        },
-      ],
     },
     state: {
-      ...options.state,
-      isLoading: query.isLoading || query.isFetching,
-    },
-    muiTableBodyRowProps: ({row}) => {
-      let className = "info";
-      if ( row.original.up === false ) className = "error";
-      else if ( row.original.locked === true ) className = "warning";
-      else if ( row.original.locked === false ) className = "success";
-      return {className};
+      columnFilters,
+      pagination,
+      sorting,
     },
   });
-  return <MaterialReactTable table={table} />
+  const rowClass = (row: Row<Node>) => {
+    return row.original.up === false? 'error' :
+      row.original.locked === true? 'warning' :
+      row.original.locked === false? 'success' :
+      'info'
+  }
+  return (
+    <div className='tableContainer'>
+      <div className='tableControls'>
+        <FilterMenu
+          isOpen={openFilterMenu}
+          onChange={setOpenFilterMenu}
+          table={table}
+          sections={FILTER_SECTIONS}
+        />
+        { props.pagination? <Paginator table={table} /> : null }
+      </div>
+      <Table
+        table={table}
+        rowClass={rowClass}
+      />
+      { props.pagination? <Paginator table={table} /> : null }
+    </div>
+  )
 }

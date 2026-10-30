@@ -1,45 +1,83 @@
-import { ReactNode, useMemo } from "react";
-import DescriptionIcon from "@mui/icons-material/Description";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { TextInput } from "@mantine/core";
+import { useData } from 'vike-react/useData'
+import { usePageContext } from 'vike-react/usePageContext'
+import { IconFileText } from "@tabler/icons-react";
 import {
-  useMaterialReactTable,
-  MaterialReactTable,
-  type MRT_ColumnDef,
-  type MRT_Row,
-} from 'material-react-table';
-import type { UseQueryResult } from "@tanstack/react-query";
-import { type Theme } from "@mui/material/styles";
+  getCoreRowModel,
+  getSortedRowModel,
+  getExpandedRowModel,
+  getPaginationRowModel,
+  useReactTable,
+  type PaginationState,
+  type ColumnDef,
+  type Row,
+  type SortingState,
+} from '@tanstack/react-table';
 
-import { formatDate, formatDuration } from "../../lib/utils";
-import IconLink from "../../components/IconLink";
-import Link from "../../components/Link";
-import type { Job, JobList, Run } from "../../lib/paddles.d";
+import { formatDate, formatDuration, parseTimestamp } from "../../lib/utils";
+import IconLink from "../IconLink";
+import FilterMenu from '../FilterMenu';
+import Link from "../Link";
+import type { Job, Run } from "../../lib/paddles.d";
+import { JobStatuses } from "../../lib/paddles.d";
+import {
+  type FilterMenuSections,
+  type RowDetail,
+  type StatusCategory,
+} from '#src/lib/types.d';
 import { dirName } from "../../lib/utils";
-import useDefaultTableOptions from "../../lib/table";
+import {
+  getColumnFiltersCallback,
+  getPaginationCallback,
+  parseParams,
+  useDefaultTableOptions,
+} from "../../lib/table";
+import Table from '../Table';
+import Paginator from '../Paginator';
+import {
+  JobDetailPanel,
+} from "../JobDetailPanel";
+import DetailMenu from '../DetailMenu'; 
 
 import sentryIcon from "./assets/sentry.svg";
 
 
-const columns: MRT_ColumnDef<Job>[] = [
+const getColumns = (setDetails: React.Dispatch<React.SetStateAction<RowDetail>>): ColumnDef<Job>[] => {
+  return [
+  {
+    id: 'expander',
+    header: ({table}) => (
+      <DetailMenu
+        table={table}
+        details={table.getState().details}
+        setDetails={setDetails}
+      />
+    ),
+    cell: ({ row }) => (
+      row.getCanExpand() &&
+      <button type="button" className='expandButton' onClick={row.getToggleExpandedHandler()} >
+        {row.getIsExpanded() ? '-' : '+'}
+      </button>
+    ),
+    size: 40,
+  },
   {
     header: "status",
     accessorKey: "status",
-    size: 120,
-    filterVariant: "select",
+    size: 20,
   },
   {
     header: "links",
     id: "links",
-    size: 75,
-    Cell: ({ row }) => {
+    cell: ({ row }) => {
       const log_url = row.original.log_href;
       const sentry_url = row.original.sentry_event;
       return (
         <div>
           {log_url? (
             <IconLink to={dirName(log_url)}>
-              <DescriptionIcon fontSize="small" style={{marginLeft: '5px'}} />
+              <IconFileText size={20} style={{marginLeft: '5px'}} />
             </IconLink>
           ) : null}
           {sentry_url ? (
@@ -54,12 +92,12 @@ const columns: MRT_ColumnDef<Job>[] = [
         </div>
       );
     },
+    size: 20,
   },
   {
     header: "job ID",
     accessorKey: "job_id",
-    size: 110,
-    Cell: ({ row }) => {
+    cell: ({ row }) => {
       return (
         <Link
           to={`/runs/${row.original.name}/jobs/${row.original.job_id}`}
@@ -69,6 +107,7 @@ const columns: MRT_ColumnDef<Job>[] = [
         </Link>
       );
     },
+    size: 20,
   },
   {
     header: "tasks",
@@ -76,7 +115,7 @@ const columns: MRT_ColumnDef<Job>[] = [
     accessorFn: (row: Job) => {
       const tasks = Object.values(row.tasks || {});
       const task_list = tasks.map(task => {
-          if (Object.keys(tasks).length > 0) 
+          if (Object.keys(tasks).length > 0)
             return Object.keys(task)[0];
           return [];
         });
@@ -84,88 +123,75 @@ const columns: MRT_ColumnDef<Job>[] = [
       return result;
     },
     size: 200,
-    filterFn: 'contains',
-    enableColumnFilter: true,
+    meta: {
+      filterFn: 'contains',
+    },
   },
   {
     header: "description",
     size: 200,
     accessorFn: (row: Job) => row.description + "",
-    filterFn: 'contains',
-    enableColumnFilter: true,
+    meta: {
+      filterFn: 'contains',
+    },
   },
   {
     header: "posted",
     id: "posted",
     accessorFn: (row: Job) => formatDate(row.posted),
-    filterVariant: 'date',
     sortingFn: "datetime",
-    size: 150,
   },
   {
     header: "updated",
     id: "updated",
     accessorFn: (row: Job) => formatDate(row.updated),
-    filterVariant: 'date',
     sortingFn: "datetime",
-    size: 150,
   },
   {
     header: "started",
     id: "started",
     accessorFn: (row: Job) => formatDate(row.started),
-    filterVariant: 'date',
     sortingFn: "datetime",
-    size: 150,
   },
   {
     header: "runtime",
     id: "runtime",
-    size: 110,
     accessorFn: (row: Job) => {
-      const start = Date.parse(row.started);
-      const end = Date.parse(row.updated);
+      const start = Number(parseTimestamp(row.started));
+      const end = Number(parseTimestamp(row.updated));
       if (!end || !start) return "";
       return formatDuration(Math.round((end - start) / 1000));
     },
-    enableColumnFilter: false,
   },
   {
     header: "duration",
     id: "duration",
-    size: 120,
     accessorFn: (row: Job) =>
       formatDuration(row.duration),
-    enableColumnFilter: false,
   },
   {
     header: "in waiting",
     id: "waiting",
-    size: 100,
     accessorFn: (row: Job) => {
-      const start = Date.parse(row.started);
-      const end = Date.parse(row.updated);
+      const start = Number(parseTimestamp(row.started));
+      const end = Number(parseTimestamp(row.updated));
       if (!end || !start || !row.duration) return "";
       return formatDuration(Math.round((end - start) / 1000 - row.duration));
     },
-    enableColumnFilter: false,
   },
   {
     header: "machine type",
     accessorKey: "machine_type",
-    filterVariant: "select",
   },
   {
     header: "OS type",
-    size: 85,
     accessorFn: (row: Job) => row.os_type + "",
-    filterVariant: "select",
+    size: 20,
   },
   {
     header: "OS version",
     accessorFn: (row: Job) => row.os_version + "",
-    size: 85,
-    filterVariant: "select",
+    size: 20,
   },
   {
     header: "nodes",
@@ -173,11 +199,32 @@ const columns: MRT_ColumnDef<Job>[] = [
     accessorFn: (row: Job) => {
       return Object.keys(row.targets || row.roles || {}).length || 0;
     },
-    size: 85,
+    size: 20,
   },
 ];
+}
 
-function jobStatusToThemeCategory(status: string): keyof Theme["palette"] {
+const FILTER_SECTIONS: FilterMenuSections = {
+  job: {
+    label: "Filter by job details",
+    filters: {
+      status: {
+        label: "status",
+        options: JobStatuses,
+      },
+    },
+  },
+}
+
+function jobSearchText(job: Job): string {
+  return [
+    job.job_id, job.status, job.description, job.failure_reason,
+    job.machine_type, job.os_type, job.os_version, job.started,
+    ...Object.keys(job.targets || {}),
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+
+function jobStatusToThemeCategory(status: string): StatusCategory {
   switch (status) {
     case "dead": return "error";
     case "fail": return "error";
@@ -189,59 +236,80 @@ function jobStatusToThemeCategory(status: string): keyof Theme["palette"] {
   }
 };
 
-type JobDetailPanelProps = {
-  row: MRT_Row<Job>;
-}
-
-function JobDetailPanel(props: JobDetailPanelProps): ReactNode {
-  const failure_reason = props.row.original.failure_reason;
-  if ( ! failure_reason ) return null;
-  return (
-    <Box
-      sx={{
-        borderLeft: 1,
-        borderColor: (theme) => theme.palette.grey[800],
-        padding: 1,
-        color: (theme) => theme.palette.text.primary,
-      }}
-    >
-      <Typography
-        variant="subtitle2"
-      >
-        Failure Reason:
-      </Typography>
-      <Typography
-        variant="caption"
-      >
-        <code>{failure_reason}</code>
-      </Typography>
-    </Box>
-  )
-};
-
 type JobListProps = {
-  query: UseQueryResult<Run> | UseQueryResult<JobList>;
   sortMode?: "time" | "id";
+  pagination?: boolean;
 }
 
-export default function JobList({ query, sortMode }: JobListProps) {
+export default function JobList(props: JobListProps) {
+  const context = usePageContext();
+  const params = context?.urlParsed.search || {};
+  const data_: Run = useData();
   const options = useDefaultTableOptions<Job>();
+  const { columnFilters, pagination } = parseParams(params);
+  const onColumnFiltersChange = getColumnFiltersCallback({
+    path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
+  });
+  // paddles can't filter a run's jobs by status, so do it here
+  const statusFilter = params.status;
+  const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search.trim().toLowerCase());
   const data = useMemo(() => {
-    return (query.data?.jobs || []).filter(item => !! item.id);
-  }, [query, sortMode]);
-  const table = useMaterialReactTable({
+    return (data_?.jobs || [])
+      .filter(item => !statusFilter || item.status === statusFilter)
+      .filter(item => !deferredSearch || jobSearchText(item).includes(deferredSearch))
+      .map(item => ({
+        ...item,
+        id: String(item.job_id)
+      }));
+  }, [data_, statusFilter, deferredSearch]);
+  const [openFilterMenu, setOpenFilterMenu] = useState<boolean>(false);
+  // Node pages paginate via paddles (and the URL). Run and history pages get
+  // every job at once; paginate those locally so huge runs stay responsive.
+  const serverPaginated = !!props.pagination;
+  const onPaginationChange = getPaginationCallback({
+    path: context.urlPathname, columnFiltersState: columnFilters, paginationState: pagination
+  });
+  const [localPagination, setLocalPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: pagination.pageSize,
+  });
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset when the job set changes
+  useEffect(() => {
+    setLocalPagination(p => p.pageIndex === 0 ? p : {...p, pageIndex: 0});
+  }, [data]);
+  const [sorting, setSorting] = useState<SortingState>([{
+      id: props.sortMode === "time"? "started" : "job_id",
+      desc: true,
+  }]);
+  const [details, setDetails] = useState<RowDetail>({
+    description: false,
+    failure_reason: true,
+  });
+  const columns = useMemo(() => getColumns(setDetails), []);
+  const getRowCanExpand = (row: Row<Job>) => {
+    return Object.entries(details).filter(([key, display]) => display && !!row.original[key as keyof Job]).length >= 1;
+  }
+  const table = useReactTable({
     ...options,
     columns,
-    data: data,
-    enableFacetedValues: true,
-    enableGlobalFilter: true,
-    enableGlobalFilterRankedResults: false,
-    positionGlobalFilter: "left",
-    globalFilterFn: 'contains',
-    muiSearchTextFieldProps: {
-      placeholder: 'Search across all fields',
-      sx: { minWidth: '200px' },
-    },
+    data: data || [],
+    getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getRowCanExpand,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange,
+    onSortingChange: setSorting,
+    manualFiltering: true,
+    manualPagination: serverPaginated,
+    getPaginationRowModel: serverPaginated ? undefined : getPaginationRowModel(),
+    // reset to the first page on search/filter changes (below), not on sorting
+    autoResetPageIndex: false,
+    onPaginationChange: serverPaginated ? onPaginationChange : setLocalPagination,
+    // When paginating server-side, paddles doesn't tell us the total, so the
+    // page count is unknown (-1) unless this page came back short.
+    pageCount: !serverPaginated ? undefined :
+      (data_?.jobs || []).length < pagination.pageSize ? pagination.pageIndex + 1 : -1,
     initialState: {
       ...options.initialState,
       columnVisibility: {
@@ -252,31 +320,47 @@ export default function JobList({ query, sortMode }: JobListProps) {
         tasks: false,
         description: false,
       },
-      pagination: {
-        pageIndex: 0,
-        pageSize: 25,
-      },
-      sorting: [
-        {
-          id: sortMode === "time"? "started" : "job_id",
-          desc: true,
-        },
-      ],
-      showGlobalFilter: true,
     },
     state: {
-      isLoading: query.isLoading || query.isFetching,
-    },
-    renderDetailPanel: JobDetailPanel,
-    muiTableBodyRowProps: ({row, isDetailPanel}) => {
-      if ( isDetailPanel ) {
-        return row.original.failure_reason? {} : {className: "empty"};
-      }
-      const category = jobStatusToThemeCategory(row.original.status);
-      if ( category ) return { className: category };
-      return {};
+      columnFilters,
+      pagination: serverPaginated ? pagination : localPagination,
+      sorting,
+      details,
     },
   });
-  if (query.isError) return null;
-  return <MaterialReactTable table={table} />
+  const rowClass = (row: Row<Job>) => {
+    const category = jobStatusToThemeCategory(row.getValue('status'));
+    return category || '';
+  }
+  return (
+    <div className='tableContainer'>
+      <div className='tableControls'>
+        <TextInput
+          placeholder={serverPaginated ? "Search this page" : "Search across all fields"}
+          aria-label="Search jobs"
+          value={search}
+          onChange={e => setSearch(e.currentTarget.value)}
+          size="xs"
+          style={{ minWidth: "200px" }}
+        />
+        <FilterMenu
+          isOpen={openFilterMenu}
+          onChange={setOpenFilterMenu}
+          table={table}
+          sections={FILTER_SECTIONS}
+        />
+        <Paginator table={table} />
+      </div>
+      <Table
+        table={table}
+        rowClass={rowClass}
+        detailPanel={JobDetailPanel}
+        details={details}
+      />
+      { table.getState().pagination.pageSize >= 10? (
+      <div className='tableControls'>
+        <Paginator table={table} />
+      </div> ) : null }
+    </div>
+  )
 }

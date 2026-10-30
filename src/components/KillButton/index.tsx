@@ -1,39 +1,29 @@
 import { useState } from "react";
-import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import Dialog from '@mui/material/Dialog';
-import Paper from "@mui/material/Paper";
-import Typography from "@mui/material/Typography";
-import Tooltip from '@mui/material/Tooltip';
+import { Button, Loader, Modal, Paper, Text, Title, Tooltip } from "@mantine/core";
 
 import CodeBlock from "../CodeBlock";
 import type { Run as RunResponse } from "../../lib/paddles.d";
-import { KillRunPayload } from "../../lib/teuthologyAPI.d";
+import type { KillRunPayload } from "../../lib/teuthologyAPI.d";
 import { useSession, useRunKill } from "../../lib/teuthologyAPI";
 import Alert from "../Alert";
 
 
 type KillButtonProps = {
-  query: UseQueryResult<RunResponse>;
+  data: RunResponse;
 };
 
 type KillButtonDialogProps = {
-  mutation: UseMutationResult;
+  mutation: ReturnType<typeof useRunKill>;
   payload: KillRunPayload;
   open: boolean;
   handleClose: () => void;
 };
 
-export default function KillButton({query: runQuery}: KillButtonProps) {
+export default function KillButton({data}: KillButtonProps) {
   const killMutation = useRunKill();
   const [open, setOpen] = useState(false);
   const sessionQuery = useSession();
-  const data: RunResponse | undefined = runQuery.data;
-  const run_owner = data?.jobs[0].owner || "";
+  const run_owner = data?.jobs?.[0]?.owner || "";
   const killPayload: KillRunPayload = {
     "--run": data?.name || "",
     "--owner": run_owner,
@@ -41,9 +31,9 @@ export default function KillButton({query: runQuery}: KillButtonProps) {
     "--preserve-queue": true,
   }
   const loggedUser = sessionQuery.data?.session?.username;
-  const isUserAdmin = sessionQuery.data?.session?.isUserAdmin;
+  const isUserAdmin = !!sessionQuery.data?.session?.isUserAdmin;
   const owner = killPayload["--owner"].toLowerCase()
-  const isOwner = (loggedUser?.toLowerCase() == owner) || (`scheduled_${loggedUser?.toLowerCase()}@teuthology` == owner)
+  const isOwner = (loggedUser?.toLowerCase() === owner) || (`scheduled_${loggedUser?.toLowerCase()}@teuthology` === owner)
   const isButtonDisabled = (!isOwner && !isUserAdmin)
 
   const getHelperMessage = () => {
@@ -60,31 +50,34 @@ export default function KillButton({query: runQuery}: KillButtonProps) {
   };
 
   const refreshAndtoggle = () => {
-    if (open && !killMutation.isIdle) { // on closing confirmation dialog after kill-run
-      runQuery.refetch();
+    if ( killMutation.isSuccess ) {
+      // show the run's new state
+      window.location.reload();
+      return;
     }
     toggleDialog();
     killMutation.reset();
   }
 
-  if ((data?.status.includes("finished")) || !(sessionQuery.data?.session?.username)) {
+  if ((data?.status?.includes("finished")) || !(sessionQuery.data?.session?.username)) {
     // run finished or user logged out
     return null;
   }
-  
+
 
   return (
   <div>
       <div style={{ display: "flex" }}>
-      <Tooltip arrow title={getHelperMessage()}>
+      <Tooltip withArrow label={getHelperMessage()}>
         <span>
         <Button
-          variant="contained"
-          color="error"
-          size="large"
+          variant="filled"
+          color="red"
+          size="lg"
+          className="dangerButton"
           onClick={refreshAndtoggle}
           disabled={isButtonDisabled}
-          sx={{ marginBottom: "12px" }}
+          style={{ marginBottom: "12px" }}
         >
           {(isOwner) ? "Kill Run" : "Kill Run As Admin"}
         </Button>
@@ -97,7 +90,7 @@ export default function KillButton({query: runQuery}: KillButtonProps) {
           handleClose={refreshAndtoggle}
         />
       </div>
-      { (killMutation.isError) ? <Alert severity="error" message="Unable to kill run" /> : null }     
+      { (killMutation.isError) ? <Alert severity="error" message="Unable to kill run" /> : null }
       { (killMutation.isSuccess) ? <Alert severity="success" message={`Run killed successfully! \n`} /> : null }
   </div>
   );
@@ -106,52 +99,50 @@ export default function KillButton({query: runQuery}: KillButtonProps) {
 function KillButtonDialog({mutation, open, handleClose, payload}: KillButtonDialogProps) {
   return (
     <div>
-      <Dialog onClose={handleClose} open={open} scroll="paper" fullWidth={true} maxWidth="md">
-        <DialogTitle variant="h6">KILL CONFIRMATION</DialogTitle>
-        <DialogContent dividers>
-          { (mutation.isSuccess && mutation.data ) ? 
+      <Modal onClose={handleClose} opened={open} size="xl" title="KILL CONFIRMATION">
+          { (mutation.isSuccess && mutation.data ) ?
             <div>
-              <Typography variant="h6" display="block" color="green" gutterBottom>
+              <Title order={3} c="green" mb="sm">
                 Successful!
-              </Typography>
-              <Paper>
-                <CodeBlock value={mutation.data?.data?.logs || ""} language="python" />
+              </Title>
+              <Paper withBorder>
+                <CodeBlock value={mutation.data.logs || ""} language="python" />
               </Paper>
-            </div> : 
-            (mutation.isLoading) ? (
+            </div> :
+            (mutation.isPending) ? (
               <div style={{display: "flex", alignItems: "center"}}>
-                <CircularProgress size={20} color="inherit" style={{marginRight: "12px"}} />
-                <Typography variant="subtitle1" display="block">
+                <Loader size="xs" color="inherit" style={{marginRight: "12px"}} />
+                <Text size="md">
                   Killing run...
-                </Typography>
+                </Text>
               </div>
-            ) : 
+            ) :
             (mutation.isError) ? (
               <div>
-                <Typography variant="h6" display="block" color="red" gutterBottom>
+                <Title order={3} c="red" mb="sm">
                   Failed!
-                </Typography>
-                <Paper>
-                  <CodeBlock value={(mutation.error?.response?.data?.detail) || ""} language="python" />
+                </Title>
+                <Paper withBorder>
+                  <CodeBlock value={(mutation.error?.message) || ""} language="python" />
                 </Paper>
               </div>
-            ) :  
+            ) :
             <div>
-              <Typography variant="overline" display="block" gutterBottom>
+              <Text size="xs" tt="uppercase" mb="sm">
                 Are you sure you want to kill this run/job?
-              </Typography>
+              </Text>
               <Button
-                variant="contained"
-                color="error"
-                size="large"
+                variant="filled"
+                color="red"
+                size="lg"
+                className="dangerButton"
                 onClick={() => mutation.mutate(payload)}
               >
                 Yes, I'm sure
               </Button>
             </div>
           }
-        </DialogContent>
-      </Dialog>
+      </Modal>
     </div>
-  ) 
+  )
 }

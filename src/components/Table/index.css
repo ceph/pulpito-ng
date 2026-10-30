@@ -1,0 +1,96 @@
+table.pulpito {
+  width: 100%;
+  border-spacing: 0;
+
+  th {
+    text-align: left;
+
+    button {
+      color: var(--palette-text-primary);
+    }
+  }
+
+  tr,
+  td {
+    background-color: var(--palette-background-default);
+    color: var(--palette-text-primary);
+    height: 2rem;
+  }
+
+  td {
+    border-bottom: 1px solid var(--palette-table-cell-border);
+    padding: 1px;
+    padding-right: 5px;
+
+    .hardWrap {
+      overflow-wrap: anywhere;
+    }
+  }
+
+  th {
+
+    td {
+      font-size: 0.7rem;
+    }
+  }
+
+  tbody {
+    tr.info {
+
+      td,
+      svg {
+        background-color: var(--palette-info-main);
+        color: var(--palette-info-contrast-text);
+      }
+    }
+
+    tr.success {
+
+      td,
+      svg {
+        background-color: var(--palette-success-main);
+        color: var(--palette-success-contrast-text);
+      }
+    }
+
+    tr.error {
+
+      td,
+      svg {
+        background-color: var(--palette-error-main);
+        color: var(--palette-error-contrast-text);
+      }
+    }
+
+    tr.warning {
+
+      td,
+      svg {
+        background-color: var(--palette-warning-main);
+        color: var(--palette-warning-contrast-text);
+      }
+    }
+
+    button {
+      color: var(--palette-primary-contrast-text);
+    }
+  }
+
+  button.expandButton {
+    width: 2rem;
+    background: transparent;
+    border: 0;
+  }
+
+  [data-mantine-color-scheme="dark"] & {
+    tr:hover td {
+      filter: brightness(85%);
+    }
+  }
+
+  [data-mantine-color-scheme="light"] & {
+    tr:hover td {
+      filter: brightness(115%);
+    }
+  }
+}
